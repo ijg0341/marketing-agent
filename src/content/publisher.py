@@ -6,6 +6,10 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from src.channels.base import ChannelAdapter
+from src.channels.blog import WordPressAdapter
+from src.channels.email_channel import SendGridAdapter
+from src.channels.facebook import FacebookAdapter
+from src.channels.instagram import InstagramAdapter
 from src.channels.twitter import TwitterAdapter
 from src.db.repository import ContentRepository
 
@@ -13,6 +17,10 @@ logger = logging.getLogger(__name__)
 
 ADAPTERS: dict[str, type[ChannelAdapter]] = {
     "twitter": TwitterAdapter,
+    "instagram": InstagramAdapter,
+    "facebook": FacebookAdapter,
+    "blog": WordPressAdapter,
+    "email": SendGridAdapter,
 }
 
 

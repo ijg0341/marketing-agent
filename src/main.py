@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
@@ -15,23 +16,27 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("Initializing database...")
+    init_db()
+    logger.info("Marketing Agent API is ready.")
+    yield
+    logger.info("Shutting down.")
+
+
 app = FastAPI(
     title="Marketing Agent API",
     description="Self-evolving AI marketing agent — data & execution layer",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 app.include_router(health.router)
 app.include_router(content.router)
 app.include_router(analytics.router)
 app.include_router(strategy.router)
-
-
-@app.on_event("startup")
-async def on_startup():
-    logger.info("Initializing database...")
-    init_db()
-    logger.info("Marketing Agent API is ready.")
 
 
 def main():

@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.git/
+.env
+data/
+reports/*.md
+logs/*.jsonl
+.claude/
+scheduled_tasks/
+tests/
