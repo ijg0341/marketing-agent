@@ -1,0 +1,45 @@
+# Blog Post Template (evolved by Level 2 Evolution)
+version: 1
+last_updated: "2026-04-03"
+
+templates:
+  how_to:
+    structure: |
+      # [Title with primary keyword]
+      ## Introduction
+      - Hook the reader with a problem
+      - Preview the solution
+      ## [Step-by-step sections]
+      - Clear actionable steps
+      - Include screenshots/examples
+      ## Conclusion
+      - Summarize key takeaways
+      - CTA
+    seo_guidelines:
+      - Include primary keyword in title, H2, and first paragraph
+      - Use 2-3 related keywords naturally
+      - Target 1000-1500 words
+      - Add internal links to related posts
+
+  listicle:
+    structure: |
+      # [Number] [Topic] [Benefit]
+      ## Introduction
+      ## [Numbered items with clear headers]
+      ## Conclusion + CTA
+    seo_guidelines:
+      - Use odd numbers in titles (7, 11, 15)
+      - Each item should be scannable
+      - Target 800-1200 words
+
+  thought_leadership:
+    structure: |
+      # [Provocative or insightful title]
+      ## The current state
+      ## Why this matters
+      ## Our perspective
+      ## What to do about it
+    seo_guidelines:
+      - Focus on trending industry topics
+      - Include data and citations
+      - Target 1200-2000 words

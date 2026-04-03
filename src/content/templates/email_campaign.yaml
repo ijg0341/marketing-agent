@@ -1,0 +1,53 @@
+# Email Campaign Template (evolved by Level 2 Evolution)
+version: 1
+last_updated: "2026-04-03"
+
+templates:
+  newsletter:
+    structure: |
+      Subject: [Compelling subject line]
+      Preview: [Preview text that extends the subject]
+
+      Hi {first_name},
+
+      [Opening hook - 1-2 sentences]
+
+      [Main content - value-first approach]
+
+      [Secondary content or tip]
+
+      [CTA button]
+
+      Best,
+      {sender_name}
+    guidelines:
+      - Subject line under 50 characters
+      - Preview text under 90 characters
+      - One primary CTA per email
+      - Mobile-friendly formatting
+
+  product_announcement:
+    structure: |
+      Subject: [Feature/Update name] is here
+      Preview: [Key benefit in one line]
+
+      [Visual hero section]
+      [What's new - 3 bullet points max]
+      [How it helps you]
+      [Try it now CTA]
+    guidelines:
+      - Focus on benefits, not features
+      - Include a screenshot or GIF
+      - Create urgency without being pushy
+
+  re_engagement:
+    structure: |
+      Subject: We miss you / [Personalized hook]
+      [Acknowledge the gap]
+      [What's new since they left]
+      [Special offer or incentive]
+      [Easy re-entry CTA]
+    guidelines:
+      - Be genuine, not guilt-tripping
+      - Offer clear value for returning
+      - Include an unsubscribe option prominently

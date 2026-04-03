@@ -1,0 +1,46 @@
+# Marketing Strategy (Auto-evolved by Level 1 Evolution)
+# This file is automatically updated based on performance analysis.
+# Manual edits are welcome — they will be preserved as baseline.
+
+version: 1
+last_updated: "2026-04-03"
+updated_by: "manual"
+
+content_strategy:
+  themes:
+    - "product_updates"
+    - "industry_insights"
+    - "tips_and_tricks"
+    - "customer_stories"
+  theme_weights:
+    product_updates: 0.2
+    industry_insights: 0.3
+    tips_and_tricks: 0.3
+    customer_stories: 0.2
+  content_mix:
+    educational: 0.4
+    promotional: 0.2
+    engagement: 0.3
+    brand_awareness: 0.1
+
+posting_optimization:
+  best_times:
+    twitter: ["10:00", "15:00"]
+    instagram: ["12:00", "19:00"]
+    facebook: ["11:00", "18:00"]
+  best_days:
+    high_engagement: ["tuesday", "wednesday", "thursday"]
+    low_engagement: ["saturday", "sunday"]
+
+engagement_tactics:
+  hashtag_strategy: "mix_popular_niche"  # popular_only, niche_only, mix_popular_niche
+  max_hashtags: 10
+  call_to_action: true
+  question_posts_ratio: 0.2
+  emoji_usage: "moderate"  # none, minimal, moderate, heavy
+
+performance_thresholds:
+  min_engagement_rate: 0.02
+  target_engagement_rate: 0.05
+  min_click_rate: 0.01
+  alert_drop_percentage: 0.3

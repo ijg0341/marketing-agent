@@ -1,0 +1,50 @@
+# SNS Post Template (evolved by Level 2 Evolution)
+version: 1
+last_updated: "2026-04-03"
+
+templates:
+  product_update:
+    structure: |
+      [Hook - attention grabber]
+      [Main point - what's new]
+      [Benefit - why it matters]
+      [CTA - what to do next]
+    guidelines:
+      - Keep under 280 characters for Twitter
+      - Use 1-2 relevant emojis
+      - Include a clear call to action
+      - Add 3-5 targeted hashtags
+    example_hooks:
+      - "Just shipped:"
+      - "New feature alert:"
+      - "You asked, we built:"
+
+  industry_insight:
+    structure: |
+      [Interesting fact or stat]
+      [Our perspective/take]
+      [Question to spark engagement]
+    guidelines:
+      - Lead with a surprising data point
+      - Provide actionable insight
+      - End with an open question
+
+  tips_and_tricks:
+    structure: |
+      [Problem statement]
+      [Quick tip/solution]
+      [Result/benefit]
+    guidelines:
+      - Be specific and actionable
+      - Use numbered tips for threads
+      - Include before/after if possible
+
+  engagement:
+    structure: |
+      [Relatable statement or question]
+      [Context or options]
+      [Invitation to respond]
+    guidelines:
+      - Ask genuine questions
+      - Use polls when possible
+      - Respond to comments promptly

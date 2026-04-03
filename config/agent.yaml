@@ -1,0 +1,34 @@
+# Marketing Agent - Product & Brand Configuration
+# Fill in your product details to get started
+
+product:
+  name: "My Product"
+  description: "A brief description of your product or service"
+  website: "https://example.com"
+  category: "SaaS"  # SaaS, E-commerce, Education, etc.
+
+brand:
+  tone: "professional_friendly"  # professional_friendly, casual, formal, playful, authoritative
+  voice_guidelines: |
+    - Be helpful and approachable
+    - Use clear, simple language
+    - Focus on benefits, not features
+  language: "ko"  # Primary language: ko, en, ja, etc.
+  hashtag_pool:
+    - "#마케팅"
+    - "#비즈니스"
+
+target_audience:
+  demographics:
+    age_range: "25-45"
+    interests:
+      - "technology"
+      - "productivity"
+  pain_points:
+    - "Spending too much time on repetitive tasks"
+  value_propositions:
+    - "Save time with automation"
+
+competitors:
+  - name: "Competitor A"
+    url: "https://competitor-a.com"
