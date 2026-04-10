@@ -20,7 +20,7 @@ def _ensure_db_dir(url: str) -> None:
 
 _ensure_db_dir(settings.database_url)
 
-engine = create_engine(settings.database_url, echo=False)
+engine = create_engine(settings.database_url, echo=False, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 
 

@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-import os
 from pathlib import Path
 from typing import Any
 
 import yaml
-from pydantic import BaseModel
 from pydantic_settings import BaseSettings
 
 
@@ -16,6 +14,7 @@ class Settings(BaseSettings):
     host: str = "0.0.0.0"
     port: int = 8000
     database_url: str = "sqlite:///./data/marketing_agent.db"
+    api_secret_key: str = ""
 
     # Twitter/X
     twitter_api_key: str = ""
@@ -85,6 +84,11 @@ class AgentConfig:
     def get_enabled_channels(self) -> list[str]:
         return [name for name, cfg in self._channels.items() if cfg.get("enabled")]
 
+    def reload_channels(self) -> dict[str, Any]:
+        """Reload channels.yaml from disk. Called after channel settings are updated via API."""
+        self._channels = load_yaml("channels.yaml")
+        return self._channels
+
     def reload_strategy(self) -> dict[str, Any]:
         self._strategy = load_yaml("strategy.yaml")
         return self._strategy
@@ -97,3 +101,13 @@ class AgentConfig:
 
 settings = Settings()
 agent_config = AgentConfig()
+
+
+def reload() -> None:
+    """Reload settings from .env file. Updates the module-level singleton in-place.
+
+    Called after platform credentials are written to .env so that the running process
+    picks up the new values without a restart.
+    """
+    global settings
+    settings = Settings()
