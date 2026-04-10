@@ -4,11 +4,13 @@ from typing import Any
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.config import agent_config
 from src.content.publisher import publish_queued
 from src.db.database import get_db
+from src.db.models import Content
 from src.db.repository import ContentRepository
 
 router = APIRouter(prefix="/api/content", tags=["content"])
@@ -30,6 +32,34 @@ class ContentResponse(BaseModel):
     posted_at: str | None = None
 
     model_config = {"from_attributes": True}
+
+
+@router.get("", response_model=list[dict[str, Any]])
+async def list_content(
+    status: str | None = None,
+    channel: str | None = None,
+    limit: int = 50,
+    db: Session = Depends(get_db),
+):
+    q = select(Content)
+    if status is not None:
+        q = q.where(Content.status == status)
+    if channel is not None:
+        q = q.where(Content.channel == channel)
+    q = q.order_by(Content.created_at.desc()).limit(limit)
+    items = list(db.scalars(q).all())
+    return [
+        {
+            "id": c.id,
+            "channel": c.channel,
+            "content_text": c.content_text,
+            "status": c.status,
+            "created_at": str(c.created_at),
+            "posted_at": str(c.posted_at) if c.posted_at else None,
+            "external_id": c.external_id,
+        }
+        for c in items
+    ]
 
 
 @router.post("", response_model=dict[str, Any])

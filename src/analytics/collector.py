@@ -5,7 +5,6 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
-from src.channels.base import ChannelAdapter
 from src.content.publisher import get_adapter
 from src.db.repository import ContentRepository, MetricRepository
 
@@ -24,7 +23,7 @@ async def collect_metrics_for_channel(db: Session, channel: str) -> list[dict[st
             continue
         try:
             snapshot = await adapter.collect_metrics(content.external_id)
-            metric_repo.record(
+            metric = metric_repo.record(
                 content_id=content.id,
                 channel=channel,
                 impressions=snapshot.impressions,
@@ -33,6 +32,10 @@ async def collect_metrics_for_channel(db: Session, channel: str) -> list[dict[st
                 conversions=snapshot.conversions,
                 engagement_rate=snapshot.engagement_rate,
             )
+            if snapshot.raw:
+                metric.set_raw(snapshot.raw)
+                db.add(metric)
+                db.commit()
             results.append({
                 "content_id": content.id,
                 "impressions": snapshot.impressions,

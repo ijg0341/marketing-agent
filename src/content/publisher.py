@@ -25,9 +25,20 @@ ADAPTERS: dict[str, type[ChannelAdapter]] = {
 
 
 def get_adapter(channel: str) -> ChannelAdapter:
+    # Note: get_adapter() creates new adapter instances each call, so Settings.reload() ensures latest credentials are used
     cls = ADAPTERS.get(channel)
     if cls is None:
         raise ValueError(f"Unknown channel: {channel}")
+    if channel == "twitter":
+        from src.config import settings as _settings
+        missing = not all([
+            _settings.twitter_api_key,
+            _settings.twitter_api_secret,
+            _settings.twitter_access_token,
+            _settings.twitter_access_secret,
+        ])
+        if missing:
+            raise ValueError("Twitter credentials not configured. Please complete onboarding.")
     return cls()
 
 

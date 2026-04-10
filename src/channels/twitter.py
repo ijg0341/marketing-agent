@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import hashlib
 import hmac
-import time
+import logging
+import secrets
+import asyncio
 from base64 import b64encode
 from urllib.parse import quote
 
@@ -10,6 +12,8 @@ import httpx
 
 from src.channels.base import ChannelAdapter, MetricSnapshot, PublishResult
 from src.config import settings
+
+logger = logging.getLogger(__name__)
 
 API_BASE = "https://api.twitter.com/2"
 
@@ -26,7 +30,7 @@ class TwitterAdapter(ChannelAdapter):
 
     def _oauth_headers(self, method: str, url: str) -> dict[str, str]:
         ts = str(int(time.time()))
-        nonce = b64encode(ts.encode()).decode().rstrip("=")
+        nonce = secrets.token_urlsafe(32)
         params = {
             "oauth_consumer_key": self._api_key,
             "oauth_nonce": nonce,
@@ -50,26 +54,85 @@ class TwitterAdapter(ChannelAdapter):
     async def publish(self, text: str, media_url: str | None = None) -> PublishResult:
         url = f"{API_BASE}/tweets"
         payload = {"text": text}
-        headers = self._oauth_headers("POST", url)
-        headers["Content-Type"] = "application/json"
-        async with httpx.AsyncClient() as client:
-            resp = await client.post(url, json=payload, headers=headers)
-        if resp.status_code in (200, 201):
-            data = resp.json().get("data", {})
-            tweet_id = data.get("id")
-            return PublishResult(
-                success=True,
-                external_id=tweet_id,
-                url=f"https://x.com/i/status/{tweet_id}" if tweet_id else None,
-            )
-        return PublishResult(success=False, error=f"{resp.status_code}: {resp.text}")
+        max_attempts = 3
+        last_error: str = ""
+
+        for attempt in range(1, max_attempts + 1):
+            try:
+                headers = self._oauth_headers("POST", url)
+                headers["Content-Type"] = "application/json"
+                async with httpx.AsyncClient(timeout=30.0) as client:
+                    resp = await client.post(url, json=payload, headers=headers)
+
+                if resp.status_code in (200, 201):
+                    data = resp.json().get("data", {})
+                    tweet_id = data.get("id")
+                    return PublishResult(
+                        success=True,
+                        external_id=tweet_id,
+                        url=f"https://x.com/i/status/{tweet_id}" if tweet_id else None,
+                    )
+
+                if resp.status_code == 429:
+                    retry_after = resp.headers.get("retry-after", "unknown")
+                    logger.warning(
+                        "Twitter rate limit hit (attempt %d/%d). retry-after: %s",
+                        attempt, max_attempts, retry_after,
+                    )
+                    last_error = f"429 rate limited (retry-after: {retry_after})"
+                    if attempt < max_attempts:
+                        wait = 2 ** attempt
+                        await asyncio.sleep(wait)
+                        continue
+
+                elif resp.status_code in (500, 502, 503):
+                    logger.warning(
+                        "Twitter transient error %d (attempt %d/%d): %s",
+                        resp.status_code, attempt, max_attempts, resp.text[:200],
+                    )
+                    last_error = f"{resp.status_code}: {resp.text}"
+                    if attempt < max_attempts:
+                        wait = 2 ** attempt
+                        await asyncio.sleep(wait)
+                        continue
+
+                else:
+                    logger.error(
+                        "Twitter HTTP error %d: %s",
+                        resp.status_code, resp.text[:500],
+                    )
+                    return PublishResult(success=False, error=f"{resp.status_code}: {resp.text}")
+
+            except httpx.TimeoutException as exc:
+                logger.error(
+                    "Twitter request timed out (attempt %d/%d): %s",
+                    attempt, max_attempts, exc,
+                )
+                last_error = f"Request timed out: {exc}"
+                if attempt < max_attempts:
+                    wait = 2 ** attempt
+                    await asyncio.sleep(wait)
+                    continue
+                raise RuntimeError(f"Twitter publish failed after {max_attempts} attempts due to timeout") from exc
+
+        return PublishResult(success=False, error=last_error)
 
     async def collect_metrics(self, external_id: str) -> MetricSnapshot:
         url = f"{API_BASE}/tweets/{external_id}"
         params = {"tweet.fields": "public_metrics"}
         headers = {"Authorization": f"Bearer {self._bearer}"}
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(url, params=params, headers=headers)
+        try:
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(url, params=params, headers=headers)
+        except Exception:
+            logger.exception("Twitter collect_metrics request failed for tweet %s", external_id)
+            return MetricSnapshot()
+        if resp.status_code in (401, 403):
+            logger.warning(
+                "Twitter Free Tier: public_metrics unavailable. "
+                "Upgrade to Basic ($200/mo) for full analytics."
+            )
+            return MetricSnapshot()
         if resp.status_code != 200:
             return MetricSnapshot()
         metrics = resp.json().get("data", {}).get("public_metrics", {})
