@@ -1,34 +1,25 @@
-# Marketing Agent - Product & Brand Configuration
-# Fill in your product details to get started
-
 product:
-  name: "My Product"
-  description: "A brief description of your product or service"
-  website: "https://example.com"
-  category: "SaaS"  # SaaS, E-commerce, Education, etc.
-
+  name: 플랜도그
+  description: A brief description of your product or service
+  website: https://plandog.net/
+  category: SaaS
 brand:
-  tone: "professional_friendly"  # professional_friendly, casual, formal, playful, authoritative
-  voice_guidelines: |
-    - Be helpful and approachable
-    - Use clear, simple language
-    - Focus on benefits, not features
-  language: "ko"  # Primary language: ko, en, ja, etc.
-  hashtag_pool:
-    - "#마케팅"
-    - "#비즈니스"
-
+  tone: professional_friendly
+  voice_guidelines: ''
+  language: ko
+  hashtag_pool: []
 target_audience:
   demographics:
-    age_range: "25-45"
-    interests:
-      - "technology"
-      - "productivity"
-  pain_points:
-    - "Spending too much time on repetitive tasks"
-  value_propositions:
-    - "Save time with automation"
-
-competitors:
-  - name: "Competitor A"
-    url: "https://competitor-a.com"
+    age_range: ''
+    interests: []
+  pain_points: []
+  value_propositions: []
+competitors: []
+context: "## 제품/서비스 소개\n(제품명)은 (한 줄 설명)입니다.\n주요 기능: (기능 1), (기능 2), (기능 3)\n카테고리:\
+  \ SaaS / E-commerce / Education / 기타\n\n## 브랜드 톤 & 작성 가이드\n- 말투: ~합니다 체 / 반말 / 격식체\n\
+  - 톤: 전문적이되 친근하게 / 캐주얼 / 공식적\n- 이모지 사용: 적절히 / 많이 / 사용하지 않음\n- 기타 작성 지침: (자유 기술)\n\
+  \n## 타겟 오디언스\n- 연령대: 25~45세\n- 직업/역할: 마케터, 스타트업 대표, 1인 사업자\n- 관심사: 생산성, AI, 마케팅\
+  \ 자동화\n- 고충/니즈:\n  - (고객이 겪는 문제 1)\n  - (고객이 겪는 문제 2)\n- 우리가 제공하는 가치:\n  - (가치 제안\
+  \ 1)\n  - (가치 제안 2)\n\n## 경쟁사\n- (경쟁사 이름 1) (URL) — 간단한 설명\n- (경쟁사 이름 2) (URL) —\
+  \ 간단한 설명\n\n## 해시태그\n#해시태그1 #해시태그2 #해시태그3\n\n## 기타 참고사항\n(AI가 콘텐츠 생성 시 알아야 할 추가\
+  \ 정보를 자유롭게 작성하세요)\n"

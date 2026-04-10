@@ -1,58 +1,43 @@
-# Channel Configuration
-# Enable channels and set posting schedules
-
 twitter:
   enabled: false
   posting_schedule:
-    frequency: "daily"
+    frequency: daily
     times: ["10:00", "15:00", "20:00"]
-    timezone: "Asia/Seoul"
+    timezone: Asia/Seoul
   limits:
     max_posts_per_day: 5
     min_interval_minutes: 120
-
 instagram:
   enabled: false
   posting_schedule:
-    frequency: "daily"
+    frequency: daily
     times: ["12:00", "19:00"]
-    timezone: "Asia/Seoul"
+    timezone: Asia/Seoul
   limits:
     max_posts_per_day: 2
     min_interval_minutes: 360
-  content_types:
-    - "image"
-    - "carousel"
-    - "reel"
-
 facebook:
   enabled: false
   posting_schedule:
-    frequency: "daily"
+    frequency: daily
     times: ["11:00", "18:00"]
-    timezone: "Asia/Seoul"
+    timezone: Asia/Seoul
   limits:
     max_posts_per_day: 3
     min_interval_minutes: 240
-
 blog:
   enabled: false
-  platform: "wordpress"  # wordpress, ghost
+  platform: wordpress
   posting_schedule:
-    frequency: "weekly"
-    days: ["monday", "thursday"]
+    frequency: weekly
+    days: [monday, thursday]
     times: ["09:00"]
-    timezone: "Asia/Seoul"
-  seo:
-    focus_keywords: []
-    min_word_count: 800
-
+    timezone: Asia/Seoul
 email:
   enabled: false
-  provider: "sendgrid"  # sendgrid, mailchimp
+  provider: sendgrid
   campaign_schedule:
-    frequency: "weekly"
-    day: "tuesday"
+    frequency: weekly
+    day: tuesday
     time: "10:00"
-    timezone: "Asia/Seoul"
-  lists: []
+    timezone: Asia/Seoul

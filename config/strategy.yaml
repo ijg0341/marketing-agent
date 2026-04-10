@@ -6,6 +6,26 @@ version: 1
 last_updated: "2026-04-03"
 updated_by: "manual"
 
+# ── 광고 전략 (1순위) ──────────────────────────────────────────
+ad_strategy:
+  total_monthly_budget: 3000000  # 월 총 광고 예산 (KRW)
+  platform_allocation:
+    meta: 0.45       # Meta (Facebook + Instagram) 45%
+    google: 0.35     # Google Ads 35%
+    twitter: 0.20    # Twitter/X Ads 20%
+  default_bid_strategy: "auto"  # auto, manual_cpc, manual_cpm, target_cpa
+  performance_targets:
+    min_roas: 2.0           # 최소 ROAS (이하면 검토)
+    target_roas: 4.0        # 목표 ROAS
+    max_cpa: 15000          # 최대 CPA (KRW)
+    min_ctr: 0.01           # 최소 CTR 1%
+    target_ctr: 0.03        # 목표 CTR 3%
+  auto_optimization:
+    enabled: true
+    budget_realloc_threshold: 0.3   # ROAS 차이 30% 이상이면 재배분
+    pause_threshold_days: 3         # 3일 연속 저성과 시 일시정지 제안
+
+# ── 콘텐츠 전략 (2순위) ────────────────────────────────────────
 content_strategy:
   themes:
     - "product_updates"
@@ -33,11 +53,11 @@ posting_optimization:
     low_engagement: ["saturday", "sunday"]
 
 engagement_tactics:
-  hashtag_strategy: "mix_popular_niche"  # popular_only, niche_only, mix_popular_niche
+  hashtag_strategy: "mix_popular_niche"
   max_hashtags: 10
   call_to_action: true
   question_posts_ratio: 0.2
-  emoji_usage: "moderate"  # none, minimal, moderate, heavy
+  emoji_usage: "moderate"
 
 performance_thresholds:
   min_engagement_rate: 0.02

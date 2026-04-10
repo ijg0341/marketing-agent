@@ -1,0 +1,14 @@
+# Marketing Agent - Claude Code Scheduled Tasks
+# Install: crontab crontab.example (after adjusting paths)
+#
+# Role: Claude Code handles content_planning + daily_analysis + strategy_evolution
+# APScheduler (inside Docker) handles publish + collect_metrics
+
+# Daily analysis - 매일 오전 9:03
+03 09 * * * cd /path/to/marketing-agent && claude scheduled_tasks/daily_analysis.md >> logs/daily_analysis.log 2>&1
+
+# Content planning - 매일 오전 10:17
+17 10 * * * cd /path/to/marketing-agent && claude scheduled_tasks/content_planning.md >> logs/content_planning.log 2>&1
+
+# Strategy evolution - 월/목 오전 11:42
+42 11 * * 1,4 cd /path/to/marketing-agent && claude scheduled_tasks/strategy_evolution.md >> logs/strategy_evolution.log 2>&1
