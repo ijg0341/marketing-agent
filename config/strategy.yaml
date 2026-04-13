@@ -1,62 +1,43 @@
-# Marketing Strategy (Auto-evolved by Level 1 Evolution)
-# This file is automatically updated based on performance analysis.
+# Marketing Strategy for PLANDOG
+# Auto-evolved by Level 1 Evolution
 # Manual edits are welcome — they will be preserved as baseline.
 
 version: 1
-last_updated: "2026-04-03"
+last_updated: "2026-04-13"
 updated_by: "manual"
 
-# ── 광고 전략 (1순위) ──────────────────────────────────────────
-ad_strategy:
-  total_monthly_budget: 3000000  # 월 총 광고 예산 (KRW)
-  platform_allocation:
-    meta: 0.45       # Meta (Facebook + Instagram) 45%
-    google: 0.35     # Google Ads 35%
-    twitter: 0.20    # Twitter/X Ads 20%
-  default_bid_strategy: "auto"  # auto, manual_cpc, manual_cpm, target_cpa
-  performance_targets:
-    min_roas: 2.0           # 최소 ROAS (이하면 검토)
-    target_roas: 4.0        # 목표 ROAS
-    max_cpa: 15000          # 최대 CPA (KRW)
-    min_ctr: 0.01           # 최소 CTR 1%
-    target_ctr: 0.03        # 목표 CTR 3%
-  auto_optimization:
-    enabled: true
-    budget_realloc_threshold: 0.3   # ROAS 차이 30% 이상이면 재배분
-    pause_threshold_days: 3         # 3일 연속 저성과 시 일시정지 제안
-
-# ── 콘텐츠 전략 (2순위) ────────────────────────────────────────
+# ── 콘텐츠 전략 ────────────────────────────────────────
 content_strategy:
   themes:
-    - "product_updates"
-    - "industry_insights"
-    - "tips_and_tricks"
-    - "customer_stories"
+    - "product_updates"      # 플랜도그 신기능, 업데이트 소식
+    - "industry_insights"    # PM/UX 업계 인사이트, 트렌드
+    - "tips_and_tricks"      # 기획서 작성 팁, 생산성 향상법
+    - "customer_stories"     # 사용 후기, 활용 사례
+    - "pain_point_content"   # 기획자가 겪는 문제 공감 콘텐츠
   theme_weights:
-    product_updates: 0.2
-    industry_insights: 0.3
-    tips_and_tricks: 0.3
-    customer_stories: 0.2
+    product_updates: 0.15
+    industry_insights: 0.20
+    tips_and_tricks: 0.30
+    customer_stories: 0.15
+    pain_point_content: 0.20
   content_mix:
-    educational: 0.4
-    promotional: 0.2
-    engagement: 0.3
-    brand_awareness: 0.1
+    educational: 0.35       # 기획 팁, UX 지식
+    promotional: 0.20       # 플랜도그 기능 소개, CTA
+    engagement: 0.30        # 질문, 공감, 토론
+    brand_awareness: 0.15   # 브랜드 인지도
 
 posting_optimization:
   best_times:
-    twitter: ["10:00", "15:00"]
-    instagram: ["12:00", "19:00"]
-    facebook: ["11:00", "18:00"]
+    twitter: ["09:30", "12:30", "18:00"]
   best_days:
     high_engagement: ["tuesday", "wednesday", "thursday"]
     low_engagement: ["saturday", "sunday"]
 
 engagement_tactics:
   hashtag_strategy: "mix_popular_niche"
-  max_hashtags: 10
+  max_hashtags: 5    # Twitter는 해시태그 적게
   call_to_action: true
-  question_posts_ratio: 0.2
+  question_posts_ratio: 0.25   # 4개 중 1개는 질문형
   emoji_usage: "moderate"
 
 performance_thresholds:

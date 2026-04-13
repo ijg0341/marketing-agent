@@ -1,53 +1,54 @@
-# 일일 콘텐츠 기획 및 생성
+# 일일 콘텐츠 기획 및 생성 — PLANDOG
 
-마케팅 에이전트의 콘텐츠 담당입니다. 현재 전략과 최근 성과 데이터를 바탕으로 오늘의 마케팅 콘텐츠를 생성하고 큐에 등록합니다.
+마케팅 에이전트의 콘텐츠 크리에이터입니다. 현재 전략과 최근 성과를 바탕으로 오늘의 Twitter 콘텐츠를 생성하고 큐에 등록합니다.
+
+## 제품 컨텍스트
+- 제품: 플랜도그(PLANDOG) — 대화 기반 화면설계서 생성 AI 도구
+- 웹사이트: https://plandog.net/
+- 핵심 가치: 5분 만에 기획서, SSOT 기반 일관성, PDF 즉시 공유
+- 타겟: PM/기획자, 1인 개발·창업팀, SI/에이전시
 
 ## 단계
 
-1. **현재 전략 확인** — `config/strategy.yaml`에서 콘텐츠 테마, 가중치, 게시 최적화 설정을 읽습니다.
+1. **현재 전략 확인** — `config/strategy.yaml`에서 콘텐츠 테마 비중, 콘텐츠 믹스, 발행 최적화 설정을 읽습니다.
 
-2. **제품 정보 확인** — `config/agent.yaml`에서 제품 상세, 브랜드 톤, 타겟 오디언스를 읽습니다.
+2. **제품 정보 확인** — `config/agent.yaml`에서 제품 설명, 브랜드 보이스, 타겟 오디언스, 해시태그 풀을 읽습니다.
 
-3. **최근 성과 확인** — `reports/` 폴더의 최신 일일 리포트를 읽어 어떤 콘텐츠 유형이 잘 되고 있는지 파악합니다.
+3. **최근 성과 확인** — `reports/` 최신 리포트가 있으면 어떤 콘텐츠 유형이 잘 반응했는지 참고합니다.
 
-4. **템플릿 확인** — `src/content/templates/`에서 생성할 콘텐츠 유형에 맞는 템플릿을 읽습니다.
+4. **콘텐츠 생성** — Twitter 채널에 맞게 생성합니다:
+   - **반드시 280자 이내** (한글은 2바이트이므로 실제로 140자 내외가 안전)
+   - 테마 비중에 따라 콘텐츠 유형 선택 (tips_and_tricks 30%, industry_insights 20%, pain_point 20% 등)
+   - 브랜드 보이스 가이드라인 준수 (~합니다 체, 전문적이되 친근하게)
+   - 해시태그 최대 3-5개, 해시태그 풀에서 선택
+   - 4개 중 1개는 질문형 (question_posts_ratio: 0.25)
+   - CTA 포함: "plandog.net에서 무료로 시작하세요" 또는 "링크는 프로필에서"
 
-5. **콘텐츠 생성** — 활성화된 각 채널(`config/channels.yaml` 확인)에 대해:
-   - 전략의 `theme_weights`에 따라 콘텐츠 주제 선택
-   - 브랜드 톤과 작성 가이드라인 준수
-   - strategy.yaml의 해시태그 전략 적용
-   - 채널 제약 사항 **반드시** 준수:
-     - **Twitter**: 본문 + 해시태그 합산 **280자 이하** (초과 시 트윗 실패). 생성 후 반드시 len() 확인.
-     - 기타 채널: 각 채널 가이드라인 준수
-   - 오늘의 게시 스케줄에 맞게 충분한 콘텐츠 생성
-   - 템플릿 참조: `src/content/templates/` 폴더 (예: `sns_post_v1`, `blog_post_v1`)
+   **콘텐츠 예시:**
+   - tips_and_tricks: "기획서 작성에 3일 걸리시나요? 플랜도그에서는 대화로 5분이면 초안이 완성됩니다. 수정해도 문서가 안 깨지는 SSOT 기반이라 걱정 없어요 ✅ #플랜도그 #PM도구 #AI기획"
+   - pain_point: "화면설계서 수정할 때마다 전체 문서를 다시 정리하는 건 정말 비효율적이죠 😩 혹시 이 문제 겪고 계신 분? #기획자 #UX설계"
+   - engagement: "PM/기획자분들, 기획서 초안 작성에 보통 얼마나 걸리시나요? 🤔 플랜도그 유저들은 평균 5분이라고 합니다! #프로덕트매니저"
+   - product_updates: "플랜도그 새 기능 🚀 AI가 빠진 요구사항을 직접 물어봐서 더 완성도 높은 설계서를 만들 수 있어요. plandog.net #PLANDOG #AI자동화"
 
-6. **콘텐츠 큐 등록** — 생성된 콘텐츠를 API로 제출합니다 (API URL: `http://localhost:8000`):
+5. **오늘 스케줄에 맞는 수량 생성** — `config/channels.yaml`의 posting_schedule 확인:
+   - Twitter: 하루 최대 5개, 시간대별 배분 (09:30, 12:30, 18:00)
+   - 3개 콘텐츠를 생성하여 큐에 등록
+
+6. **큐에 등록** — 생성한 콘텐츠를 API로 등록합니다:
    ```bash
    curl -X POST http://localhost:8000/api/content \
      -H "Content-Type: application/json" \
-     -d '{"channel": "twitter", "content_text": "...", "template_version": "sns_post_v1"}'
-   ```
-   여러 개는 `http://localhost:8000/api/content/batch`를 사용합니다:
-   ```bash
-   curl -X POST http://localhost:8000/api/content/batch \
-     -H "Content-Type: application/json" \
-     -d '[{"channel": "twitter", "content_text": "...", "template_version": "sns_post_v1"}, ...]'
+     -d '{"channel": "twitter", "content_text": "생성한 콘텐츠 텍스트", "template_version": "plandog_v1"}'
    ```
 
-7. **확인** — 큐 상태 및 필터 조회:
+7. **검증** — 큐 등록 확인:
    ```bash
-   # 전체 큐 확인
    curl -s http://localhost:8000/api/content/queued
-
-   # 상태별 필터 조회 (queued / posted / failed)
-   curl -s "http://localhost:8000/api/content?status=queued"
-   curl -s "http://localhost:8000/api/content?status=failed"
    ```
 
 ## 가이드라인
-- 콘텐츠는 자연스럽고 진정성 있게 작성할 것 (AI가 쓴 느낌 배제)
-- 브랜드 톤을 반드시 준수할 것
-- 하루 동안 콘텐츠 유형을 다양하게 배치할 것
-- 홍보성 콘텐츠에는 CTA를 포함할 것
-- agent.yaml에 지정된 언어를 사용할 것
+- 콘텐츠는 자연스럽고 진정성 있게 — AI가 쓴 느낌을 줄일 것
+- 브랜드 보이스를 엄격히 따를 것
+- 하루 내 콘텐츠 유형이 겹치지 않게 다양하게 배분
+- 프로모션 콘텐츠는 20% 이하로 유지
+- 플랜도그의 핵심 차별점(속도, SSOT, PDF)을 자연스럽게 녹여낼 것
