@@ -382,8 +382,8 @@ async def test_platform_connection(platform_id: str):
     from src.ads.google_ads import GoogleAdsAdapter
     from src.ads.meta_ads import MetaAdsAdapter
     from src.ads.twitter_ads import TwitterAdsAdapter
-    from src.channels.blog import BlogAdapter
-    from src.channels.email_channel import EmailAdapter
+    from src.channels.blog import WordPressAdapter
+    from src.channels.email_channel import SendGridAdapter
     from src.channels.facebook import FacebookAdapter
     from src.channels.instagram import InstagramAdapter
     from src.channels.twitter import TwitterAdapter
@@ -392,8 +392,8 @@ async def test_platform_connection(platform_id: str):
         "twitter": TwitterAdapter,
         "instagram": InstagramAdapter,
         "facebook": FacebookAdapter,
-        "blog": BlogAdapter,
-        "email": EmailAdapter,
+        "blog": WordPressAdapter,
+        "email": SendGridAdapter,
         "meta_ads": MetaAdsAdapter,
         "google_ads": GoogleAdsAdapter,
         "twitter_ads": TwitterAdsAdapter,

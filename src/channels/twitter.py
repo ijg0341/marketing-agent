@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import asyncio
 import logging
 import secrets
-import asyncio
+import time
 from base64 import b64encode
 from urllib.parse import quote
 
@@ -154,7 +155,11 @@ class TwitterAdapter(ChannelAdapter):
 
     async def verify_credentials(self) -> bool:
         url = f"{API_BASE}/users/me"
-        headers = {"Authorization": f"Bearer {self._bearer}"}
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(url, headers=headers)
-        return resp.status_code == 200
+        try:
+            headers = self._oauth_headers("GET", url)
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.get(url, headers=headers)
+            return resp.status_code == 200
+        except Exception as e:
+            logger.error("Twitter verify_credentials failed: %s", e)
+            return False
