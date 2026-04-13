@@ -25,26 +25,10 @@ logger = logging.getLogger(__name__)
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend" / "dist"
 
 
-def _ensure_api_secret_key() -> None:
-    """Auto-generate API_SECRET_KEY on first startup if not set."""
-    if settings.api_secret_key:
-        return
-    from src.api.settings import _read_env, _write_env
-    env = _read_env()
-    if not env.get("API_SECRET_KEY"):
-        key = secrets.token_urlsafe(32)
-        env["API_SECRET_KEY"] = key
-        _write_env(env)
-        from src.config import reload
-        reload()
-        logger.info("Auto-generated API_SECRET_KEY. Find it in your .env file.")
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Initializing database...")
     init_db()
-    _ensure_api_secret_key()
     setup_scheduler()
     logger.info("Marketing Agent API is ready.")
     yield

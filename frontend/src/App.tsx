@@ -20,13 +20,23 @@ function LoginGate({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     async function check() {
-      const key = getApiKey();
-      if (!key) { setChecking(false); return; }
       try {
-        await api.health();
+        // Try without key first — if server has no auth configured, skip login
+        await api.onboarding.status();
         setAuthenticated(true);
-      } catch {
-        // Key might be invalid or server has no auth
+      } catch (e: any) {
+        if (e.message === 'AUTH_REQUIRED') {
+          // Server requires auth — check if we have a stored key
+          const key = getApiKey();
+          if (key) {
+            try {
+              await api.onboarding.status();
+              setAuthenticated(true);
+            } catch {
+              // Stored key is invalid
+            }
+          }
+        }
       }
       setChecking(false);
     }
