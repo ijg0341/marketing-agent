@@ -6,7 +6,7 @@ import {
 import {
   DollarSign, Target, TrendingUp, MousePointerClick,
   FileText, Eye, Heart, Loader2, BarChart3, ArrowRight,
-  CheckCircle2, Clock, AtSign,
+  CheckCircle2, Clock, AtSign, ChevronDown, ChevronUp, Calendar,
 } from 'lucide-react';
 import { api } from '../api';
 
@@ -216,6 +216,13 @@ export function DashboardPage() {
   const [ga4Channels, setGa4Channels] = useState<any[]>([]);
   const [ga4Configured, setGa4Configured] = useState(false);
 
+  // Reports
+  const [reports, setReports] = useState<any[]>([]);
+  const [reportsLoading, setReportsLoading] = useState(false);
+  const [expandedReport, setExpandedReport] = useState<string | null>(null);
+  const [reportContents, setReportContents] = useState<Record<string, string>>({});
+  const [reportContentLoading, setReportContentLoading] = useState<Record<string, boolean>>({});
+
   useEffect(() => {
     let cancelled = false;
 
@@ -271,6 +278,17 @@ export function DashboardPage() {
           }
         }).catch(() => {});
 
+        // Reports (independent, non-blocking)
+        setReportsLoading(true);
+        api.reports.list().then((res) => {
+          if (cancelled) return;
+          setReports(Array.isArray(res) ? res.slice(0, 5) : []);
+        }).catch(() => {
+          if (!cancelled) setReports([]);
+        }).finally(() => {
+          if (!cancelled) setReportsLoading(false);
+        });
+
       } catch (err) {
         // silently handle — individual calls already caught above
       } finally {
@@ -281,6 +299,25 @@ export function DashboardPage() {
     fetchData();
     return () => { cancelled = true; };
   }, [period]);
+
+  // Report toggle handler
+  async function toggleReport(filename: string) {
+    if (expandedReport === filename) {
+      setExpandedReport(null);
+      return;
+    }
+    setExpandedReport(filename);
+    if (reportContents[filename]) return;
+    setReportContentLoading((prev) => ({ ...prev, [filename]: true }));
+    try {
+      const data = await api.reports.get(filename);
+      setReportContents((prev) => ({ ...prev, [filename]: typeof data === 'string' ? data : data.content ?? JSON.stringify(data, null, 2) }));
+    } catch {
+      setReportContents((prev) => ({ ...prev, [filename]: '리포트를 불러올 수 없습니다.' }));
+    } finally {
+      setReportContentLoading((prev) => ({ ...prev, [filename]: false }));
+    }
+  }
 
   // Derived ad data
   const adKpis = aggregateAdKpis(campaigns);
@@ -601,6 +638,94 @@ export function DashboardPage() {
           </div>
         </div>
       )}
+
+      {/* ── 5. 최근 리포트 ─────────────────────────────────────────── */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <h2 className="text-xs font-semibold text-surface-400 uppercase tracking-wider">최근 리포트</h2>
+          {reportsLoading && <Loader2 className="w-3 h-3 text-primary-400 animate-spin" />}
+        </div>
+
+        <div className="bg-surface-50 rounded-xl border border-surface-200 p-4 shadow-sm">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-base">📊</span>
+            <h3 className="text-sm font-semibold text-surface-900">최근 리포트</h3>
+          </div>
+
+          {reportsLoading ? (
+            <div className="flex items-center justify-center py-8 gap-2 text-surface-400">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span className="text-sm">리포트를 불러오는 중...</span>
+            </div>
+          ) : reports.length === 0 ? (
+            <div className="py-8 text-center">
+              <FileText className="w-8 h-8 text-surface-300 mx-auto mb-2" />
+              <p className="text-sm text-surface-400">아직 생성된 리포트가 없습니다. daily_analysis 스케줄을 활성화하면 자동으로 생성됩니다.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {reports.map((report) => {
+                const filename: string = report.filename ?? report.name ?? String(report);
+                const title: string = report.title ?? filename.replace(/\.[^.]+$/, '').replace(/_/g, ' ');
+                const date: string = report.created_at ?? report.date ?? '';
+                const size: number | null = report.size ?? null;
+                const isExpanded = expandedReport === filename;
+                const isLoadingContent = reportContentLoading[filename] ?? false;
+                const content = reportContents[filename];
+
+                return (
+                  <div key={filename} className="bg-white rounded-lg border border-surface-200 shadow-sm overflow-hidden">
+                    <button
+                      onClick={() => toggleReport(filename)}
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-surface-50 transition-colors text-left"
+                    >
+                      <div className="p-1.5 bg-primary-50 rounded-md text-primary-500 shrink-0">
+                        <FileText className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-surface-800 truncate">{title}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          {date && (
+                            <span className="flex items-center gap-1 text-xs text-surface-400">
+                              <Calendar className="w-3 h-3" />
+                              {new Date(date).toLocaleDateString('ko-KR')}
+                            </span>
+                          )}
+                          {size != null && (
+                            <span className="text-xs text-surface-400">
+                              {size < 1024 ? `${size}B` : `${(size / 1024).toFixed(1)}KB`}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {isExpanded ? (
+                        <ChevronUp className="w-4 h-4 text-surface-400 shrink-0" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-surface-400 shrink-0" />
+                      )}
+                    </button>
+
+                    {isExpanded && (
+                      <div className="border-t border-surface-100 bg-surface-50 px-4 py-3">
+                        {isLoadingContent ? (
+                          <div className="flex items-center gap-2 py-4 text-surface-400">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span className="text-xs">불러오는 중...</span>
+                          </div>
+                        ) : (
+                          <pre className="text-xs text-surface-700 font-mono whitespace-pre-wrap max-h-96 overflow-y-auto leading-relaxed">
+                            {content}
+                          </pre>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

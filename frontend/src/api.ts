@@ -91,6 +91,11 @@ export const api = {
     status: () => request<any>('/onboarding/status'),
   },
 
+  reports: {
+    list: () => request<any[]>('/reports'),
+    get: (filename: string) => request<any>(`/reports/${filename}`),
+  },
+
   scheduledTasks: {
     list: () => request<any[]>('/scheduled-tasks'),
     get: (id: string) => request<any>(`/scheduled-tasks/${id}`),

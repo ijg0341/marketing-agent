@@ -11,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import FileResponse, JSONResponse
 
-from src.api import ads, analytics, content, ga4, health, onboarding, scheduled_tasks, settings as settings_api, strategy
+from src.api import ads, analytics, content, ga4, health, onboarding, reports, scheduled_tasks, settings as settings_api, strategy
 from src.config import settings
 from src.db.database import init_db
 from src.scheduler import setup_scheduler, shutdown_scheduler
@@ -83,6 +83,7 @@ app.include_router(ads.router)
 app.include_router(settings_api.router)
 app.include_router(onboarding.router)
 app.include_router(ga4.router)
+app.include_router(reports.router)
 
 # Serve React frontend static files
 if FRONTEND_DIR.exists():
