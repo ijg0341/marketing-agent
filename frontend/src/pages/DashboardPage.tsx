@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
@@ -714,8 +715,8 @@ export function DashboardPage() {
                             <span className="text-xs">불러오는 중...</span>
                           </div>
                         ) : (
-                          <div className="prose prose-sm prose-surface max-w-none max-h-96 overflow-y-auto text-xs leading-relaxed">
-                            <ReactMarkdown>{content}</ReactMarkdown>
+                          <div className="report-markdown max-h-96 overflow-y-auto text-sm leading-relaxed">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
                           </div>
                         )}
                       </div>
