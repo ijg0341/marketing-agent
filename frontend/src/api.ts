@@ -1,10 +1,25 @@
 const BASE = '/api';
+const API_KEY_STORAGE = 'marketing_agent_api_key';
+
+export function getApiKey(): string {
+  return localStorage.getItem(API_KEY_STORAGE) || '';
+}
+
+export function setApiKey(key: string) {
+  localStorage.setItem(API_KEY_STORAGE, key);
+}
+
+export function clearApiKey() {
+  localStorage.removeItem(API_KEY_STORAGE);
+}
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options,
-  });
+  const apiKey = getApiKey();
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (apiKey) headers['X-API-Key'] = apiKey;
+
+  const res = await fetch(`${BASE}${path}`, { headers, ...options });
+  if (res.status === 401) throw new Error('AUTH_REQUIRED');
   if (!res.ok) throw new Error(`API error: ${res.status}`);
   return res.json();
 }
