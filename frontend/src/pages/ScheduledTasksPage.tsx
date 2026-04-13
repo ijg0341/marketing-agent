@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   Clock, Pencil, X, Save, Plus, Trash2, ChevronDown, ChevronUp,
   CalendarClock, Bot, FileText, Code, Zap, Mail, Loader2,
-  Power, CheckCircle2, AlertTriangle,
+  Power, CheckCircle2, AlertTriangle, Play,
 } from 'lucide-react';
 import { api } from '../api';
 
@@ -268,6 +268,7 @@ export function ScheduledTasksPage() {
   const [newContent, setNewContent] = useState('# New Task\n\nDescribe the task prompt here.\n\n## Steps\n\n1. ...\n');
   const [enabledCrons, setEnabledCrons] = useState<Record<string, string>>({});
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [runningIds, setRunningIds] = useState<Set<string>>(new Set());
 
   /* ---------- fetch tasks + cron status on mount ---------- */
   useEffect(() => {
@@ -323,6 +324,34 @@ export function ScheduledTasksPage() {
     } finally {
       setTogglingId(null);
     }
+  };
+
+  const runTask = async (taskId: string) => {
+    setRunningIds((prev) => new Set(prev).add(taskId));
+    try {
+      const res = await api.scheduledTasks.run(taskId);
+      if (res.status === 'already_running') {
+        setError(`${taskId}이(가) 이미 실행 중입니다 (PID: ${res.pid})`);
+      }
+    } catch (err) {
+      console.error('Failed to run task:', err);
+      setError(`${taskId} 실행 실패. Claude CLI가 설치되어 있는지 확인하세요.`);
+      setRunningIds((prev) => { const n = new Set(prev); n.delete(taskId); return n; });
+      return;
+    }
+    // Poll for completion
+    const poll = setInterval(async () => {
+      try {
+        const status = await api.scheduledTasks.runStatus(taskId);
+        if (!status.running) {
+          clearInterval(poll);
+          setRunningIds((prev) => { const n = new Set(prev); n.delete(taskId); return n; });
+        }
+      } catch {
+        clearInterval(poll);
+        setRunningIds((prev) => { const n = new Set(prev); n.delete(taskId); return n; });
+      }
+    }, 5000);
   };
 
   const startEdit = (task: ScheduledTask) => {
@@ -607,6 +636,23 @@ export function ScheduledTasksPage() {
                           <Power className="w-3.5 h-3.5" />
                         )}
                         {isCronEnabled ? '활성' : '비활성'}
+                      </button>
+                      {/* Run button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          runTask(task.id);
+                        }}
+                        disabled={runningIds.has(task.id)}
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-colors bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 disabled:opacity-50"
+                        title="지금 실행"
+                      >
+                        {runningIds.has(task.id) ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Play className="w-3.5 h-3.5" />
+                        )}
+                        {runningIds.has(task.id) ? '실행 중...' : '실행'}
                       </button>
                       {!isEditing && (
                         <button

@@ -181,6 +181,69 @@ async def delete_task(task_id: str):
 
 
 # ---------------------------------------------------------------------------
+# Manual execution
+# ---------------------------------------------------------------------------
+
+# Track running tasks to prevent double execution
+_running_tasks: dict[str, subprocess.Popen] = {}
+
+
+@router.post("/{task_id}/run")
+async def run_task(task_id: str):
+    """Manually execute a scheduled task via Claude CLI (background process)."""
+    path = TASKS_DIR / f"{task_id}.md"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail=f"Task '{task_id}' not found")
+
+    # Check if already running
+    if task_id in _running_tasks:
+        proc = _running_tasks[task_id]
+        if proc.poll() is None:  # Still running
+            return {"status": "already_running", "task_id": task_id, "pid": proc.pid}
+        else:
+            del _running_tasks[task_id]
+
+    # Ensure logs directory exists
+    logs_dir = PROJECT_DIR / "logs"
+    logs_dir.mkdir(exist_ok=True)
+    log_file = logs_dir / f"{task_id}.log"
+
+    try:
+        with open(log_file, "a") as lf:
+            proc = subprocess.Popen(
+                ["claude", "-p", str(path)],
+                cwd=str(PROJECT_DIR),
+                stdout=lf,
+                stderr=lf,
+                start_new_session=True,
+            )
+        _running_tasks[task_id] = proc
+        logger.info("Started task %s (PID %d)", task_id, proc.pid)
+        return {"status": "started", "task_id": task_id, "pid": proc.pid}
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=500,
+            detail="Claude CLI not found. Install with: npm install -g @anthropic-ai/claude-code",
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to start task: {e}")
+
+
+@router.get("/{task_id}/status")
+async def get_task_run_status(task_id: str):
+    """Check if a task is currently running."""
+    if task_id in _running_tasks:
+        proc = _running_tasks[task_id]
+        if proc.poll() is None:
+            return {"task_id": task_id, "running": True, "pid": proc.pid}
+        else:
+            exit_code = proc.returncode
+            del _running_tasks[task_id]
+            return {"task_id": task_id, "running": False, "exit_code": exit_code}
+    return {"task_id": task_id, "running": False}
+
+
+# ---------------------------------------------------------------------------
 # Crontab management endpoints
 # ---------------------------------------------------------------------------
 

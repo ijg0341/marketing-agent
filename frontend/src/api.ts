@@ -108,5 +108,7 @@ export const api = {
     cronStatus: () => request<any>('/scheduled-tasks/cron/status'),
     toggleCron: (id: string, data: { enabled: boolean; cron?: string }) =>
       request<any>(`/scheduled-tasks/${id}/cron`, { method: 'PUT', body: JSON.stringify(data) }),
+    run: (id: string) => request<any>(`/scheduled-tasks/${id}/run`, { method: 'POST' }),
+    runStatus: (id: string) => request<any>(`/scheduled-tasks/${id}/status`),
   },
 };
