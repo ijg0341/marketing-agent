@@ -720,8 +720,36 @@ function ChannelSettingsTab({ toast }: { toast: ReturnType<typeof useToast> }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const updateChannel = (id: string, patch: Partial<ChannelConfig>) => {
-    setChannels((prev) => prev.map((ch) => (ch.id === id ? { ...ch, ...patch } : ch)));
+  const updateChannel = async (id: string, patch: Partial<ChannelConfig>) => {
+    // Optimistic UI update
+    const prev = channels;
+    setChannels((chs) => chs.map((ch) => (ch.id === id ? { ...ch, ...patch } : ch)));
+
+    // If enabled changed, immediately call API
+    if ('enabled' in patch) {
+      try {
+        const current = prev.find((ch) => ch.id === id);
+        await request(`/channels/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+            enabled: patch.enabled,
+            posting_schedule: {
+              frequency: current?.frequency || 'daily',
+              times: current?.posting_times || ['10:00'],
+              timezone: 'Asia/Seoul',
+            },
+            limits: {
+              max_posts_per_day: current?.max_posts_per_day || 5,
+            },
+          }),
+        });
+        toast.show('success', `${id} 채널 ${patch.enabled ? '활성화' : '비활성화'} 완료`);
+      } catch (err) {
+        // Rollback on failure
+        setChannels(prev);
+        toast.show('error', `채널 상태 변경 실패`);
+      }
+    }
   };
 
   const saveAll = async () => {
