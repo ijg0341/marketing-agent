@@ -4,6 +4,8 @@ import {
   CalendarClock, Bot, FileText, Code, Zap, Mail, Loader2,
   Power, CheckCircle2, AlertTriangle, Play,
 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { api } from '../api';
 
 interface ScheduledTask {
@@ -733,9 +735,9 @@ export function ScheduledTasksPage() {
                         </div>
                       ) : (
                         <div className="p-4">
-                          <pre className="text-sm text-surface-700 whitespace-pre-wrap font-mono leading-relaxed bg-surface-50 rounded-lg p-4 max-h-96 overflow-y-auto">
-                            {task.content}
-                          </pre>
+                          <div className="report-markdown text-sm leading-relaxed">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{task.content}</ReactMarkdown>
+                          </div>
                         </div>
                       )}
                     </div>

@@ -1,46 +1,24 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-  AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend,
 } from 'recharts';
 import { TrendingUp, TrendingDown, Eye, Heart, MousePointerClick, Target, RefreshCw, Loader2 } from 'lucide-react';
 import { ChannelBadge } from '../components/ChannelBadge';
 import { api } from '../api';
 
-// ── Fallback mock data (shown before API responds or when API returns empty) ──
-
-const defaultDailyData = [
-  { date: '03/31', impressions: 5200, engagements: 310, clicks: 120 },
-  { date: '04/01', impressions: 6100, engagements: 380, clicks: 145 },
-  { date: '04/02', impressions: 5800, engagements: 350, clicks: 132 },
-  { date: '04/03', impressions: 7200, engagements: 420, clicks: 178 },
-  { date: '04/04', impressions: 8100, engagements: 490, clicks: 201 },
-  { date: '04/05', impressions: 7400, engagements: 445, clicks: 189 },
-  { date: '04/06', impressions: 8900, engagements: 530, clicks: 225 },
+const emptyMetrics = [
+  { label: 'Total Impressions', value: '0', change: '+0%', up: true, icon: Eye },
+  { label: 'Total Engagements', value: '0', change: '+0%', up: true, icon: Heart },
+  { label: 'Total Clicks', value: '0', change: '+0%', up: true, icon: MousePointerClick },
+  { label: 'Avg. Engagement Rate', value: '0.0%', change: '+0%p', up: true, icon: Target },
 ];
 
-const defaultChannelComparison = [
-  { channel: 'Twitter', impressions: 18200, engagements: 1050, clicks: 420, rate: 5.8 },
-  { channel: 'Instagram', impressions: 15600, engagements: 980, clicks: 310, rate: 6.3 },
-  { channel: 'Facebook', impressions: 8400, engagements: 450, clicks: 280, rate: 5.4 },
-  { channel: 'Blog', impressions: 4500, engagements: 220, clicks: 145, rate: 4.9 },
-  { channel: 'Email', impressions: 2220, engagements: 147, clicks: 48, rate: 6.6 },
-];
-
-const defaultTopContent = [
-  { id: 1, channel: 'instagram', text: '비즈니스 성장을 위한 5가지 핵심 전략 📈', impressions: 4200, engagements: 320, rate: 7.6 },
-  { id: 2, channel: 'twitter', text: '🚀 새로운 기능 출시! AI 기반 마케팅 자동화', impressions: 3800, engagements: 285, rate: 7.5 },
-  { id: 3, channel: 'facebook', text: '고객 성공 사례: 참여율 3배 증가', impressions: 2900, engagements: 203, rate: 7.0 },
-  { id: 4, channel: 'blog', text: '2026년 디지털 마케팅 트렌드 분석', impressions: 2400, engagements: 156, rate: 6.5 },
-  { id: 5, channel: 'twitter', text: '💡 콘텐츠 게시 최적 시간을 AI가 분석합니다', impressions: 2100, engagements: 134, rate: 6.4 },
-];
-
-const defaultMetrics = [
-  { label: 'Total Impressions', value: '48,920', change: '+12.3%', up: true, icon: Eye },
-  { label: 'Total Engagements', value: '2,847', change: '+15.2%', up: true, icon: Heart },
-  { label: 'Total Clicks', value: '1,203', change: '-2.1%', up: false, icon: MousePointerClick },
-  { label: 'Avg. Engagement Rate', value: '5.8%', change: '+0.8%p', up: true, icon: Target },
-];
+const EmptyState = () => (
+  <div className="flex items-center justify-center py-12 text-sm text-surface-400">
+    아직 데이터가 없습니다. Collect Metrics를 실행하면 데이터가 수집됩니다.
+  </div>
+);
 
 export function AnalyticsPage() {
   const [period, setPeriod] = useState('7d');
@@ -48,10 +26,9 @@ export function AnalyticsPage() {
   const [collecting, setCollecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [metrics, setMetrics] = useState(defaultMetrics);
-  const [dailyData, setDailyData] = useState(defaultDailyData);
-  const [channelComparison, setChannelComparison] = useState(defaultChannelComparison);
-  const [topContent, setTopContent] = useState(defaultTopContent);
+  const [metrics, setMetrics] = useState(emptyMetrics);
+  const [dailyData, setDailyData] = useState<{ date: string; impressions: number; engagements: number; clicks: number }[]>([]);
+  const [topContent, setTopContent] = useState<{ id: number; channel: string; text: string; impressions: number; engagements: number; rate: number }[]>([]);
 
   const fetchData = useCallback(async (p: string) => {
     setLoading(true);
@@ -97,14 +74,11 @@ export function AnalyticsPage() {
         ]);
       }
 
-      // Map details to daily chart and channel comparison
+      // Map details to daily chart
       if (Array.isArray(details) && details.length > 0) {
-        // Group by date for the area chart
         const byDate: Record<string, { impressions: number; engagements: number; clicks: number }> = {};
-        const byChannel: Record<string, { impressions: number; engagements: number; clicks: number }> = {};
 
         for (const d of details) {
-          // Daily aggregation
           const dateKey = d.timestamp
             ? new Date(d.timestamp).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' })
             : 'unknown';
@@ -112,34 +86,21 @@ export function AnalyticsPage() {
           byDate[dateKey].impressions += d.impressions ?? 0;
           byDate[dateKey].engagements += d.engagements ?? 0;
           byDate[dateKey].clicks += d.clicks ?? 0;
-
-          // Channel aggregation
-          const ch = d.channel ?? 'Other';
-          if (!byChannel[ch]) byChannel[ch] = { impressions: 0, engagements: 0, clicks: 0 };
-          byChannel[ch].impressions += d.impressions ?? 0;
-          byChannel[ch].engagements += d.engagements ?? 0;
-          byChannel[ch].clicks += d.clicks ?? 0;
         }
 
         const dailyArr = Object.entries(byDate).map(([date, v]) => ({ date, ...v }));
-        if (dailyArr.length > 0) setDailyData(dailyArr);
-
-        const channelArr = Object.entries(byChannel).map(([channel, v]) => ({
-          channel: channel.charAt(0).toUpperCase() + channel.slice(1),
-          impressions: v.impressions,
-          engagements: v.engagements,
-          clicks: v.clicks,
-          rate: v.impressions > 0 ? parseFloat(((v.engagements / v.impressions) * 100).toFixed(1)) : 0,
-        }));
-        if (channelArr.length > 0) setChannelComparison(channelArr);
+        setDailyData(dailyArr);
+      } else {
+        setDailyData([]);
       }
 
-      // Map recent content to top performing table
+      // Map recent content to top performing table (Twitter only)
       if (Array.isArray(recent) && recent.length > 0) {
         const mapped = recent
+          .filter((c: any) => (c.channel ?? 'twitter').toLowerCase() === 'twitter')
           .map((c: any, i: number) => ({
             id: c.id ?? i + 1,
-            channel: (c.channel ?? 'twitter').toLowerCase(),
+            channel: 'twitter',
             text: c.content_text ?? c.text ?? '',
             impressions: c.impressions ?? 0,
             engagements: c.engagements ?? 0,
@@ -147,12 +108,13 @@ export function AnalyticsPage() {
           }))
           .sort((a: any, b: any) => b.rate - a.rate)
           .slice(0, 5);
-        if (mapped.length > 0) setTopContent(mapped);
+        setTopContent(mapped);
+      } else {
+        setTopContent([]);
       }
     } catch (err: any) {
       console.error('Failed to fetch analytics:', err);
       setError(err.message ?? 'Failed to load analytics data');
-      // Keep current data (fallback defaults on first load)
     } finally {
       setLoading(false);
     }
@@ -166,7 +128,6 @@ export function AnalyticsPage() {
     setCollecting(true);
     try {
       await api.analytics.collect();
-      // Refresh data after collection
       await fetchData(period);
     } catch (err: any) {
       console.error('Metric collection failed:', err);
@@ -182,7 +143,7 @@ export function AnalyticsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-surface-900">Analytics</h1>
-          <p className="text-sm text-surface-500 mt-0.5">성과 분석 및 인사이트</p>
+          <p className="text-sm text-surface-500 mt-0.5">Twitter 성과 분석 및 인사이트</p>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -216,7 +177,7 @@ export function AnalyticsPage() {
         </div>
       )}
 
-      {/* Loading Overlay for metric cards */}
+      {/* Loading indicator */}
       {loading && (
         <div className="flex items-center gap-2 text-sm text-surface-500">
           <Loader2 className="w-4 h-4 animate-spin" />
@@ -243,53 +204,42 @@ export function AnalyticsPage() {
 
       {/* Performance Over Time */}
       <div className="bg-white rounded-xl border border-surface-200 p-5 shadow-sm">
-        <h2 className="text-sm font-semibold text-surface-900 mb-4">Performance Over Time</h2>
-        <ResponsiveContainer width="100%" height={320}>
-          <AreaChart data={dailyData}>
-            <defs>
-              <linearGradient id="impressionsGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} />
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="engagementsGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#10b981" stopOpacity={0.15} />
-                <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-            <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="#94a3b8" />
-            <YAxis tick={{ fontSize: 12 }} stroke="#94a3b8" />
-            <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }} />
-            <Legend />
-            <Area type="monotone" dataKey="impressions" stroke="#3b82f6" strokeWidth={2} fill="url(#impressionsGrad)" name="Impressions" />
-            <Area type="monotone" dataKey="engagements" stroke="#10b981" strokeWidth={2} fill="url(#engagementsGrad)" name="Engagements" />
-          </AreaChart>
-        </ResponsiveContainer>
+        <h2 className="text-sm font-semibold text-surface-900 mb-4">Performance Over Time (Twitter)</h2>
+        {dailyData.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <ResponsiveContainer width="100%" height={320}>
+            <AreaChart data={dailyData}>
+              <defs>
+                <linearGradient id="impressionsGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="engagementsGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="#94a3b8" />
+              <YAxis tick={{ fontSize: 12 }} stroke="#94a3b8" />
+              <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }} />
+              <Legend />
+              <Area type="monotone" dataKey="impressions" stroke="#3b82f6" strokeWidth={2} fill="url(#impressionsGrad)" name="Impressions" />
+              <Area type="monotone" dataKey="engagements" stroke="#10b981" strokeWidth={2} fill="url(#engagementsGrad)" name="Engagements" />
+            </AreaChart>
+          </ResponsiveContainer>
+        )}
       </div>
 
-      {/* Channel Comparison + Top Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Channel Comparison */}
-        <div className="bg-white rounded-xl border border-surface-200 p-5 shadow-sm">
-          <h2 className="text-sm font-semibold text-surface-900 mb-4">Channel Comparison</h2>
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={channelComparison} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis type="number" tick={{ fontSize: 12 }} stroke="#94a3b8" />
-              <YAxis type="category" dataKey="channel" tick={{ fontSize: 12 }} stroke="#94a3b8" width={80} />
-              <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0' }} />
-              <Legend />
-              <Bar dataKey="engagements" fill="#3b82f6" radius={[0, 4, 4, 0]} name="Engagements" />
-              <Bar dataKey="clicks" fill="#f59e0b" radius={[0, 4, 4, 0]} name="Clicks" />
-            </BarChart>
-          </ResponsiveContainer>
+      {/* Top Content */}
+      <div className="bg-white rounded-xl border border-surface-200 shadow-sm">
+        <div className="p-5 border-b border-surface-100">
+          <h2 className="text-sm font-semibold text-surface-900">Top Performing Twitter Content</h2>
         </div>
-
-        {/* Top Content */}
-        <div className="bg-white rounded-xl border border-surface-200 shadow-sm">
-          <div className="p-5 border-b border-surface-100">
-            <h2 className="text-sm font-semibold text-surface-900">Top Performing Content</h2>
-          </div>
+        {topContent.length === 0 ? (
+          <EmptyState />
+        ) : (
           <div className="divide-y divide-surface-50">
             {topContent.map((item, i) => (
               <div key={item.id} className="px-5 py-3 flex items-start gap-3">
@@ -308,7 +258,7 @@ export function AnalyticsPage() {
               </div>
             ))}
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

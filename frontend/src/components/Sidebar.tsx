@@ -13,7 +13,7 @@ import { clsx } from 'clsx';
 
 const links = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/ads', icon: Megaphone, label: 'Advertising' },
+  { to: '/ads', icon: Megaphone, label: 'Advertising', disabled: true, badge: '준비 중' },
   { to: '/analytics', icon: BarChart3, label: 'Analytics' },
   { to: '/content', icon: FileText, label: 'Content' },
   { to: '/strategy', icon: Zap, label: 'Strategy' },
@@ -33,23 +33,38 @@ export function Sidebar() {
         <p className="text-xs text-surface-400 mt-1">Self-Evolving System</p>
       </div>
       <nav className="flex-1 py-3">
-        {links.map(({ to, icon: Icon, label }) => (
-          <NavLink
-            key={to}
-            to={to}
-            className={({ isActive }) =>
-              clsx(
-                'flex items-center gap-3 px-5 py-2.5 text-sm transition-colors',
-                isActive
-                  ? 'bg-surface-800 text-white border-r-2 border-primary-400'
-                  : 'text-surface-400 hover:text-white hover:bg-surface-800/50'
-              )
-            }
-          >
-            <Icon className="w-4.5 h-4.5" />
-            {label}
-          </NavLink>
-        ))}
+        {links.map(({ to, icon: Icon, label, disabled, badge }) =>
+          disabled ? (
+            <div
+              key={to}
+              className="flex items-center gap-3 px-5 py-2.5 text-sm text-surface-400 opacity-40 cursor-not-allowed"
+            >
+              <Icon className="w-4.5 h-4.5" />
+              {label}
+              {badge && (
+                <span className="text-[10px] ml-1 px-1.5 py-0.5 bg-surface-200 text-surface-400 rounded-full">
+                  {badge}
+                </span>
+              )}
+            </div>
+          ) : (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) =>
+                clsx(
+                  'flex items-center gap-3 px-5 py-2.5 text-sm transition-colors',
+                  isActive
+                    ? 'bg-surface-800 text-white border-r-2 border-primary-400'
+                    : 'text-surface-400 hover:text-white hover:bg-surface-800/50'
+                )
+              }
+            >
+              <Icon className="w-4.5 h-4.5" />
+              {label}
+            </NavLink>
+          )
+        )}
       </nav>
       <div className="p-4 border-t border-surface-700">
         <div className="flex items-center gap-2">

@@ -1,8 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, X, Send, Search, Loader2 } from 'lucide-react';
+import { Plus, X, Send, Search, Loader2, ExternalLink, Clock, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import { ChannelBadge } from '../components/ChannelBadge';
 import { StatusBadge } from '../components/StatusBadge';
 import { api } from '../api';
+
+const TEMPLATES = [
+  { value: 'sns_post_v1', label: 'SNS Post' },
+  { value: 'plandog_v1', label: 'PLANDOG' },
+];
 
 // Phase 1: active channels — only Twitter
 const ACTIVE_CHANNELS = [
@@ -17,6 +22,7 @@ export function ContentPage() {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [selectedContent, setSelectedContent] = useState<any | null>(null);
 
   // Form state — default to first active channel
   const [formChannel, setFormChannel] = useState(ACTIVE_CHANNELS[0].value);
@@ -158,9 +164,9 @@ export function ContentPage() {
                 onChange={(e) => setFormTemplate(e.target.value)}
                 className="w-full px-3 py-2 text-sm border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               >
-                <option value="sns_post_v1">SNS Post v1</option>
-                <option value="blog_post_v1">Blog Post v1</option>
-                <option value="email_campaign_v1">Email Campaign v1</option>
+                {TEMPLATES.map((t) => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
               </select>
             </div>
             <div>
@@ -244,7 +250,7 @@ export function ContentPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filtered.map((item) => (
-            <div key={item.id} className="bg-white rounded-xl border border-surface-200 p-4 shadow-sm hover:shadow-md transition-shadow">
+            <div key={item.id} onClick={() => setSelectedContent(item)} className="bg-white rounded-xl border border-surface-200 p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer hover:border-primary-200 transition-colors">
               <div className="flex items-center justify-between mb-3">
                 <ChannelBadge channel={item.channel} />
                 <StatusBadge status={item.status} />
@@ -262,6 +268,107 @@ export function ContentPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Content Detail Modal */}
+      {selectedContent !== null && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedContent(null)}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-5 border-b border-surface-200">
+              <div className="flex items-center gap-2">
+                <ChannelBadge channel={selectedContent.channel} />
+                <StatusBadge status={selectedContent.status} />
+              </div>
+              <button
+                onClick={() => setSelectedContent(null)}
+                className="p-1.5 rounded-lg text-surface-400 hover:text-surface-700 hover:bg-surface-100 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 space-y-4">
+              {/* Full content text */}
+              <p className="text-sm text-surface-800 whitespace-pre-wrap leading-relaxed">
+                {selectedContent.content_text}
+              </p>
+
+              {/* Twitter link */}
+              {selectedContent.external_id && (
+                <a
+                  href={`https://x.com/i/status/${selectedContent.external_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm text-primary-600 hover:text-primary-700 font-medium"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Twitter에서 보기
+                </a>
+              )}
+
+              {/* Status details */}
+              <div className="rounded-xl border border-surface-200 p-4 space-y-2 bg-surface-50">
+                {selectedContent.status === 'posted' && (
+                  <div className="flex items-center gap-2 text-sm text-green-700">
+                    <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <span>
+                      게시됨
+                      {selectedContent.posted_at && (
+                        <> · {new Date(selectedContent.posted_at).toLocaleString('ko-KR')}</>
+                      )}
+                    </span>
+                  </div>
+                )}
+                {selectedContent.status === 'queued' && (
+                  <div className="flex items-center gap-2 text-sm text-blue-700">
+                    <Clock className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                    <span>게시 대기 중</span>
+                  </div>
+                )}
+                {selectedContent.status === 'failed' && (
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2 text-sm text-red-700">
+                      <XCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                      <span>게시 실패</span>
+                    </div>
+                    {selectedContent.error_message && (
+                      <div className="flex items-start gap-2 text-xs text-red-600 bg-red-50 rounded-lg p-2.5">
+                        <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                        <span className="break-all">{selectedContent.error_message}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Created at */}
+                {selectedContent.created_at && (
+                  <div className="flex items-center gap-2 text-xs text-surface-400">
+                    <Clock className="w-3.5 h-3.5 flex-shrink-0" />
+                    <span>생성됨 · {new Date(selectedContent.created_at).toLocaleString('ko-KR')}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex justify-end px-5 pb-5">
+              <button
+                onClick={() => setSelectedContent(null)}
+                className="px-4 py-2 text-sm font-medium text-surface-600 bg-surface-100 rounded-lg hover:bg-surface-200 transition-colors"
+              >
+                닫기
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

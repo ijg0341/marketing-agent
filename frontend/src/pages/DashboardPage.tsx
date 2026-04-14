@@ -8,7 +8,7 @@ import {
 import {
   DollarSign, Target, TrendingUp, MousePointerClick,
   FileText, Eye, Heart, Loader2, BarChart3, ArrowRight,
-  CheckCircle2, Clock, AtSign, ChevronDown, ChevronUp, Calendar,
+  CheckCircle2, Clock, AtSign, Calendar, X,
 } from 'lucide-react';
 import { api } from '../api';
 
@@ -221,9 +221,8 @@ export function DashboardPage() {
   // Reports
   const [reports, setReports] = useState<any[]>([]);
   const [reportsLoading, setReportsLoading] = useState(false);
-  const [expandedReport, setExpandedReport] = useState<string | null>(null);
   const [reportContents, setReportContents] = useState<Record<string, string>>({});
-  const [reportContentLoading, setReportContentLoading] = useState<Record<string, boolean>>({});
+  const [reportModal, setReportModal] = useState<{ title: string; date: string; content: string } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -301,25 +300,6 @@ export function DashboardPage() {
     fetchData();
     return () => { cancelled = true; };
   }, [period]);
-
-  // Report toggle handler
-  async function toggleReport(filename: string) {
-    if (expandedReport === filename) {
-      setExpandedReport(null);
-      return;
-    }
-    setExpandedReport(filename);
-    if (reportContents[filename]) return;
-    setReportContentLoading((prev) => ({ ...prev, [filename]: true }));
-    try {
-      const data = await api.reports.get(filename);
-      setReportContents((prev) => ({ ...prev, [filename]: typeof data === 'string' ? data : data.content ?? JSON.stringify(data, null, 2) }));
-    } catch {
-      setReportContents((prev) => ({ ...prev, [filename]: '리포트를 불러올 수 없습니다.' }));
-    } finally {
-      setReportContentLoading((prev) => ({ ...prev, [filename]: false }));
-    }
-  }
 
   // Derived ad data
   const adKpis = aggregateAdKpis(campaigns);
@@ -671,14 +651,21 @@ export function DashboardPage() {
                 const title: string = report.title ?? filename.replace(/\.[^.]+$/, '').replace(/_/g, ' ');
                 const date: string = report.created_at ?? report.date ?? '';
                 const size: number | null = report.size ?? null;
-                const isExpanded = expandedReport === filename;
-                const isLoadingContent = reportContentLoading[filename] ?? false;
-                const content = reportContents[filename];
 
                 return (
                   <div key={filename} className="bg-white rounded-lg border border-surface-200 shadow-sm overflow-hidden">
                     <button
-                      onClick={() => toggleReport(filename)}
+                      onClick={() => {
+                        if (reportContents[filename]) {
+                          setReportModal({ title, date, content: reportContents[filename] });
+                        } else {
+                          api.reports.get(filename).then(data => {
+                            const content = typeof data === 'string' ? data : data.content ?? JSON.stringify(data, null, 2);
+                            setReportContents(prev => ({ ...prev, [filename]: content }));
+                            setReportModal({ title, date, content });
+                          });
+                        }
+                      }}
                       className="w-full flex items-center gap-3 px-4 py-3 hover:bg-surface-50 transition-colors text-left"
                     >
                       <div className="p-1.5 bg-primary-50 rounded-md text-primary-500 shrink-0">
@@ -700,27 +687,7 @@ export function DashboardPage() {
                           )}
                         </div>
                       </div>
-                      {isExpanded ? (
-                        <ChevronUp className="w-4 h-4 text-surface-400 shrink-0" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4 text-surface-400 shrink-0" />
-                      )}
                     </button>
-
-                    {isExpanded && (
-                      <div className="border-t border-surface-100 bg-surface-50 px-4 py-3">
-                        {isLoadingContent ? (
-                          <div className="flex items-center gap-2 py-4 text-surface-400">
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            <span className="text-xs">불러오는 중...</span>
-                          </div>
-                        ) : (
-                          <div className="report-markdown max-h-96 overflow-y-auto text-sm leading-relaxed">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
-                          </div>
-                        )}
-                      </div>
-                    )}
                   </div>
                 );
               })}
@@ -728,6 +695,26 @@ export function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* ── Report Modal ─────────────────────────────────────────── */}
+      {reportModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setReportModal(null)}>
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-5 border-b border-surface-100">
+              <div>
+                <h2 className="text-lg font-bold text-surface-900">{reportModal.title}</h2>
+                <p className="text-xs text-surface-400 mt-0.5">{reportModal.date}</p>
+              </div>
+              <button onClick={() => setReportModal(null)} className="p-2 hover:bg-surface-100 rounded-lg">
+                <X className="w-5 h-5 text-surface-400" />
+              </button>
+            </div>
+            <div className="p-5 overflow-y-auto max-h-[calc(85vh-80px)] report-markdown">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{reportModal.content}</ReactMarkdown>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
