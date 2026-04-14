@@ -17,6 +17,7 @@
    ```
 
 2. **현재 전략 확인** — `config/strategy.yaml`에서 성과 임계값을 확인합니다.
+   - `marketing_budget`에서 예산/기간 확인. 예산이 설정되어 있으면 리포트에 예산 소진율(spent/total_budget)과 기간 진행률을 포함. 예산 소진 속도가 기간 대비 빠르면 경고.
 
 3. **성과 분석**:
    - engagement rate와 `performance_thresholds` 비교
@@ -32,6 +33,7 @@
    - 성과 하위 3개 콘텐츠 + 피해야 할 패턴
    - 내일 콘텐츠 추천 (어떤 테마, 어떤 시간대)
    - 전략 조정 필요 여부 플래그
+   - 예산 현황: {spent}/{total_budget}원 소진 ({percentage}%), 기간: {start}~{end} ({days_left}일 남음)
 
 5. **이상 징후 기록** — engagement가 급락하면 리포트에 플래그하고 전략 진화 태스크에 알립니다.
 

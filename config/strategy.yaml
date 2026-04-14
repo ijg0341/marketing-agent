@@ -6,6 +6,13 @@ version: 1
 last_updated: "2026-04-13"
 updated_by: "manual"
 
+# ── 마케팅 예산 및 기간 ──────────────────────────────────────
+marketing_budget:
+  total_budget: 0          # 총 마케팅 예산 (KRW)
+  start_date: ""           # 마케팅 시작일 (YYYY-MM-DD)
+  end_date: ""             # 마케팅 종료일 (YYYY-MM-DD)
+  spent: 0                 # 누적 지출 (자동 추적)
+
 # ── 콘텐츠 전략 ────────────────────────────────────────
 content_strategy:
   themes:

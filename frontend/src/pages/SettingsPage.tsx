@@ -21,6 +21,7 @@ import {
   Link2,
   Sliders,
   AlertCircle,
+  DollarSign,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -1046,15 +1047,142 @@ function OnboardingWizard({
 }
 
 // ---------------------------------------------------------------------------
+// Tab 4: Marketing Budget
+// ---------------------------------------------------------------------------
+
+interface MarketingBudget {
+  total_budget: number;
+  start_date: string;
+  end_date: string;
+}
+
+function BudgetTab({ toast }: { toast: ReturnType<typeof useToast> }) {
+  const [budget, setBudget] = useState<MarketingBudget>({ total_budget: 0, start_date: '', end_date: '' });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/strategy')
+      .then((r) => { if (!r.ok) throw new Error('fetch failed'); return r.json(); })
+      .then((data) => {
+        const mb = data?.marketing_budget ?? {};
+        setBudget({
+          total_budget: mb.total_budget ?? 0,
+          start_date: mb.start_date ?? '',
+          end_date: mb.end_date ?? '',
+        });
+      })
+      .catch(() => toast.show('error', '예산 설정을 불러오지 못했습니다'))
+      .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const dailyGuide = (() => {
+    if (!budget.start_date || !budget.end_date || !budget.total_budget) return null;
+    const ms = new Date(budget.end_date).getTime() - new Date(budget.start_date).getTime();
+    const days = Math.round(ms / 86400000);
+    if (days <= 0) return null;
+    return Math.round(budget.total_budget / days);
+  })();
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch('/api/strategy', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          updates: { marketing_budget: budget },
+          changed_by: 'user',
+          reason: '마케팅 예산 설정',
+        }),
+      });
+      if (!res.ok) throw new Error('save failed');
+      toast.show('success', '마케팅 예산이 저장되었습니다');
+    } catch {
+      toast.show('error', '저장에 실패했습니다');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Spinner className="w-6 h-6 text-primary-500" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white rounded-xl border border-surface-200 shadow-sm p-6 space-y-5">
+        <h3 className="text-base font-semibold text-surface-900">마케팅 예산</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div>
+            <SectionLabel>총 예산 (₩)</SectionLabel>
+            <input
+              type="number"
+              min={0}
+              value={budget.total_budget || ''}
+              onChange={(e) => setBudget((prev) => ({ ...prev, total_budget: Number(e.target.value) }))}
+              placeholder="0"
+              className="w-full px-3 py-2 text-sm border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+          <div>
+            <SectionLabel>시작일</SectionLabel>
+            <input
+              type="date"
+              value={budget.start_date}
+              onChange={(e) => setBudget((prev) => ({ ...prev, start_date: e.target.value }))}
+              className="w-full px-3 py-2 text-sm border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+          <div>
+            <SectionLabel>종료일</SectionLabel>
+            <input
+              type="date"
+              value={budget.end_date}
+              onChange={(e) => setBudget((prev) => ({ ...prev, end_date: e.target.value }))}
+              className="w-full px-3 py-2 text-sm border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+        </div>
+        {dailyGuide !== null && (
+          <div className="pt-1">
+            <SectionLabel>일일 예산 가이드</SectionLabel>
+            <p className="text-sm text-surface-700 font-medium">
+              ₩{dailyGuide.toLocaleString()} / 일
+            </p>
+          </div>
+        )}
+        <div className="flex justify-end pt-2">
+          <button
+            onClick={save}
+            disabled={saving}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors disabled:opacity-60"
+          >
+            {saving ? <Spinner /> : <Save className="w-4 h-4" />}
+            저장
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Main Settings Page
 // ---------------------------------------------------------------------------
 
-type TabKey = 'target' | 'platforms' | 'channels';
+type TabKey = 'target' | 'platforms' | 'channels' | 'budget';
 
 const TABS: { key: TabKey; label: string; sublabel: string; icon: React.ElementType }[] = [
   { key: 'target', label: 'Marketing Target', sublabel: '마케팅 대상', icon: Target },
   { key: 'platforms', label: 'Platform Connections', sublabel: '플랫폼 연동', icon: Link2 },
   { key: 'channels', label: 'Channel Settings', sublabel: '채널 설정', icon: Sliders },
+  { key: 'budget', label: '마케팅 예산', sublabel: 'Budget', icon: DollarSign },
 ];
 
 export function SettingsPage() {
@@ -1077,7 +1205,7 @@ export function SettingsPage() {
   }, []);
 
   const handleWizardNavigate = (tab: string) => {
-    if (tab === 'target' || tab === 'platforms' || tab === 'channels') {
+    if (tab === 'target' || tab === 'platforms' || tab === 'channels' || tab === 'budget') {
       setActiveTab(tab as TabKey);
     }
   };
@@ -1136,6 +1264,7 @@ export function SettingsPage() {
         {activeTab === 'target' && <MarketingTargetTab toast={toast} />}
         {activeTab === 'platforms' && <PlatformConnectionsTab toast={toast} />}
         {activeTab === 'channels' && <ChannelSettingsTab toast={toast} />}
+        {activeTab === 'budget' && <BudgetTab toast={toast} />}
       </div>
     </div>
   );
