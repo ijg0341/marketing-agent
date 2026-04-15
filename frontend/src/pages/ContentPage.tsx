@@ -117,7 +117,7 @@ export function ContentPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-surface-900">Content</h1>
+          <h1 className="text-2xl font-bold text-surface-900">콘텐츠</h1>
           <p className="text-sm text-surface-500 mt-0.5">콘텐츠 관리 및 게시</p>
         </div>
         <div className="flex items-center gap-2">
@@ -128,14 +128,14 @@ export function ContentPage() {
             className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-primary-600 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors disabled:opacity-50"
           >
             {publishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-            Publish Queued
+            대기열 발행
           </button>
           <button
             onClick={() => setShowForm(!showForm)}
             className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 transition-colors"
           >
             {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-            {showForm ? 'Cancel' : 'New Content'}
+            {showForm ? '취소' : '콘텐츠 작성'}
           </button>
         </div>
       </div>
@@ -143,10 +143,10 @@ export function ContentPage() {
       {/* New Content Form */}
       {showForm && (
         <div className="bg-white rounded-xl border border-surface-200 p-5 shadow-sm space-y-4">
-          <h3 className="text-sm font-semibold text-surface-900">Create New Content</h3>
+          <h3 className="text-sm font-semibold text-surface-900">콘텐츠 작성</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-medium text-surface-600 mb-1">Channel</label>
+              <label className="block text-xs font-medium text-surface-600 mb-1">채널</label>
               <select
                 value={formChannel}
                 onChange={(e) => setFormChannel(e.target.value)}
@@ -158,7 +158,7 @@ export function ContentPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-surface-600 mb-1">Template</label>
+              <label className="block text-xs font-medium text-surface-600 mb-1">템플릿</label>
               <select
                 value={formTemplate}
                 onChange={(e) => setFormTemplate(e.target.value)}
@@ -170,7 +170,7 @@ export function ContentPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-surface-600 mb-1">Media URL (optional)</label>
+              <label className="block text-xs font-medium text-surface-600 mb-1">미디어 URL (선택)</label>
               <input
                 type="url"
                 value={formMediaUrl}
@@ -181,12 +181,12 @@ export function ContentPage() {
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-surface-600 mb-1">Content</label>
+            <label className="block text-xs font-medium text-surface-600 mb-1">내용</label>
             <textarea
               rows={3}
               value={formContent}
               onChange={(e) => setFormContent(e.target.value)}
-              placeholder="Write your content here..."
+              placeholder="콘텐츠를 입력하세요..."
               className="w-full px-3 py-2 text-sm border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
             />
           </div>
@@ -197,7 +197,7 @@ export function ContentPage() {
               className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-50"
             >
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-              Add to Queue
+              대기열에 추가
             </button>
           </div>
         </div>
@@ -211,7 +211,7 @@ export function ContentPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search content..."
+            placeholder="콘텐츠 검색..."
             className="w-full pl-9 pr-3 py-2 text-sm border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
           />
         </div>
@@ -226,7 +226,7 @@ export function ContentPage() {
                   : 'text-surface-500 hover:bg-surface-100'
               }`}
             >
-              {t.charAt(0).toUpperCase() + t.slice(1)} ({counts[t]})
+              {t === 'all' ? '전체' : t === 'queued' ? '대기 중' : t === 'posted' ? '발행됨' : '실패'} ({counts[t]})
             </button>
           ))}
         </div>
@@ -260,9 +260,9 @@ export function ContentPage() {
                 <span>{item.template_version ?? '—'}</span>
                 <span>
                   {item.posted_at
-                    ? `Posted ${new Date(item.posted_at).toLocaleString('ko-KR')}`
+                    ? `발행됨 ${new Date(item.posted_at).toLocaleString('ko-KR')}`
                     : item.created_at
-                    ? `Created ${new Date(item.created_at).toLocaleString('ko-KR')}`
+                    ? `생성됨 ${new Date(item.created_at).toLocaleString('ko-KR')}`
                     : '—'}
                 </span>
               </div>

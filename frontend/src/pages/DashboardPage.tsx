@@ -313,7 +313,7 @@ export function DashboardPage() {
       {/* ── Header ──────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-surface-900">Dashboard</h1>
+          <h1 className="text-2xl font-bold text-surface-900">대시보드</h1>
           <p className="text-sm text-surface-500 mt-0.5">마케팅 성과 요약</p>
         </div>
         <div className="flex items-center gap-3">
@@ -344,7 +344,7 @@ export function DashboardPage() {
 
       {/* ── 2. Content Marketing KPIs ───────────────────────────── */}
       <div className="space-y-3">
-        <h2 className="text-xs font-semibold text-surface-400 uppercase tracking-wider">Content Marketing</h2>
+        <h2 className="text-xs font-semibold text-surface-400 uppercase tracking-wider">콘텐츠 마케팅</h2>
 
         {/* Compact KPI row */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -353,7 +353,7 @@ export function DashboardPage() {
               <FileText className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-xs text-surface-400">Total Posts</p>
+              <p className="text-xs text-surface-400">전체 게시물</p>
               <p className="text-lg font-bold text-surface-800">
                 {contentKpi ? contentKpi.totalPosts : '—'}
               </p>
@@ -364,7 +364,7 @@ export function DashboardPage() {
               <Eye className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-xs text-surface-400">Impressions</p>
+              <p className="text-xs text-surface-400">노출수</p>
               <p className="text-lg font-bold text-surface-800">
                 {contentKpi ? contentKpi.totalImpressions.toLocaleString() : '—'}
               </p>
@@ -375,7 +375,7 @@ export function DashboardPage() {
               <Heart className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-xs text-surface-400">Avg Engagement</p>
+              <p className="text-xs text-surface-400">평균 참여율</p>
               <p className="text-lg font-bold text-surface-800">
                 {contentKpi ? `${contentKpi.avgEngagementRate}%` : '—'}
               </p>
@@ -386,8 +386,8 @@ export function DashboardPage() {
         {/* Recent content list */}
         <div className="bg-white rounded-lg border border-surface-200 shadow-sm">
           <div className="px-4 py-3 border-b border-surface-100 flex items-center justify-between">
-            <p className="text-xs font-semibold text-surface-600">Recent Content</p>
-            <a href="/content" className="text-xs text-primary-600 hover:text-primary-700 font-medium">View All</a>
+            <p className="text-xs font-semibold text-surface-600">최근 콘텐츠</p>
+            <a href="/content" className="text-xs text-primary-600 hover:text-primary-700 font-medium">전체 보기</a>
           </div>
           {recentContent.length === 0 ? (
             <div className="px-4 py-8 text-center">
@@ -404,7 +404,7 @@ export function DashboardPage() {
                   <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${
                     item.status === 'posted' ? 'bg-emerald-50 text-emerald-600' : 'bg-surface-100 text-surface-500'
                   }`}>
-                    {item.status}
+                    {item.status === 'posted' ? '발행됨' : item.status === 'queued' ? '대기 중' : item.status === 'failed' ? '실패' : item.status}
                   </span>
                   <span className="text-xs text-surface-400 w-20 text-right shrink-0">
                     {item.posted_at
@@ -420,7 +420,7 @@ export function DashboardPage() {
 
       {/* ── 3. Ad Performance (Phase 1: 준비 중) ─────────────────── */}
       <div className="space-y-3">
-        <h2 className="text-xs font-semibold text-surface-400 uppercase tracking-wider">Ad Performance</h2>
+        <h2 className="text-xs font-semibold text-surface-400 uppercase tracking-wider">광고 성과</h2>
 
         {hasAdData ? (
           <>
@@ -429,7 +429,7 @@ export function DashboardPage() {
               <div className="bg-white rounded-xl border border-surface-200 p-6 shadow-sm">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm text-surface-500 font-medium">Total Ad Spend</p>
+                    <p className="text-sm text-surface-500 font-medium">총 광고 지출</p>
                     <p className="text-3xl font-bold mt-1.5 text-surface-900">{formatWon(adKpis.totalSpend)}</p>
                   </div>
                   <div className="p-3 bg-blue-50 rounded-lg text-blue-600">
@@ -440,7 +440,7 @@ export function DashboardPage() {
               <div className="bg-white rounded-xl border border-surface-200 p-6 shadow-sm">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm text-surface-500 font-medium">Total Conversions</p>
+                    <p className="text-sm text-surface-500 font-medium">총 전환수</p>
                     <p className="text-3xl font-bold mt-1.5 text-surface-900">{adKpis.totalConversions.toLocaleString()}</p>
                   </div>
                   <div className="p-3 bg-emerald-50 rounded-lg text-emerald-600">
@@ -451,7 +451,7 @@ export function DashboardPage() {
               <div className="bg-white rounded-xl border border-surface-200 p-6 shadow-sm">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm text-surface-500 font-medium">Average ROAS</p>
+                    <p className="text-sm text-surface-500 font-medium">평균 ROAS</p>
                     <p className="text-3xl font-bold mt-1.5 text-surface-900">{adKpis.avgRoas.toFixed(1)}x</p>
                   </div>
                   <div className="p-3 bg-violet-50 rounded-lg text-violet-600">
@@ -462,7 +462,7 @@ export function DashboardPage() {
               <div className="bg-white rounded-xl border border-surface-200 p-6 shadow-sm">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm text-surface-500 font-medium">Average CTR</p>
+                    <p className="text-sm text-surface-500 font-medium">평균 CTR</p>
                     <p className="text-3xl font-bold mt-1.5 text-surface-900">{adKpis.avgCtr.toFixed(1)}%</p>
                   </div>
                   <div className="p-3 bg-amber-50 rounded-lg text-amber-600">
@@ -475,25 +475,25 @@ export function DashboardPage() {
             {/* Active Campaigns Table */}
             <div className="bg-white rounded-xl border border-surface-200 shadow-sm">
               <div className="p-5 border-b border-surface-200 flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-surface-900">Active Campaigns</h2>
+                <h2 className="text-sm font-semibold text-surface-900">활성 캠페인</h2>
                 <a
                   href="/ads"
                   className="flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
                 >
-                  View All <ArrowRight className="w-3.5 h-3.5" />
+                  전체 보기 <ArrowRight className="w-3.5 h-3.5" />
                 </a>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-surface-100">
-                      <th className="text-left px-5 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider">Platform</th>
-                      <th className="text-left px-5 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider">Name</th>
-                      <th className="text-left px-5 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider">Status</th>
-                      <th className="text-right px-5 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider">Daily Budget</th>
-                      <th className="text-right px-5 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider">Spend</th>
-                      <th className="text-right px-5 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider">Impressions</th>
-                      <th className="text-right px-5 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider">Clicks</th>
+                      <th className="text-left px-5 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider">플랫폼</th>
+                      <th className="text-left px-5 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider">이름</th>
+                      <th className="text-left px-5 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider">상태</th>
+                      <th className="text-right px-5 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider">일일 예산</th>
+                      <th className="text-right px-5 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider">지출</th>
+                      <th className="text-right px-5 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider">노출수</th>
+                      <th className="text-right px-5 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider">클릭수</th>
                       <th className="text-right px-5 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider">CTR</th>
                       <th className="text-right px-5 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider">ROAS</th>
                     </tr>
@@ -528,7 +528,7 @@ export function DashboardPage() {
             {/* Ad Spend Trend + Platform Distribution */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div className="lg:col-span-2 bg-white rounded-xl border border-surface-200 p-5 shadow-sm">
-                <h2 className="text-sm font-semibold text-surface-900 mb-4">Daily Ad Spend by Platform</h2>
+                <h2 className="text-sm font-semibold text-surface-900 mb-4">플랫폼별 일별 광고 지출</h2>
                 <ResponsiveContainer width="100%" height={280}>
                   <AreaChart data={[]}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -546,7 +546,7 @@ export function DashboardPage() {
                 </ResponsiveContainer>
               </div>
               <div className="bg-white rounded-xl border border-surface-200 p-5 shadow-sm">
-                <h2 className="text-sm font-semibold text-surface-900 mb-4">Spend by Platform</h2>
+                <h2 className="text-sm font-semibold text-surface-900 mb-4">플랫폼별 지출</h2>
                 <ResponsiveContainer width="100%" height={280}>
                   <PieChart>
                     <Pie data={platformDist} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={4} dataKey="value">
@@ -577,14 +577,14 @@ export function DashboardPage() {
           <div className="bg-white rounded-xl border border-surface-200 p-5 shadow-sm">
             <h2 className="text-sm font-semibold text-surface-900 mb-4 flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-primary-500" />
-              Google Analytics Overview
+              Google Analytics 개요
             </h2>
             <div className="grid grid-cols-2 gap-4">
               {[
-                { label: 'Sessions', value: ga4Overview.sessions || '0' },
-                { label: 'Users', value: ga4Overview.totalUsers || '0' },
-                { label: 'Page Views', value: ga4Overview.screenPageViews || '0' },
-                { label: 'Conversions', value: ga4Overview.conversions || '0' },
+                { label: '세션', value: ga4Overview.sessions || '0' },
+                { label: '사용자', value: ga4Overview.totalUsers || '0' },
+                { label: '페이지뷰', value: ga4Overview.screenPageViews || '0' },
+                { label: '전환수', value: ga4Overview.conversions || '0' },
               ].map((item) => (
                 <div key={item.label} className="p-3 bg-surface-50 rounded-lg">
                   <p className="text-xs text-surface-500">{item.label}</p>
@@ -594,7 +594,7 @@ export function DashboardPage() {
             </div>
           </div>
           <div className="bg-white rounded-xl border border-surface-200 p-5 shadow-sm">
-            <h2 className="text-sm font-semibold text-surface-900 mb-4">Traffic by Channel</h2>
+            <h2 className="text-sm font-semibold text-surface-900 mb-4">채널별 트래픽</h2>
             {ga4Channels.length > 0 ? (
               <div className="space-y-2">
                 {ga4Channels.slice(0, 8).map((ch, i) => {
@@ -615,7 +615,7 @@ export function DashboardPage() {
                 })}
               </div>
             ) : (
-              <p className="text-sm text-surface-400">No channel data available</p>
+              <p className="text-sm text-surface-400">채널 데이터가 없습니다</p>
             )}
           </div>
         </div>

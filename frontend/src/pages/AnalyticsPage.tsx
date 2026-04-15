@@ -8,15 +8,15 @@ import { ChannelBadge } from '../components/ChannelBadge';
 import { api } from '../api';
 
 const emptyMetrics = [
-  { label: 'Total Impressions', value: '0', change: '+0%', up: true, icon: Eye },
-  { label: 'Total Engagements', value: '0', change: '+0%', up: true, icon: Heart },
-  { label: 'Total Clicks', value: '0', change: '+0%', up: true, icon: MousePointerClick },
-  { label: 'Avg. Engagement Rate', value: '0.0%', change: '+0%p', up: true, icon: Target },
+  { label: '노출수', value: '0', change: '+0%', up: true, icon: Eye },
+  { label: '참여수', value: '0', change: '+0%', up: true, icon: Heart },
+  { label: '클릭수', value: '0', change: '+0%', up: true, icon: MousePointerClick },
+  { label: '평균 참여율', value: '0.0%', change: '+0%p', up: true, icon: Target },
 ];
 
 const EmptyState = () => (
   <div className="flex items-center justify-center py-12 text-sm text-surface-400">
-    아직 데이터가 없습니다. Collect Metrics를 실행하면 데이터가 수집됩니다.
+    아직 데이터가 없습니다. 메트릭 수집을 실행하면 데이터가 수집됩니다.
   </div>
 );
 
@@ -44,28 +44,28 @@ export function AnalyticsPage() {
       if (summary) {
         setMetrics([
           {
-            label: 'Total Impressions',
+            label: '노출수',
             value: (summary.total_impressions ?? 0).toLocaleString(),
             change: '+0%',
             up: true,
             icon: Eye,
           },
           {
-            label: 'Total Engagements',
+            label: '참여수',
             value: (summary.total_engagements ?? 0).toLocaleString(),
             change: '+0%',
             up: true,
             icon: Heart,
           },
           {
-            label: 'Total Clicks',
+            label: '클릭수',
             value: (summary.total_clicks ?? 0).toLocaleString(),
             change: '+0%',
             up: true,
             icon: MousePointerClick,
           },
           {
-            label: 'Avg. Engagement Rate',
+            label: '평균 참여율',
             value: `${(summary.avg_engagement_rate ?? 0).toFixed(1)}%`,
             change: '+0%p',
             up: true,
@@ -142,7 +142,7 @@ export function AnalyticsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-surface-900">Analytics</h1>
+          <h1 className="text-2xl font-bold text-surface-900">분석</h1>
           <p className="text-sm text-surface-500 mt-0.5">Twitter 성과 분석 및 인사이트</p>
         </div>
         <div className="flex items-center gap-3">
@@ -152,18 +152,18 @@ export function AnalyticsPage() {
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-primary-50 text-primary-600 hover:bg-primary-100 transition-colors disabled:opacity-50"
           >
             {collecting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-            Collect Metrics
+            메트릭 수집
           </button>
           <div className="flex gap-1 bg-white rounded-lg border border-surface-200 p-1">
-            {['24h', '7d', '30d'].map((p) => (
+            {[{ key: '24h', label: '24시간' }, { key: '7d', label: '7일' }, { key: '30d', label: '30일' }].map(({ key, label }) => (
               <button
-                key={p}
-                onClick={() => setPeriod(p)}
+                key={key}
+                onClick={() => setPeriod(key)}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                  period === p ? 'bg-primary-500 text-white' : 'text-surface-500 hover:bg-surface-100'
+                  period === key ? 'bg-primary-500 text-white' : 'text-surface-500 hover:bg-surface-100'
                 }`}
               >
-                {p}
+                {label}
               </button>
             ))}
           </div>
@@ -181,7 +181,7 @@ export function AnalyticsPage() {
       {loading && (
         <div className="flex items-center gap-2 text-sm text-surface-500">
           <Loader2 className="w-4 h-4 animate-spin" />
-          Loading analytics...
+          로딩 중...
         </div>
       )}
 
@@ -196,7 +196,7 @@ export function AnalyticsPage() {
             <p className="text-2xl font-bold text-surface-900">{m.value}</p>
             <div className={`flex items-center gap-1 mt-1 text-xs font-medium ${m.up ? 'text-emerald-600' : 'text-red-500'}`}>
               {m.up ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
-              {m.change} vs previous period
+              {m.change} 이전 기간 대비
             </div>
           </div>
         ))}
@@ -204,7 +204,7 @@ export function AnalyticsPage() {
 
       {/* Performance Over Time */}
       <div className="bg-white rounded-xl border border-surface-200 p-5 shadow-sm">
-        <h2 className="text-sm font-semibold text-surface-900 mb-4">Performance Over Time (Twitter)</h2>
+        <h2 className="text-sm font-semibold text-surface-900 mb-4">기간별 성과 (Twitter)</h2>
         {dailyData.length === 0 ? (
           <EmptyState />
         ) : (
@@ -225,8 +225,8 @@ export function AnalyticsPage() {
               <YAxis tick={{ fontSize: 12 }} stroke="#94a3b8" />
               <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }} />
               <Legend />
-              <Area type="monotone" dataKey="impressions" stroke="#3b82f6" strokeWidth={2} fill="url(#impressionsGrad)" name="Impressions" />
-              <Area type="monotone" dataKey="engagements" stroke="#10b981" strokeWidth={2} fill="url(#engagementsGrad)" name="Engagements" />
+              <Area type="monotone" dataKey="impressions" stroke="#3b82f6" strokeWidth={2} fill="url(#impressionsGrad)" name="노출수" />
+              <Area type="monotone" dataKey="engagements" stroke="#10b981" strokeWidth={2} fill="url(#engagementsGrad)" name="참여수" />
             </AreaChart>
           </ResponsiveContainer>
         )}
@@ -235,7 +235,7 @@ export function AnalyticsPage() {
       {/* Top Content */}
       <div className="bg-white rounded-xl border border-surface-200 shadow-sm">
         <div className="p-5 border-b border-surface-100">
-          <h2 className="text-sm font-semibold text-surface-900">Top Performing Twitter Content</h2>
+          <h2 className="text-sm font-semibold text-surface-900">성과 상위 Twitter 콘텐츠</h2>
         </div>
         {topContent.length === 0 ? (
           <EmptyState />
@@ -247,12 +247,12 @@ export function AnalyticsPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <ChannelBadge channel={item.channel} />
-                    <span className="text-xs text-surface-400">{item.rate}% engagement</span>
+                    <span className="text-xs text-surface-400">참여율 {item.rate}%</span>
                   </div>
                   <p className="text-sm text-surface-700 truncate">{item.text}</p>
                   <div className="flex gap-4 mt-1 text-xs text-surface-400">
-                    <span>{item.impressions.toLocaleString()} impressions</span>
-                    <span>{item.engagements.toLocaleString()} engagements</span>
+                    <span>노출 {item.impressions.toLocaleString()}</span>
+                    <span>참여 {item.engagements.toLocaleString()}</span>
                   </div>
                 </div>
               </div>

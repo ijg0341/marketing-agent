@@ -11,12 +11,12 @@ import {
 import { clsx } from 'clsx';
 
 const links = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/content', icon: FileText, label: 'Content' },
-  { to: '/analytics', icon: BarChart3, label: 'Analytics' },
-  { to: '/ads', icon: Megaphone, label: 'Ads' },
-  { to: '/scheduled-tasks', icon: CalendarClock, label: 'Scheduled Tasks' },
-  { to: '/settings', icon: Settings2, label: 'Settings' },
+  { to: '/', icon: LayoutDashboard, label: '대시보드' },
+  { to: '/content', icon: FileText, label: '콘텐츠' },
+  { to: '/analytics', icon: BarChart3, label: '분석' },
+  { to: '/ads', icon: Megaphone, label: '광고' },
+  { to: '/scheduled-tasks', icon: CalendarClock, label: '자동화' },
+  { to: '/settings', icon: Settings2, label: '설정' },
 ];
 
 export function Sidebar() {
@@ -27,7 +27,7 @@ export function Sidebar() {
           <Zap className="w-5 h-5 text-primary-400" />
           Marketing Agent
         </h1>
-        <p className="text-xs text-surface-400 mt-1">Self-Evolving System</p>
+        <p className="text-xs text-surface-400 mt-1">자율 진화 마케팅 시스템</p>
       </div>
       <nav className="flex-1 py-3">
         {links.map(({ to, icon: Icon, label }) => (
@@ -51,7 +51,7 @@ export function Sidebar() {
       <div className="p-4 border-t border-surface-700">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-xs text-surface-400">System Active</span>
+          <span className="text-xs text-surface-400">시스템 활성</span>
         </div>
       </div>
     </aside>

@@ -413,7 +413,7 @@ function PlatformCard({
         const res = await request<{ steps: string[] }>(`/platforms/${platform.id}/guide`);
         setGuide(res.steps);
       } catch {
-        setGuide(['Setup guide could not be loaded. Please check the documentation.']);
+        setGuide(['설정 가이드를 불러오지 못했습니다. 문서를 확인하세요.']);
       } finally {
         setGuideLoading(false);
       }
@@ -427,12 +427,12 @@ function PlatformCard({
         method: 'PUT',
         body: JSON.stringify({ credentials: creds }),
       });
-      toast.show('success', `${platform.name} credentials saved`);
+      toast.show('success', `${platform.name} 인증 정보가 저장되었습니다`);
       setCreds({});
       setEditing({});
       onUpdate();
     } catch {
-      toast.show('error', `Failed to save ${platform.name} credentials`);
+      toast.show('error', `${platform.name} 인증 정보 저장에 실패했습니다`);
     } finally {
       setSaving(false);
     }
@@ -447,10 +447,10 @@ function PlatformCard({
       });
       setTestResult({
         ok: res.connected ?? res.ok ?? false,
-        message: res.connected ? 'Connected successfully' : (res.error || 'Connection failed'),
+        message: res.connected ? '연결 성공' : (res.error || '연결 실패'),
       });
     } catch {
-      setTestResult({ ok: false, message: 'Connection test failed' });
+      setTestResult({ ok: false, message: '연결 테스트 실패' });
     } finally {
       setTesting(false);
     }
@@ -484,7 +484,7 @@ function PlatformCard({
             ) : (
               <XCircle className="w-3.5 h-3.5" />
             )}
-            {platform.connected ? 'Connected' : 'Not Connected'}
+            {platform.connected ? '연결됨' : '미연결'}
           </span>
         </div>
 
@@ -494,7 +494,7 @@ function PlatformCard({
           className="flex items-center gap-1.5 text-xs font-medium text-primary-600 hover:text-primary-700 mb-4"
         >
           <BookOpen className="w-3.5 h-3.5" />
-          Setup Guide
+          설정 가이드
           {guideOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
         </button>
 
@@ -503,7 +503,7 @@ function PlatformCard({
           <div className="mb-4 p-4 bg-surface-50 rounded-lg border border-surface-100">
             {guideLoading ? (
               <div className="flex items-center gap-2 text-sm text-surface-500">
-                <Spinner /> Loading guide...
+                <Spinner /> 가이드 로딩 중...
               </div>
             ) : (
               <ol className="space-y-2">
@@ -556,7 +556,7 @@ function PlatformCard({
                         type={field.type === 'password' ? 'password' : 'text'}
                         value={creds[field.key] || ''}
                         onChange={(e) => setCreds((prev) => ({ ...prev, [field.key]: e.target.value }))}
-                        placeholder={field.has_value ? 'Enter new value to replace...' : `Enter ${field.label.toLowerCase()}`}
+                        placeholder={field.has_value ? '새 값을 입력하면 교체됩니다...' : `${field.label} 입력`}
                         className="flex-1 px-3 py-2 text-sm border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                       {field.has_value && (
@@ -591,7 +591,7 @@ function PlatformCard({
             className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 disabled:opacity-40 transition-colors"
           >
             {saving ? <Spinner /> : <Save className="w-3.5 h-3.5" />}
-            Save Credentials
+            인증 정보 저장
           </button>
           <button
             onClick={testConnection}
@@ -651,7 +651,7 @@ function PlatformConnectionsTab({ toast }: { toast: ReturnType<typeof useToast> 
         }));
         setPlatforms(list);
       })
-      .catch(() => toast.show('error', 'Failed to load platform connections'))
+      .catch(() => toast.show('error', '플랫폼 연동 정보를 불러오지 못했습니다'))
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -671,7 +671,7 @@ function PlatformConnectionsTab({ toast }: { toast: ReturnType<typeof useToast> 
   if (platforms.length === 0) {
     return (
       <div className="text-center py-16 text-surface-500 text-sm">
-        No platforms configured. Check your backend API.
+        등록된 플랫폼이 없습니다. 백엔드 API를 확인하세요.
       </div>
     );
   }
@@ -716,7 +716,7 @@ function ChannelSettingsTab({ toast }: { toast: ReturnType<typeof useToast> }) {
         }));
         setChannels(list);
       })
-      .catch(() => toast.show('error', 'Failed to load channel settings'))
+      .catch(() => toast.show('error', '채널 설정을 불러오지 못했습니다'))
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -773,18 +773,18 @@ function ChannelSettingsTab({ toast }: { toast: ReturnType<typeof useToast> }) {
           }),
         });
       }
-      toast.show('success', 'Channel settings saved');
+      toast.show('success', '채널 설정이 저장되었습니다');
     } catch {
-      toast.show('error', 'Failed to save channel settings');
+      toast.show('error', '채널 설정 저장에 실패했습니다');
     } finally {
       setSaving(false);
     }
   };
 
   const statusConfig = {
-    connected: { label: 'Connected', color: 'text-emerald-600', bg: 'bg-emerald-50', icon: CheckCircle2 },
-    disconnected: { label: 'Disconnected', color: 'text-surface-400', bg: 'bg-surface-100', icon: XCircle },
-    error: { label: 'Error', color: 'text-red-500', bg: 'bg-red-50', icon: AlertCircle },
+    connected: { label: '연결됨', color: 'text-emerald-600', bg: 'bg-emerald-50', icon: CheckCircle2 },
+    disconnected: { label: '미연결', color: 'text-surface-400', bg: 'bg-surface-100', icon: XCircle },
+    error: { label: '오류', color: 'text-red-500', bg: 'bg-red-50', icon: AlertCircle },
   };
 
   if (loading) {
@@ -835,20 +835,20 @@ function ChannelSettingsTab({ toast }: { toast: ReturnType<typeof useToast> }) {
               {ch.enabled && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-surface-100">
                   <div>
-                    <label className="block text-xs font-medium text-surface-500 mb-1">Frequency</label>
+                    <label className="block text-xs font-medium text-surface-500 mb-1">게시 빈도</label>
                     <select
                       value={ch.frequency}
                       onChange={(e) => updateChannel(ch.id, { frequency: e.target.value })}
                       className="w-full px-3 py-2 text-sm border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
                     >
-                      <option value="hourly">Hourly</option>
-                      <option value="daily">Daily</option>
-                      <option value="weekly">Weekly</option>
-                      <option value="custom">Custom</option>
+                      <option value="hourly">매시간</option>
+                      <option value="daily">매일</option>
+                      <option value="weekly">매주</option>
+                      <option value="custom">커스텀</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-surface-500 mb-1">Max Posts/Day</label>
+                    <label className="block text-xs font-medium text-surface-500 mb-1">하루 최대 게시 수</label>
                     <input
                       type="number"
                       min={1}
@@ -859,7 +859,7 @@ function ChannelSettingsTab({ toast }: { toast: ReturnType<typeof useToast> }) {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-surface-500 mb-1">Posting Times</label>
+                    <label className="block text-xs font-medium text-surface-500 mb-1">게시 시간</label>
                     <div className="flex flex-wrap gap-1.5">
                       {ch.posting_times.map((t) => (
                         <span
@@ -912,28 +912,28 @@ function ChannelSettingsTab({ toast }: { toast: ReturnType<typeof useToast> }) {
 
       {/* System Info */}
       <div className="bg-white rounded-xl border border-surface-200 p-5 shadow-sm">
-        <h2 className="text-sm font-semibold text-surface-900 mb-4">System Information</h2>
+        <h2 className="text-sm font-semibold text-surface-900 mb-4">시스템 정보</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
-            <p className="text-xs text-surface-500">API Server</p>
+            <p className="text-xs text-surface-500">API 서버</p>
             <p className="text-sm font-medium text-emerald-600 mt-0.5 flex items-center gap-1">
               <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
-              Running
+              실행 중
             </p>
           </div>
           <div>
-            <p className="text-xs text-surface-500">Database</p>
+            <p className="text-xs text-surface-500">데이터베이스</p>
             <p className="text-sm font-medium text-surface-700 mt-0.5">SQLite</p>
           </div>
           <div>
-            <p className="text-xs text-surface-500">Strategy Version</p>
+            <p className="text-xs text-surface-500">전략 버전</p>
             <p className="text-sm font-medium text-surface-700 mt-0.5">v1</p>
           </div>
           <div>
-            <p className="text-xs text-surface-500">Scheduler</p>
+            <p className="text-xs text-surface-500">스케줄러</p>
             <p className="text-sm font-medium text-emerald-600 mt-0.5 flex items-center gap-1">
               <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
-              Active
+              활성
             </p>
           </div>
         </div>
@@ -947,7 +947,7 @@ function ChannelSettingsTab({ toast }: { toast: ReturnType<typeof useToast> }) {
           className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 disabled:opacity-50 transition-colors"
         >
           {saving ? <Spinner /> : <Save className="w-4 h-4" />}
-          Save Channel Settings
+          채널 설정 저장
         </button>
       </div>
     </div>
@@ -1178,11 +1178,11 @@ function BudgetTab({ toast }: { toast: ReturnType<typeof useToast> }) {
 
 type TabKey = 'target' | 'platforms' | 'channels' | 'budget';
 
-const TABS: { key: TabKey; label: string; sublabel: string; icon: React.ElementType }[] = [
-  { key: 'target', label: 'Marketing Target', sublabel: '마케팅 대상', icon: Target },
-  { key: 'platforms', label: 'Platform Connections', sublabel: '플랫폼 연동', icon: Link2 },
-  { key: 'channels', label: 'Channel Settings', sublabel: '채널 설정', icon: Sliders },
-  { key: 'budget', label: '마케팅 예산', sublabel: 'Budget', icon: DollarSign },
+const TABS: { key: TabKey; label: string; icon: React.ElementType }[] = [
+  { key: 'target', label: '마케팅 대상', icon: Target },
+  { key: 'platforms', label: '플랫폼 연동', icon: Link2 },
+  { key: 'channels', label: '채널 설정', icon: Sliders },
+  { key: 'budget', label: '마케팅 예산', icon: DollarSign },
 ];
 
 export function SettingsPage() {
@@ -1220,7 +1220,7 @@ export function SettingsPage() {
       <div>
         <div className="flex items-center gap-2 mb-1">
           <Settings className="w-5 h-5 text-surface-400" />
-          <h1 className="text-2xl font-bold text-surface-900">Settings</h1>
+          <h1 className="text-2xl font-bold text-surface-900">설정</h1>
         </div>
         <p className="text-sm text-surface-500">마케팅 대상, 플랫폼 연동, 채널 설정을 관리합니다</p>
       </div>
@@ -1252,7 +1252,6 @@ export function SettingsPage() {
               >
                 <Icon className="w-4 h-4" />
                 <span>{tab.label}</span>
-                <span className="text-xs text-surface-400 hidden sm:inline">({tab.sublabel})</span>
               </button>
             );
           })}

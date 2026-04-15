@@ -222,7 +222,7 @@ export function AdsPage() {
     } catch (err) {
       console.error('Failed to fetch campaigns:', err);
       setCampaigns([]);
-      setError('Failed to load campaigns from API.');
+      setError('캠페인을 불러오는 데 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -283,7 +283,7 @@ export function AdsPage() {
   }
 
   async function handleDelete(id: number) {
-    if (!confirm('Are you sure you want to delete this campaign?')) return;
+    if (!confirm('이 캠페인을 삭제하시겠습니까?')) return;
     setActionLoading(id);
     try {
       await api.ads.deleteCampaign(id);
@@ -427,7 +427,7 @@ export function AdsPage() {
       {/* ===== Header ===== */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-surface-900">Advertising</h1>
+          <h1 className="text-2xl font-bold text-surface-900">광고</h1>
           <p className="text-sm text-surface-500 mt-0.5">광고 캠페인 관리 및 성과 분석</p>
         </div>
         <div className="flex items-center gap-3">
@@ -444,24 +444,24 @@ export function AdsPage() {
                     : 'text-surface-500 hover:bg-surface-100',
                 )}
               >
-                {p === 'all' ? 'All' : platformLabels[p]}
+                {p === 'all' ? '전체' : platformLabels[p]}
               </button>
             ))}
           </div>
           <button
             onClick={handleAiDraft}
             disabled={aiDrafting}
-            className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-purple-500 rounded-lg hover:bg-purple-600 transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-50"
           >
             {aiDrafting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
-            {aiDrafting ? 'AI가 설계 중...' : '🤖 AI 자동 생성'}
+            {aiDrafting ? 'AI가 설계 중...' : 'AI 자동 생성'}
           </button>
           <button
             onClick={() => setShowForm(!showForm)}
             className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 transition-colors"
           >
             {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-            {showForm ? 'Cancel' : 'New Campaign'}
+            {showForm ? '취소' : '새 캠페인'}
           </button>
         </div>
       </div>
@@ -476,30 +476,30 @@ export function AdsPage() {
       {/* ===== KPI Row ===== */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard
-          title="Total Spend"
+          title="총 광고비"
           value={formatWon(totalSpend)}
-          change="+18.2% vs last period"
+          change="+18.2% 이전 기간 대비"
           changeType="up"
           icon={<DollarSign className="w-5 h-5" />}
         />
         <KpiCard
-          title="Impressions"
+          title="노출수"
           value={formatNumber(totalImpressions)}
-          change="+12.5% vs last period"
+          change="+12.5% 이전 기간 대비"
           changeType="up"
           icon={<Eye className="w-5 h-5" />}
         />
         <KpiCard
-          title="Clicks"
+          title="클릭수"
           value={formatNumber(totalClicks)}
-          change="+9.8% vs last period"
+          change="+9.8% 이전 기간 대비"
           changeType="up"
           icon={<MousePointerClick className="w-5 h-5" />}
         />
         <KpiCard
-          title="Avg CTR"
+          title="평균 CTR"
           value={`${avgCtr}%`}
-          change="+0.4%p vs last period"
+          change="+0.4%p 이전 기간 대비"
           changeType="up"
           icon={<Target className="w-5 h-5" />}
         />
@@ -509,7 +509,7 @@ export function AdsPage() {
       {showForm && (
         <div className="bg-white rounded-xl border border-surface-200 shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-surface-100 bg-surface-50">
-            <h3 className="text-sm font-semibold text-surface-900">Create New Campaign</h3>
+            <h3 className="text-sm font-semibold text-surface-900">새 캠페인 만들기</h3>
             <p className="text-xs text-surface-500 mt-0.5">새 광고 캠페인을 설정합니다</p>
           </div>
 
@@ -517,7 +517,7 @@ export function AdsPage() {
             {/* -- Basic info -- */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
-                <label className={labelCls}>Platform</label>
+                <label className={labelCls}>플랫폼</label>
                 <select
                   className={inputCls}
                   value={form.platform}
@@ -535,7 +535,7 @@ export function AdsPage() {
                 </select>
               </div>
               <div className="lg:col-span-2">
-                <label className={labelCls}>Campaign Name</label>
+                <label className={labelCls}>캠페인 이름</label>
                 <input
                   className={inputCls}
                   placeholder="캠페인 이름을 입력하세요"
@@ -544,7 +544,7 @@ export function AdsPage() {
                 />
               </div>
               <div>
-                <label className={labelCls}>Objective</label>
+                <label className={labelCls}>목표</label>
                 <select
                   className={inputCls}
                   value={form.objective}
@@ -564,7 +564,7 @@ export function AdsPage() {
             {/* -- Budget & schedule -- */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <div>
-                <label className={labelCls}>Daily Budget (KRW)</label>
+                <label className={labelCls}>일일 예산 (KRW)</label>
                 <input
                   className={inputCls}
                   type="number"
@@ -574,7 +574,7 @@ export function AdsPage() {
                 />
               </div>
               <div>
-                <label className={labelCls}>Total Budget (KRW)</label>
+                <label className={labelCls}>총 예산 (KRW)</label>
                 <input
                   className={inputCls}
                   type="number"
@@ -584,7 +584,7 @@ export function AdsPage() {
                 />
               </div>
               <div>
-                <label className={labelCls}>Bid Strategy</label>
+                <label className={labelCls}>입찰 전략</label>
                 <select
                   className={inputCls}
                   value={form.bid_strategy}
@@ -600,7 +600,7 @@ export function AdsPage() {
                 </select>
               </div>
               <div>
-                <label className={labelCls}>Start Date</label>
+                <label className={labelCls}>시작일</label>
                 <input
                   className={inputCls}
                   type="date"
@@ -609,7 +609,7 @@ export function AdsPage() {
                 />
               </div>
               <div>
-                <label className={labelCls}>End Date</label>
+                <label className={labelCls}>종료일</label>
                 <input
                   className={inputCls}
                   type="date"
@@ -625,7 +625,7 @@ export function AdsPage() {
                 className={clsx(sectionHeaderCls, 'px-4 bg-surface-50')}
                 onClick={() => setExpandedTargeting((v) => !v)}
               >
-                <span className="text-sm font-semibold text-surface-800">Targeting</span>
+                <span className="text-sm font-semibold text-surface-800">타겟팅</span>
                 {expandedTargeting ? (
                   <ChevronUp className="w-4 h-4 text-surface-400" />
                 ) : (
@@ -637,7 +637,7 @@ export function AdsPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {/* Age range */}
                     <div>
-                      <label className={labelCls}>Age Min</label>
+                      <label className={labelCls}>최소 나이</label>
                       <select
                         className={inputCls}
                         value={form.age_min}
@@ -651,7 +651,7 @@ export function AdsPage() {
                       </select>
                     </div>
                     <div>
-                      <label className={labelCls}>Age Max</label>
+                      <label className={labelCls}>최대 나이</label>
                       <select
                         className={inputCls}
                         value={form.age_max}
@@ -666,7 +666,7 @@ export function AdsPage() {
                       </select>
                     </div>
                     <div>
-                      <label className={labelCls}>Gender</label>
+                      <label className={labelCls}>성별</label>
                       <select
                         className={inputCls}
                         value={form.gender}
@@ -674,13 +674,13 @@ export function AdsPage() {
                           setForm((f) => ({ ...f, gender: e.target.value as Gender }))
                         }
                       >
-                        <option value="all">All</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
+                        <option value="all">전체</option>
+                        <option value="male">남성</option>
+                        <option value="female">여성</option>
                       </select>
                     </div>
                     <div>
-                      <label className={labelCls}>Device</label>
+                      <label className={labelCls}>기기</label>
                       <select
                         className={inputCls}
                         value={form.device}
@@ -688,9 +688,9 @@ export function AdsPage() {
                           setForm((f) => ({ ...f, device: e.target.value as Device }))
                         }
                       >
-                        <option value="all">All Devices</option>
-                        <option value="mobile">Mobile</option>
-                        <option value="desktop">Desktop</option>
+                        <option value="all">전체 기기</option>
+                        <option value="mobile">모바일</option>
+                        <option value="desktop">데스크톱</option>
                       </select>
                     </div>
                   </div>
@@ -698,7 +698,7 @@ export function AdsPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Locations */}
                     <div>
-                      <label className={labelCls}>Locations</label>
+                      <label className={labelCls}>지역</label>
                       <input
                         className={inputCls}
                         placeholder="e.g. 서울, 경기도, 부산"
@@ -710,7 +710,7 @@ export function AdsPage() {
                     </div>
                     {/* Interests */}
                     <div>
-                      <label className={labelCls}>Interests</label>
+                      <label className={labelCls}>관심사</label>
                       <div className="flex gap-2">
                         <input
                           className={clsx(inputCls, 'flex-1')}
@@ -731,7 +731,7 @@ export function AdsPage() {
                           onClick={handleAddInterest}
                           className="px-3 py-2 text-xs font-medium text-primary-600 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors"
                         >
-                          Add
+                          추가
                         </button>
                       </div>
                       {form.interests.length > 0 && (
@@ -759,7 +759,7 @@ export function AdsPage() {
                   {/* Placements (platform-specific) */}
                   <div>
                     <label className={labelCls}>
-                      Placements ({platformLabels[form.platform]})
+                      게재 위치 ({platformLabels[form.platform]})
                     </label>
                     <div className="flex flex-wrap gap-3 mt-1">
                       {platformPlacements[form.platform].map((pl) => (
@@ -788,7 +788,7 @@ export function AdsPage() {
                 className={clsx(sectionHeaderCls, 'px-4 bg-surface-50')}
                 onClick={() => setExpandedCreative((v) => !v)}
               >
-                <span className="text-sm font-semibold text-surface-800">Ad Creative</span>
+                <span className="text-sm font-semibold text-surface-800">광고 소재</span>
                 {expandedCreative ? (
                   <ChevronUp className="w-4 h-4 text-surface-400" />
                 ) : (
@@ -799,7 +799,7 @@ export function AdsPage() {
                 <div className="p-4 space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className={labelCls}>Ad Type</label>
+                      <label className={labelCls}>광고 유형</label>
                       <select
                         className={inputCls}
                         value={form.ad_type}
@@ -815,7 +815,7 @@ export function AdsPage() {
                       </select>
                     </div>
                     <div>
-                      <label className={labelCls}>CTA</label>
+                      <label className={labelCls}>행동 유도 (CTA)</label>
                       <select
                         className={inputCls}
                         value={form.cta_type}
@@ -831,7 +831,7 @@ export function AdsPage() {
                       </select>
                     </div>
                     <div>
-                      <label className={labelCls}>Media URL</label>
+                      <label className={labelCls}>미디어 URL</label>
                       <input
                         className={inputCls}
                         placeholder="https://..."
@@ -844,7 +844,7 @@ export function AdsPage() {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className={labelCls}>Headline</label>
+                      <label className={labelCls}>헤드라인</label>
                       <input
                         className={inputCls}
                         placeholder="광고 헤드라인"
@@ -855,7 +855,7 @@ export function AdsPage() {
                       />
                     </div>
                     <div>
-                      <label className={labelCls}>Destination URL</label>
+                      <label className={labelCls}>목적지 URL</label>
                       <input
                         className={inputCls}
                         placeholder="https://your-site.com/landing"
@@ -867,7 +867,7 @@ export function AdsPage() {
                     </div>
                   </div>
                   <div>
-                    <label className={labelCls}>Body Text</label>
+                    <label className={labelCls}>본문</label>
                     <textarea
                       className={clsx(inputCls, 'resize-none')}
                       rows={3}
@@ -892,7 +892,7 @@ export function AdsPage() {
                 }}
                 className="px-4 py-2 text-sm font-medium text-surface-600 bg-surface-100 rounded-lg hover:bg-surface-200 transition-colors"
               >
-                Cancel
+                취소
               </button>
               <button
                 type="button"
@@ -901,7 +901,7 @@ export function AdsPage() {
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-50"
               >
                 {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                {submitting ? 'Creating...' : 'Create Campaign'}
+                {submitting ? '생성 중...' : '캠페인 생성'}
               </button>
             </div>
           </div>
@@ -912,31 +912,31 @@ export function AdsPage() {
       <div className="bg-white rounded-xl border border-surface-200 shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-surface-100">
           <h3 className="text-sm font-semibold text-surface-900">
-            Campaigns
+            캠페인
             <span className="ml-2 text-surface-400 font-normal">({filtered.length})</span>
           </h3>
         </div>
         {loading ? (
           <div className="flex items-center justify-center py-16 gap-2 text-surface-400">
             <Loader2 className="w-5 h-5 animate-spin" />
-            <span className="text-sm">Loading campaigns...</span>
+            <span className="text-sm">로딩 중...</span>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-surface-100 bg-surface-50">
-                  <th className="text-left px-4 py-3 font-medium text-surface-500 text-xs">Platform</th>
-                  <th className="text-left px-4 py-3 font-medium text-surface-500 text-xs">Campaign</th>
-                  <th className="text-left px-4 py-3 font-medium text-surface-500 text-xs">Objective</th>
-                  <th className="text-left px-4 py-3 font-medium text-surface-500 text-xs">Status</th>
-                  <th className="text-right px-4 py-3 font-medium text-surface-500 text-xs">Budget</th>
-                  <th className="text-right px-4 py-3 font-medium text-surface-500 text-xs">Spend</th>
-                  <th className="text-right px-4 py-3 font-medium text-surface-500 text-xs">Impressions</th>
-                  <th className="text-right px-4 py-3 font-medium text-surface-500 text-xs">Clicks</th>
+                  <th className="text-left px-4 py-3 font-medium text-surface-500 text-xs">플랫폼</th>
+                  <th className="text-left px-4 py-3 font-medium text-surface-500 text-xs">캠페인</th>
+                  <th className="text-left px-4 py-3 font-medium text-surface-500 text-xs">목표</th>
+                  <th className="text-left px-4 py-3 font-medium text-surface-500 text-xs">상태</th>
+                  <th className="text-right px-4 py-3 font-medium text-surface-500 text-xs">예산</th>
+                  <th className="text-right px-4 py-3 font-medium text-surface-500 text-xs">집행액</th>
+                  <th className="text-right px-4 py-3 font-medium text-surface-500 text-xs">노출수</th>
+                  <th className="text-right px-4 py-3 font-medium text-surface-500 text-xs">클릭수</th>
                   <th className="text-right px-4 py-3 font-medium text-surface-500 text-xs">CTR</th>
                   <th className="text-right px-4 py-3 font-medium text-surface-500 text-xs">ROAS</th>
-                  <th className="text-center px-4 py-3 font-medium text-surface-500 text-xs">Actions</th>
+                  <th className="text-center px-4 py-3 font-medium text-surface-500 text-xs">액션</th>
                 </tr>
               </thead>
               <tbody>
@@ -1027,14 +1027,14 @@ export function AdsPage() {
                           <>
                             <button
                               className="p-1.5 rounded-md text-surface-400 hover:text-surface-600 hover:bg-surface-100 transition-colors"
-                              title="Edit"
+                              title="편집"
                             >
                               <Pencil className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={() => handleDelete(c.id)}
                               className="p-1.5 rounded-md text-surface-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                              title="Delete"
+                              title="삭제"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -1059,7 +1059,7 @@ export function AdsPage() {
 
       {/* ===== Spend Trend Chart ===== */}
       <div className="bg-white rounded-xl border border-surface-200 p-5 shadow-sm">
-        <h3 className="text-sm font-semibold text-surface-900 mb-4">Daily Spend Trend</h3>
+        <h3 className="text-sm font-semibold text-surface-900 mb-4">일일 광고비 추이</h3>
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={[]} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>

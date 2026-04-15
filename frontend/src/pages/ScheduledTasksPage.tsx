@@ -8,6 +8,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { api } from '../api';
 
+
 interface ScheduledTask {
   id: string;
   title: string;
@@ -83,205 +84,9 @@ function cronToHuman(cron: string): string {
   return `${dayStr} ${hour.padStart(2, '0')}:${min.padStart(2, '0')}`;
 }
 
-// Mock data matching the actual scheduled_tasks/*.md files
-const initialTasks: ScheduledTask[] = [
-  {
-    id: 'daily_analysis',
-    title: 'Daily Performance Analysis & Report',
-    description: 'Daily Performance Analysis & Report',
-    cron: '3 9 * * *',
-    filename: 'daily_analysis.md',
-    content: `# Daily Performance Analysis & Report
-
-You are the marketing agent's analytics brain. Your job is to analyze yesterday's marketing performance and generate an actionable daily report.
-
-## Steps
-
-1. **Collect metrics** — Call the FastAPI server to gather performance data:
-   \`\`\`bash
-   curl -s http://localhost:8000/api/analytics?period=24h
-   curl -s http://localhost:8000/api/analytics/details?period=24h
-   \`\`\`
-
-2. **Read current strategy** — Read \`config/strategy.yaml\` to understand the current marketing strategy and its thresholds.
-
-3. **Analyze performance**:
-   - Compare engagement rates against \`performance_thresholds\` in strategy.yaml
-   - Identify top-performing and under-performing content
-   - Spot trends (rising/falling engagement by channel, time, content type)
-   - Check if any metric dropped more than \`alert_drop_percentage\`
-
-4. **Generate report** — Write a markdown report to \`reports/daily_YYYY-MM-DD.md\` with:
-   - Executive summary (2-3 sentences)
-   - Channel-by-channel breakdown (impressions, engagements, engagement rate, clicks)
-   - Top 3 best performing posts with analysis of why they worked
-   - Bottom 3 posts with analysis of what to avoid
-   - Recommendations for tomorrow's content
-   - Flag if strategy adjustment is needed
-
-5. **Log any anomalies** — If engagement dropped significantly, note it in the report and flag for the strategy evolution task.
-
-## Important
-- Always read the latest reports from previous days for trend comparison
-- Be data-driven — base all recommendations on actual numbers
-- Keep the report concise but actionable`,
-  },
-  {
-    id: 'content_planning',
-    title: 'Daily Content Planning & Generation',
-    description: 'Daily Content Planning & Generation',
-    cron: '17 10 * * *',
-    filename: 'content_planning.md',
-    content: `# Daily Content Planning & Generation
-
-You are the marketing agent's content creator. Generate and queue today's marketing content based on the current strategy and recent performance data.
-
-## Steps
-
-1. **Read current strategy** — Read \`config/strategy.yaml\` for content themes, weights, and posting optimization settings.
-
-2. **Read product info** — Read \`config/agent.yaml\` for product details, brand voice, and target audience.
-
-3. **Check recent performance** — Read the latest daily report from \`reports/\` to understand what content types are performing well.
-
-4. **Read templates** — Read the relevant templates from \`src/content/templates/\` for the content types you'll generate.
-
-5. **Generate content** — For each enabled channel (check \`config/channels.yaml\`):
-   - Select content themes based on \`theme_weights\` in strategy
-   - Follow the brand voice and tone guidelines
-   - Apply hashtag strategy from strategy.yaml
-   - Ensure content fits channel constraints (e.g., 280 chars for Twitter)
-   - Generate enough content for today's posting schedule
-
-6. **Queue content** — Submit generated content to the API:
-   \`\`\`bash
-   curl -X POST http://localhost:8000/api/content \\
-     -H "Content-Type: application/json" \\
-     -d '{"channel": "twitter", "content_text": "...", "template_version": "sns_post_v1"}'
-   \`\`\`
-
-7. **Verify** — Check the queue:
-   \`\`\`bash
-   curl -s http://localhost:8000/api/content/queued
-   \`\`\`
-
-## Guidelines
-- Content should feel authentic, not AI-generated
-- Follow the brand voice strictly
-- Vary content types throughout the day
-- Include CTAs in promotional content
-- Use the language specified in agent.yaml`,
-  },
-  {
-    id: 'strategy_evolution',
-    title: 'Level 1: Strategy Auto-Evolution',
-    description: 'Strategy Auto-Evolution (Mon/Thu)',
-    cron: '42 11 * * 1,4',
-    filename: 'strategy_evolution.md',
-    content: `# Level 1: Strategy Auto-Evolution
-
-You are the marketing agent's strategy optimizer. Analyze performance trends and automatically adjust marketing parameters in \`config/strategy.yaml\`.
-
-## Steps
-
-1. **Gather data** — Get the last 7 days of analytics:
-   \`\`\`bash
-   curl -s http://localhost:8000/api/analytics?period=7d
-   curl -s http://localhost:8000/api/analytics/details?period=7d
-   \`\`\`
-
-2. **Read recent reports** — Read the last 3-5 daily reports from \`reports/\` for qualitative insights.
-
-3. **Read current strategy** — Read \`config/strategy.yaml\` and \`config/channels.yaml\`.
-
-4. **Analyze and decide** what to adjust:
-   - **Posting times**: If certain time slots consistently outperform others, shift \`best_times\`
-   - **Content mix**: If certain themes get more engagement, adjust \`theme_weights\`
-   - **Hashtag strategy**: If engagement differs by hashtag approach, change \`hashtag_strategy\`
-   - **Engagement tactics**: Adjust \`question_posts_ratio\`, \`emoji_usage\` based on what works
-   - **Channel priority**: If one channel dramatically outperforms, increase its posting frequency
-
-5. **Apply changes** — Edit \`config/strategy.yaml\` directly
-
-6. **Log the change** via API
-
-## Safety Rules
-- Never change more than 3 parameters at once
-- Keep changes incremental (max 20% shift in weights per cycle)
-- If overall engagement has been stable/good, make minimal changes
-- Always document the reasoning for each change`,
-  },
-  {
-    id: 'code_evolution',
-    title: 'Level 3: Code Self-Review & Improvement',
-    description: 'Code Self-Review & Improvement (Wed)',
-    cron: '22 14 * * 3',
-    filename: 'code_evolution.md',
-    content: `# Level 3: Code Self-Review & Improvement
-
-You are the marketing agent's code evolution engine. Review and improve the Python codebase itself.
-
-## Steps
-
-1. **Read the full codebase** — Review all files under \`src/\`
-
-2. **Check for issues**:
-   - Bugs or error-prone code patterns
-   - Missing error handling in critical paths
-   - Performance bottlenecks
-   - Missing channel adapters
-   - Useful API endpoints that don't exist yet
-
-3. **Check test coverage** — Read \`tests/\` and identify untested code paths.
-
-4. **Plan improvements** — Prioritize by impact
-
-5. **Implement changes** — Keep changes focused and well-scoped
-
-6. **Verify** — Run the test suite
-
-## Safety Rules
-- NEVER modify config files
-- NEVER modify scheduled task prompts
-- Run tests after every change
-- Keep changes small and incremental`,
-  },
-  {
-    id: 'prompt_evolution',
-    title: 'Level 2: Prompt & Template Self-Improvement',
-    description: 'Prompt & Template Improvement (Fri)',
-    cron: '51 14 * * 5',
-    filename: 'prompt_evolution.md',
-    content: `# Level 2: Prompt & Template Self-Improvement
-
-You are the marketing agent's template optimizer. Improve the content generation templates based on performance data.
-
-## Steps
-
-1. **Analyze template performance** — Compare content performance by template version
-
-2. **Read current templates** — Read all files in \`src/content/templates/\`
-
-3. **Identify patterns** in high-performing content:
-   - What hooks work best?
-   - What CTAs drive more clicks?
-   - What structure gets more engagement?
-   - What tone resonates with the audience?
-
-4. **Improve templates** — Edit the template YAML files directly
-
-5. **Log the evolution**
-
-## Safety Rules
-- Keep a clear before/after record of changes
-- Only change templates that have sufficient data (>10 posts)
-- If a template change leads to lower performance, revert
-- Never delete working templates — evolve them incrementally`,
-  },
-];
 
 export function ScheduledTasksPage() {
-  const [tasks, setTasks] = useState<ScheduledTask[]>(initialTasks);
+  const [tasks, setTasks] = useState<ScheduledTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -318,13 +123,13 @@ export function ScheduledTasksPage() {
           }));
           setTasks(mapped);
         } else {
-          setTasks(initialTasks);
+          setTasks([]);
         }
         setEnabledCrons(cronStatus.enabled_tasks || {});
       } catch (err) {
         console.error('Failed to fetch scheduled tasks:', err);
-        setTasks(initialTasks);
-        setError('Failed to load tasks from API. Showing mock data.');
+        setTasks([]);
+        setError('태스크를 불러오지 못했습니다. 서버 연결을 확인하세요.');
       } finally {
         setLoading(false);
       }
@@ -476,7 +281,7 @@ export function ScheduledTasksPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-surface-900">Scheduled Tasks</h1>
+          <h1 className="text-2xl font-bold text-surface-900">자동화 태스크</h1>
           <p className="text-sm text-surface-500 mt-0.5">Claude Code 스케줄 프롬프트 관리</p>
         </div>
         <button
@@ -484,7 +289,7 @@ export function ScheduledTasksPage() {
           className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 transition-colors"
         >
           {showNewForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-          {showNewForm ? 'Cancel' : 'New Task'}
+          {showNewForm ? '취소' : '새 태스크'}
         </button>
       </div>
 
@@ -527,10 +332,10 @@ export function ScheduledTasksPage() {
       {/* New Task Form */}
       {showNewForm && (
         <div className="bg-white rounded-xl border border-surface-200 p-5 shadow-sm space-y-4">
-          <h3 className="text-sm font-semibold text-surface-900">Create New Scheduled Task</h3>
+          <h3 className="text-sm font-semibold text-surface-900">새 스케줄 태스크 생성</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-surface-600 mb-1">Task ID (snake_case)</label>
+              <label className="block text-xs font-medium text-surface-600 mb-1">태스크 ID (snake_case)</label>
               <input
                 type="text"
                 value={newId}
@@ -541,7 +346,7 @@ export function ScheduledTasksPage() {
             </div>
             <div>
               <label className="block text-xs font-medium text-surface-600 mb-1">
-                Cron Schedule
+                실행 스케줄
                 <span className="text-surface-400 font-normal ml-1">(min hour dom mon dow)</span>
               </label>
               <input
@@ -555,7 +360,7 @@ export function ScheduledTasksPage() {
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-surface-600 mb-1">Prompt Content (Markdown)</label>
+            <label className="block text-xs font-medium text-surface-600 mb-1">프롬프트 내용 (마크다운)</label>
             <textarea
               value={newContent}
               onChange={(e) => setNewContent(e.target.value)}
@@ -570,7 +375,7 @@ export function ScheduledTasksPage() {
               className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-              {saving ? 'Creating...' : 'Create Task'}
+              {saving ? '생성 중...' : '생성'}
             </button>
           </div>
         </div>
@@ -580,10 +385,16 @@ export function ScheduledTasksPage() {
       {loading ? (
         <div className="flex items-center justify-center py-16 gap-2 text-surface-400">
           <Loader2 className="w-5 h-5 animate-spin" />
-          <span className="text-sm">Loading scheduled tasks...</span>
+          <span className="text-sm">태스크 로딩 중...</span>
         </div>
       ) : (
         <>
+          {tasks.length === 0 && (
+            <div className="flex items-center justify-center py-16 text-surface-400 text-sm">
+              등록된 태스크가 없습니다.
+            </div>
+          )}
+
           {/* Category Overview */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {CATEGORIES.map((cat) => {
@@ -739,7 +550,7 @@ export function ScheduledTasksPage() {
                         <div className="p-4 space-y-3">
                           <div>
                             <label className="block text-xs font-medium text-surface-600 mb-1">
-                              Cron Schedule
+                              실행 스케줄
                             </label>
                             <div className="flex items-center gap-3">
                               <input
@@ -753,7 +564,7 @@ export function ScheduledTasksPage() {
                           </div>
                           <div>
                             <label className="block text-xs font-medium text-surface-600 mb-1">
-                              Prompt Content
+                              프롬프트 내용
                             </label>
                             <textarea
                               value={editContent}
@@ -767,7 +578,7 @@ export function ScheduledTasksPage() {
                               onClick={cancelEdit}
                               className="px-3 py-2 text-sm font-medium text-surface-600 bg-surface-100 rounded-lg hover:bg-surface-200 transition-colors"
                             >
-                              Cancel
+                              취소
                             </button>
                             <button
                               onClick={() => saveEdit(task.id)}
@@ -775,7 +586,7 @@ export function ScheduledTasksPage() {
                               className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-50"
                             >
                               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                              {saving ? 'Saving...' : 'Save Changes'}
+                              {saving ? '저장 중...' : '저장'}
                             </button>
                           </div>
                         </div>
