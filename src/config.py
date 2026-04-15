@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     twitter_access_token: str = ""
     twitter_access_secret: str = ""
     twitter_bearer_token: str = ""
+    twitter_ads_account_id: str = ""
 
     # Instagram
     instagram_access_token: str = ""

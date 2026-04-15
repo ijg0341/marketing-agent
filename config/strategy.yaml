@@ -13,6 +13,22 @@ marketing_budget:
   end_date: ""             # 마케팅 종료일 (YYYY-MM-DD)
   spent: 0                 # 누적 지출 (자동 추적)
 
+# ── 광고 전략 (Twitter Ads) ──────────────────────────────────
+ad_strategy:
+  platform_allocation:
+    twitter: 1.0        # Phase 1: Twitter만 사용 (100%)
+  default_bid_strategy: "auto"
+  performance_targets:
+    min_roas: 1.5
+    target_roas: 3.0
+    max_cpc: 5000         # 최대 CPC (KRW)
+    min_ctr: 0.01         # 최소 CTR 1%
+    target_ctr: 0.03      # 목표 CTR 3%
+  auto_optimization:
+    enabled: true
+    budget_realloc_threshold: 0.3
+    pause_threshold_days: 3
+
 # ── 콘텐츠 전략 ────────────────────────────────────────
 content_strategy:
   themes:

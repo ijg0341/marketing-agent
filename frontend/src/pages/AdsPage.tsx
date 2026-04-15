@@ -69,25 +69,8 @@ interface CampaignForm {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Mock Data (fallback)                                               */
+/*  (Mock data removed — using real API data only)                     */
 /* ------------------------------------------------------------------ */
-
-const mockCampaigns: Campaign[] = [
-  { id: 1, platform: 'meta', name: '봄 시즌 프로모션', objective: 'conversions', status: 'active', daily_budget: 50000, total_budget: 1500000, currency: 'KRW', spend: 820000, impressions: 145000, clicks: 4350, ctr: 3.0, conversions: 87, roas: 3.2, start_date: '2026-04-01', end_date: '2026-04-30' },
-  { id: 2, platform: 'google', name: '브랜드 검색광고', objective: 'traffic', status: 'active', daily_budget: 30000, total_budget: 900000, currency: 'KRW', spend: 540000, impressions: 98000, clicks: 5880, ctr: 6.0, conversions: 118, roas: 4.1, start_date: '2026-04-01', end_date: '2026-04-30' },
-  { id: 3, platform: 'twitter', name: '신규 기능 런칭 캠페인', objective: 'awareness', status: 'paused', daily_budget: 20000, total_budget: 600000, currency: 'KRW', spend: 180000, impressions: 67000, clicks: 1340, ctr: 2.0, conversions: 20, roas: 1.8, start_date: '2026-04-01', end_date: '2026-04-15' },
-  { id: 4, platform: 'meta', name: '리타겟팅 캠페인', objective: 'conversions', status: 'active', daily_budget: 40000, total_budget: 1200000, currency: 'KRW', spend: 620000, impressions: 89000, clicks: 3560, ctr: 4.0, conversions: 142, roas: 5.6, start_date: '2026-04-01', end_date: '2026-04-30' },
-  { id: 5, platform: 'google', name: '경쟁사 키워드 캠페인', objective: 'traffic', status: 'draft', daily_budget: 25000, total_budget: 750000, currency: 'KRW', spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, roas: 0, start_date: '2026-04-10', end_date: '2026-05-10' },
-];
-
-const mockSpendTrend = [
-  { date: '04/01', twitter: 18000, meta: 82000, google: 52000 },
-  { date: '04/02', twitter: 19500, meta: 85000, google: 48000 },
-  { date: '04/03', twitter: 17000, meta: 90000, google: 55000 },
-  { date: '04/04', twitter: 20000, meta: 88000, google: 53000 },
-  { date: '04/05', twitter: 0, meta: 92000, google: 56000 },
-  { date: '04/06', twitter: 0, meta: 95000, google: 58000 },
-];
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
@@ -187,7 +170,7 @@ const platformPlacements: Record<Platform, { value: string; label: string }[]> =
 /* ------------------------------------------------------------------ */
 
 const emptyForm: CampaignForm = {
-  platform: 'meta',
+  platform: 'twitter',
   name: '',
   objective: 'awareness',
   daily_budget: '',
@@ -217,7 +200,7 @@ const emptyForm: CampaignForm = {
 
 export function AdsPage() {
   const [platformTab, setPlatformTab] = useState<'all' | Platform>('all');
-  const [campaigns, setCampaigns] = useState<Campaign[]>(mockCampaigns);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -234,11 +217,11 @@ export function AdsPage() {
       setError(null);
       const platform = platformTab === 'all' ? undefined : platformTab;
       const data = await api.ads.campaigns(platform);
-      setCampaigns(data && data.length > 0 ? data : mockCampaigns);
+      setCampaigns(data ?? []);
     } catch (err) {
       console.error('Failed to fetch campaigns:', err);
-      setCampaigns(mockCampaigns);
-      setError('Failed to load campaigns from API. Showing mock data.');
+      setCampaigns([]);
+      setError('Failed to load campaigns from API.');
     } finally {
       setLoading(false);
     }
@@ -525,8 +508,8 @@ export function AdsPage() {
                   }
                 >
                   <option value="twitter">Twitter / X</option>
-                  <option value="meta">Meta</option>
-                  <option value="google">Google</option>
+                  <option value="meta" disabled>Meta (준비 중)</option>
+                  <option value="google" disabled>Google (준비 중)</option>
                 </select>
               </div>
               <div className="lg:col-span-2">
@@ -1027,8 +1010,8 @@ export function AdsPage() {
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={11} className="px-4 py-12 text-center text-surface-400 text-sm">
-                      No campaigns found.
+                    <td colSpan={11} className="px-4 py-12 text-center">
+                      <div className="flex items-center justify-center py-12 text-sm text-surface-400">아직 광고 캠페인이 없습니다. 새 캠페인을 생성하세요.</div>
                     </td>
                   </tr>
                 )}
@@ -1043,7 +1026,7 @@ export function AdsPage() {
         <h3 className="text-sm font-semibold text-surface-900 mb-4">Daily Spend Trend</h3>
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={mockSpendTrend} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+            <AreaChart data={[]} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
               <defs>
                 <linearGradient id="colorTwitter" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.15} />

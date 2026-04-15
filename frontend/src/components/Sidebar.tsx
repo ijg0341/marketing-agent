@@ -3,6 +3,7 @@ import {
   LayoutDashboard,
   FileText,
   BarChart3,
+  Megaphone,
   Settings2,
   Zap,
   CalendarClock,
@@ -13,6 +14,7 @@ const links = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/content', icon: FileText, label: 'Content' },
   { to: '/analytics', icon: BarChart3, label: 'Analytics' },
+  { to: '/ads', icon: Megaphone, label: 'Ads' },
   { to: '/scheduled-tasks', icon: CalendarClock, label: 'Scheduled Tasks' },
   { to: '/settings', icon: Settings2, label: 'Settings' },
 ];
