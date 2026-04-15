@@ -5,7 +5,7 @@ import {
 } from 'recharts';
 import {
   Plus, X, DollarSign, Eye, MousePointerClick, Target,
-  Pause, Play, Pencil, Trash2, ChevronDown, ChevronUp, Loader2,
+  Pencil, Trash2, ChevronDown, ChevronUp, Loader2, Zap,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { KpiCard } from '../components/KpiCard';
@@ -100,16 +100,16 @@ const statusColors: Record<CampaignStatus, string> = {
   draft: 'bg-surface-100 text-surface-600',
   active: 'bg-emerald-100 text-emerald-700',
   paused: 'bg-amber-100 text-amber-700',
-  completed: 'bg-purple-100 text-purple-700',
+  completed: 'bg-blue-100 text-blue-700',
   error: 'bg-red-100 text-red-700',
 };
 
 const statusLabels: Record<CampaignStatus, string> = {
-  draft: 'Draft',
-  active: 'Active',
-  paused: 'Paused',
-  completed: 'Completed',
-  error: 'Error',
+  draft: '검토 대기',
+  active: '집행 중',
+  paused: '일시정지',
+  completed: '완료',
+  error: '오류',
 };
 
 const objectiveLabels: Record<Objective, string> = {
@@ -209,6 +209,7 @@ export function AdsPage() {
   const [expandedCreative, setExpandedCreative] = useState(true);
   const [expandedTargeting, setExpandedTargeting] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [aiDrafting, setAiDrafting] = useState(false);
 
   /* ---------- fetch campaigns ---------- */
   const fetchCampaigns = useCallback(async () => {
@@ -295,6 +296,19 @@ export function AdsPage() {
       setActionLoading(null);
     }
   }
+
+  const handleAiDraft = async () => {
+    setAiDrafting(true);
+    try {
+      await api.ads.createDraft();
+      const data = await api.ads.campaigns();
+      setCampaigns(data ?? []);
+    } catch (err) {
+      console.error('AI draft failed:', err);
+    } finally {
+      setAiDrafting(false);
+    }
+  };
 
   function handleAddInterest() {
     const tag = form.interestInput.trim();
@@ -434,6 +448,14 @@ export function AdsPage() {
               </button>
             ))}
           </div>
+          <button
+            onClick={handleAiDraft}
+            disabled={aiDrafting}
+            className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-purple-500 rounded-lg hover:bg-purple-600 transition-colors disabled:opacity-50"
+          >
+            {aiDrafting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+            {aiDrafting ? 'AI가 설계 중...' : '🤖 AI 자동 생성'}
+          </button>
           <button
             onClick={() => setShowForm(!showForm)}
             className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 transition-colors"
@@ -938,14 +960,46 @@ export function AdsPage() {
                     </td>
                     <td className="px-4 py-3 text-surface-600">{objectiveLabels[c.objective]}</td>
                     <td className="px-4 py-3">
-                      <span
-                        className={clsx(
-                          'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium',
-                          statusColors[c.status],
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span
+                          className={clsx(
+                            'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
+                            statusColors[c.status],
+                          )}
+                        >
+                          {statusLabels[c.status]}
+                        </span>
+                        {actionLoading === c.id ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-surface-400" />
+                        ) : (
+                          <>
+                            {c.status === 'draft' && (
+                              <button
+                                onClick={() => handleToggleStatus(c.id)}
+                                className="px-2 py-0.5 text-xs font-medium text-white bg-emerald-500 rounded-full hover:bg-emerald-600 transition-colors"
+                              >
+                                승인하여 집행
+                              </button>
+                            )}
+                            {c.status === 'active' && (
+                              <button
+                                onClick={() => handleToggleStatus(c.id)}
+                                className="px-2 py-0.5 text-xs font-medium text-white bg-amber-500 rounded-full hover:bg-amber-600 transition-colors"
+                              >
+                                일시정지
+                              </button>
+                            )}
+                            {c.status === 'paused' && (
+                              <button
+                                onClick={() => handleToggleStatus(c.id)}
+                                className="px-2 py-0.5 text-xs font-medium text-white bg-emerald-500 rounded-full hover:bg-emerald-600 transition-colors"
+                              >
+                                재개
+                              </button>
+                            )}
+                          </>
                         )}
-                      >
-                        {statusLabels[c.status]}
-                      </span>
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-right text-surface-700 tabular-nums">
                       {formatWon(c.total_budget)}
@@ -971,24 +1025,6 @@ export function AdsPage() {
                           <Loader2 className="w-4 h-4 animate-spin text-surface-400" />
                         ) : (
                           <>
-                            {(c.status === 'active' || c.status === 'paused' || c.status === 'draft') && (
-                              <button
-                                onClick={() => handleToggleStatus(c.id)}
-                                className={clsx(
-                                  'p-1.5 rounded-md transition-colors',
-                                  c.status === 'active'
-                                    ? 'text-amber-600 hover:bg-amber-50'
-                                    : 'text-emerald-600 hover:bg-emerald-50',
-                                )}
-                                title={c.status === 'active' ? 'Pause' : 'Resume'}
-                              >
-                                {c.status === 'active' ? (
-                                  <Pause className="w-3.5 h-3.5" />
-                                ) : (
-                                  <Play className="w-3.5 h-3.5" />
-                                )}
-                              </button>
-                            )}
                             <button
                               className="p-1.5 rounded-md text-surface-400 hover:text-surface-600 hover:bg-surface-100 transition-colors"
                               title="Edit"

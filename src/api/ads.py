@@ -171,6 +171,114 @@ async def create_campaign(body: CampaignCreate, db: Session = Depends(get_db)):
     return _campaign_to_dict(campaign)
 
 
+@router.post("/campaigns/draft")
+async def create_campaign_draft(db: Session = Depends(get_db)):
+    """AI-generate a Twitter Ads campaign draft based on product info and strategy."""
+    from src.config import agent_config
+
+    # Read product info and ad strategy
+    product = agent_config.product
+    brand = agent_config.brand
+    target = agent_config.target_audience
+    strategy = agent_config.strategy.get("ad_strategy", {})
+    budget_info = agent_config.strategy.get("marketing_budget", {})
+
+    # Build AI prompt
+    prompt = f"""You are a Twitter Ads campaign strategist. Create a campaign for this product:
+
+Product: {product.get('name', '')} - {product.get('description', '')}
+Website: {product.get('website', '')}
+Brand tone: {brand.get('tone', '')}
+Target audience: {target.get('demographics', {})}
+Pain points: {target.get('pain_points', [])}
+Ad strategy: {strategy}
+Monthly budget: {budget_info.get('total_budget', 0)} KRW
+
+Design a Twitter Ads campaign. Return ONLY valid JSON (no markdown):
+{{
+    "name": "campaign name in Korean",
+    "objective": "traffic",
+    "daily_budget": 10000,
+    "targeting": {{
+        "age_range": "25-44",
+        "gender": "all",
+        "interests": ["technology", "productivity"],
+        "keywords": ["기획", "PM", "UX"],
+        "languages": ["ko"],
+        "locations": ["South Korea"]
+    }},
+    "ad_text": "광고 소재 텍스트 (140자 이내)",
+    "headline": "헤드라인 텍스트"
+}}"""
+
+    # Try Anthropic SDK
+    campaign_data = None
+    try:
+        import anthropic
+        client = anthropic.Anthropic()
+        response = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=1024,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        text = response.content[0].text
+        # Try to parse JSON from response
+        if "```" in text:
+            text = text.split("```")[1].strip()
+            if text.startswith("json"):
+                text = text[4:].strip()
+        campaign_data = json.loads(text)
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning("AI draft generation failed: %s. Using template.", e)
+
+    # Fallback template if AI fails
+    if not campaign_data:
+        campaign_data = {
+            "name": f"{product.get('name', 'Product')} 트래픽 캠페인",
+            "objective": "traffic",
+            "daily_budget": 10000,
+            "targeting": {
+                "age_range": "25-44",
+                "gender": "all",
+                "interests": ["technology"],
+                "keywords": ["기획", "PM"],
+                "languages": ["ko"],
+                "locations": ["South Korea"],
+            },
+            "ad_text": f"{product.get('name', '')} - {product.get('description', '')}",
+            "headline": product.get("name", "Product"),
+        }
+
+    # Save as draft campaign
+    repo = CampaignRepository(db)
+    campaign = repo.create(
+        platform="twitter",
+        name=campaign_data.get("name", "AI Generated Campaign"),
+        objective=campaign_data.get("objective", "traffic"),
+        daily_budget=campaign_data.get("daily_budget", 10000),
+        total_budget=budget_info.get("total_budget", 0),
+        targeting=campaign_data.get("targeting", {}),
+        status="draft",
+    )
+
+    return {
+        "campaign": {
+            "id": campaign.id,
+            "name": campaign.name,
+            "platform": campaign.platform,
+            "objective": campaign.objective,
+            "daily_budget": campaign.daily_budget,
+            "targeting": campaign.targeting_data,
+            "status": campaign.status,
+        },
+        "ai_suggestion": {
+            "ad_text": campaign_data.get("ad_text", ""),
+            "headline": campaign_data.get("headline", ""),
+        },
+    }
+
+
 @router.get("/campaigns/{campaign_id}")
 async def get_campaign(campaign_id: int, db: Session = Depends(get_db)):
     repo = CampaignRepository(db)

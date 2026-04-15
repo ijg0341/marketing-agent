@@ -75,6 +75,7 @@ export const api = {
     pauseCampaign: (id: number) => request<any>(`/ads/campaigns/${id}/pause`, { method: 'POST' }),
     resumeCampaign: (id: number) => request<any>(`/ads/campaigns/${id}/resume`, { method: 'POST' }),
     campaignMetrics: (id: number, days?: number) => request<any>(`/ads/campaigns/${id}/metrics?days=${days || 7}`),
+    createDraft: () => request<any>('/ads/campaigns/draft', { method: 'POST' }),
   },
 
   ga4: {
