@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import logging
+import subprocess
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -18,6 +20,7 @@ from src.db.repository import (
     CampaignRepository,
 )
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/ads", tags=["ads"])
 
 
@@ -211,26 +214,22 @@ Design a Twitter Ads campaign. Return ONLY valid JSON (no markdown):
     "headline": "헤드라인 텍스트"
 }}"""
 
-    # Try Anthropic SDK
+    # Use Claude CLI (same as other AI features — no separate API key needed)
     campaign_data = None
     try:
-        import anthropic
-        client = anthropic.Anthropic()
-        response = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=1024,
-            messages=[{"role": "user", "content": prompt}],
+        result = subprocess.run(
+            ["claude", "-p", prompt],
+            capture_output=True, text=True, timeout=120,
         )
-        text = response.content[0].text
-        # Try to parse JSON from response
-        if "```" in text:
-            text = text.split("```")[1].strip()
-            if text.startswith("json"):
-                text = text[4:].strip()
-        campaign_data = json.loads(text)
+        if result.returncode == 0 and result.stdout.strip():
+            text = result.stdout.strip()
+            if "```" in text:
+                text = text.split("```")[1].strip()
+                if text.startswith("json"):
+                    text = text[4:].strip()
+            campaign_data = json.loads(text)
     except Exception as e:
-        import logging
-        logging.getLogger(__name__).warning("AI draft generation failed: %s. Using template.", e)
+        logger.warning("AI draft generation failed: %s. Using template.", e)
 
     # Fallback template if AI fails
     if not campaign_data:
