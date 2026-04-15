@@ -33,6 +33,31 @@ const levelColors: Record<string, string> = {
   prompt_evolution: 'bg-pink-50 text-pink-600 border-pink-200',
 };
 
+// Category definitions
+const CATEGORIES = [
+  { id: 'analysis', label: '분석', emoji: '📊', color: 'blue' },
+  { id: 'content', label: '콘텐츠', emoji: '📝', color: 'emerald' },
+  { id: 'optimization', label: '최적화', emoji: '💰', color: 'amber' },
+  { id: 'system', label: '시스템', emoji: '🔧', color: 'purple' },
+] as const;
+
+const TASK_CATEGORY: Record<string, string> = {
+  daily_analysis: 'analysis',
+  ad_performance_analysis: 'analysis',
+  content_planning: 'content',
+  strategy_evolution: 'optimization',
+  ad_budget_optimization: 'optimization',
+  prompt_evolution: 'system',
+  code_evolution: 'system',
+};
+
+const categoryColors: Record<string, { bg: string; border: string; text: string; badge: string }> = {
+  analysis: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', badge: 'bg-blue-100 text-blue-600' },
+  content: { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', badge: 'bg-emerald-100 text-emerald-600' },
+  optimization: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', badge: 'bg-amber-100 text-amber-600' },
+  system: { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-700', badge: 'bg-purple-100 text-purple-600' },
+};
+
 function cronToHuman(cron: string): string {
   const parts = cron.split(' ');
   if (parts.length !== 5) return cron;
@@ -559,32 +584,53 @@ export function ScheduledTasksPage() {
         </div>
       ) : (
         <>
-          {/* Task Overview Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            {tasks.map((task) => {
-              const Icon = levelIcons[task.id] || Mail;
-              const isEnabled = task.id in enabledCrons;
+          {/* Category Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {CATEGORIES.map((cat) => {
+              const catTasks = tasks.filter((t) => (TASK_CATEGORY[t.id] || 'system') === cat.id);
+              if (catTasks.length === 0) return null;
+              const colors = categoryColors[cat.id];
+              const activeCount = catTasks.filter((t) => t.id in enabledCrons).length;
               return (
-                <div key={task.id} className={`bg-white rounded-xl border p-4 shadow-sm text-center ${isEnabled ? 'border-emerald-200' : 'border-surface-200'}`}>
-                  <div className={`inline-flex p-2.5 rounded-lg border mb-2 ${levelColors[task.id] || 'bg-gray-50 text-gray-600 border-gray-200'}`}>
-                    <Icon className="w-5 h-5" />
+                <div key={cat.id} className={`rounded-xl border p-4 ${colors.bg} ${colors.border}`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className={`text-sm font-semibold ${colors.text}`}>
+                      {cat.emoji} {cat.label}
+                    </h3>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${colors.badge}`}>
+                      {activeCount}/{catTasks.length} 활성
+                    </span>
                   </div>
-                  <p className="text-xs font-medium text-surface-700 truncate">{task.id}</p>
-                  <p className="text-xs text-surface-400 mt-0.5 flex items-center justify-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    {cronToHuman(task.cron)}
-                  </p>
-                  <div className={`text-xs mt-1.5 font-medium ${isEnabled ? 'text-emerald-600' : 'text-surface-400'}`}>
-                    {isEnabled ? '● 활성' : '○ 비활성'}
+                  <div className="space-y-1.5">
+                    {catTasks.map((t) => (
+                      <div key={t.id} className="flex items-center justify-between text-xs">
+                        <span className="text-surface-700 truncate">{t.id}</span>
+                        <span className={t.id in enabledCrons ? 'text-emerald-600 font-medium' : 'text-surface-400'}>
+                          {t.id in enabledCrons ? '● 활성' : '○'}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               );
             })}
           </div>
 
-          {/* Task Cards */}
-          <div className="space-y-3">
-            {tasks.map((task) => {
+          {/* Task Cards by Category */}
+          <div className="space-y-6">
+            {CATEGORIES.map((cat) => {
+              const catTasks = tasks.filter((t) => (TASK_CATEGORY[t.id] || 'system') === cat.id);
+              if (catTasks.length === 0) return null;
+              const colors = categoryColors[cat.id];
+              return (
+                <div key={cat.id}>
+                  <h2 className={`text-sm font-semibold mb-3 flex items-center gap-2 ${colors.text}`}>
+                    <span>{cat.emoji}</span>
+                    {cat.label}
+                    <span className="text-xs font-normal text-surface-400">({catTasks.length})</span>
+                  </h2>
+                  <div className="space-y-3">
+                    {catTasks.map((task) => {
               const Icon = levelIcons[task.id] || Mail;
               const isExpanded = expandedId === task.id;
               const isEditing = editingId === task.id;
@@ -742,6 +788,10 @@ export function ScheduledTasksPage() {
                       )}
                     </div>
                   )}
+                </div>
+              );
+                    })}
+                  </div>
                 </div>
               );
             })}
