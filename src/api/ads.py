@@ -257,7 +257,7 @@ Design a Twitter Ads campaign. Return ONLY valid JSON (no markdown):
         objective=campaign_data.get("objective", "traffic"),
         daily_budget=campaign_data.get("daily_budget", 10000),
         total_budget=budget_info.get("total_budget", 0),
-        targeting=campaign_data.get("targeting", {}),
+        targeting=json.dumps(campaign_data.get("targeting", {}), ensure_ascii=False),
         status="draft",
     )
 
@@ -268,7 +268,7 @@ Design a Twitter Ads campaign. Return ONLY valid JSON (no markdown):
             "platform": campaign.platform,
             "objective": campaign.objective,
             "daily_budget": campaign.daily_budget,
-            "targeting": campaign.targeting_data,
+            "targeting": campaign.get_targeting(),
             "status": campaign.status,
         },
         "ai_suggestion": {
