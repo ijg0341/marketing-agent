@@ -76,12 +76,12 @@ interface CampaignForm {
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
 
-function formatWon(n: number): string {
-  return '₩' + n.toLocaleString('ko-KR');
+function formatWon(n: number | undefined | null): string {
+  return '₩' + (n ?? 0).toLocaleString('ko-KR');
 }
 
-function formatNumber(n: number): string {
-  return n.toLocaleString('ko-KR');
+function formatNumber(n: number | undefined | null): string {
+  return (n ?? 0).toLocaleString('ko-KR');
 }
 
 const platformColors: Record<Platform, string> = {

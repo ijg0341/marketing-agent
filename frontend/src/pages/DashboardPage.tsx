@@ -14,7 +14,7 @@ import { api } from '../api';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-const formatWon = (n: number) => `₩${n.toLocaleString()}`;
+const formatWon = (n: number | undefined | null) => `₩${(n ?? 0).toLocaleString()}`;
 
 const platformColors: Record<string, string> = {
   meta: 'bg-blue-100 text-blue-700',
@@ -366,7 +366,7 @@ export function DashboardPage() {
             <div>
               <p className="text-xs text-surface-400">노출수</p>
               <p className="text-lg font-bold text-surface-800">
-                {contentKpi ? contentKpi.totalImpressions.toLocaleString() : '—'}
+                {contentKpi ? (contentKpi.totalImpressions ?? 0).toLocaleString() : '—'}
               </p>
             </div>
           </div>
@@ -441,7 +441,7 @@ export function DashboardPage() {
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm text-surface-500 font-medium">총 전환수</p>
-                    <p className="text-3xl font-bold mt-1.5 text-surface-900">{adKpis.totalConversions.toLocaleString()}</p>
+                    <p className="text-3xl font-bold mt-1.5 text-surface-900">{(adKpis.totalConversions ?? 0).toLocaleString()}</p>
                   </div>
                   <div className="p-3 bg-emerald-50 rounded-lg text-emerald-600">
                     <Target className="w-6 h-6" />
