@@ -1014,10 +1014,10 @@ export function AdsPage() {
                       {formatNumber(c.clicks)}
                     </td>
                     <td className="px-4 py-3 text-right text-surface-700 tabular-nums">
-                      {c.ctr.toFixed(1)}%
+                      {(c.ctr ?? 0).toFixed(1)}%
                     </td>
                     <td className="px-4 py-3 text-right text-surface-700 tabular-nums">
-                      {c.roas > 0 ? `${c.roas.toFixed(1)}x` : '-'}
+                      {(c.roas ?? 0) > 0 ? `${(c.roas ?? 0).toFixed(1)}x` : '-'}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-center gap-1">
