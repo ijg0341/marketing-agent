@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, X, Send, Search, Loader2, ExternalLink, Clock, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { ChannelBadge } from '../components/ChannelBadge';
 import { StatusBadge } from '../components/StatusBadge';
 import { api } from '../api';
@@ -301,9 +303,9 @@ export function ContentPage() {
             {/* Modal Body */}
             <div className="p-5 space-y-4">
               {/* Full content text */}
-              <p className="text-sm text-surface-800 whitespace-pre-wrap leading-relaxed">
-                {selectedContent.content_text}
-              </p>
+              <div className="report-markdown text-sm leading-relaxed">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedContent.content_text}</ReactMarkdown>
+              </div>
 
               {/* Twitter link */}
               {selectedContent.external_id && (
