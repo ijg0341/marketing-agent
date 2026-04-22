@@ -9,9 +9,11 @@ const TEMPLATES = [
   { value: 'plandog_v1', label: 'PLANDOG' },
 ];
 
-// Phase 1: active channels — only Twitter
 const ACTIVE_CHANNELS = [
+  { value: '', label: '전체' },
   { value: 'twitter', label: 'Twitter / X' },
+  { value: 'instagram', label: 'Instagram' },
+  { value: 'blog', label: '블로그' },
 ];
 
 export function ContentPage() {
@@ -33,8 +35,9 @@ export function ContentPage() {
   const fetchContent = useCallback(async () => {
     setLoading(true);
     try {
-      // Use the new /api/content endpoint with channel=twitter filter (Phase 1)
-      const items = await api.content.list({ channel: 'twitter', limit: 100 }).catch(() => null);
+      const params: any = { limit: 100 };
+      if (formChannel) params.channel = formChannel;
+      const items = await api.content.list(params).catch(() => null);
       if (items && Array.isArray(items)) {
         setContent(items);
       } else {
