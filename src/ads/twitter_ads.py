@@ -27,11 +27,12 @@ class TwitterAdsAdapter(AdsAdapter):
     platform = "twitter"
 
     def __init__(self) -> None:
-        self.account_id = os.getenv("TWITTER_ADS_ACCOUNT_ID", "")
-        self.api_key = os.getenv("TWITTER_API_KEY", "")
-        self.api_secret = os.getenv("TWITTER_API_SECRET", "")
-        self.access_token = os.getenv("TWITTER_ACCESS_TOKEN", "")
-        self.access_secret = os.getenv("TWITTER_ACCESS_SECRET", "")
+        from src.config import settings
+        self.account_id = settings.twitter_ads_account_id
+        self.api_key = settings.twitter_api_key
+        self.api_secret = settings.twitter_api_secret
+        self.access_token = settings.twitter_access_token
+        self.access_secret = settings.twitter_access_secret
 
     def _oauth_header(self, method: str, url: str, params: dict | None = None) -> str:
         oauth = {
