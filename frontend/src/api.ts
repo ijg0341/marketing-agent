@@ -40,6 +40,10 @@ export const api = {
       request<any>('/content', { method: 'POST', body: JSON.stringify(data) }),
     createBatch: (items: any[]) =>
       request<any>('/content/batch', { method: 'POST', body: JSON.stringify({ items }) }),
+    update: (id: number, data: { content_text?: string; media_url?: string; channel?: string }) =>
+      request<any>(`/content/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    delete: (id: number) =>
+      request<any>(`/content/${id}`, { method: 'DELETE' }),
     queued: () => request<any[]>('/content/queued'),
     recent: (limit = 20) => request<any[]>(`/content/recent?limit=${limit}`),
     publish: () => request<any>('/content/publish', { method: 'POST' }),

@@ -8,7 +8,6 @@ import { StrategyPage } from './pages/StrategyPage';
 import { EvolutionPage } from './pages/EvolutionPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { ScheduledTasksPage } from './pages/ScheduledTasksPage';
-import { AdsPage } from './pages/AdsPage';
 import { getApiKey, setApiKey, api } from './api';
 import { KeyRound, Loader2, AlertCircle } from 'lucide-react';
 
@@ -125,7 +124,6 @@ export default function App() {
           <Route element={<Layout />}>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/content" element={<ContentPage />} />
-            <Route path="/ads" element={<AdsPage />} />
             <Route path="/analytics" element={<AnalyticsPage />} />
             <Route path="/strategy" element={<StrategyPage />} />
             <Route path="/evolution" element={<EvolutionPage />} />

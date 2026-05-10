@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import logging
+
 import httpx
 
 from src.channels.base import ChannelAdapter, MetricSnapshot, PublishResult
 from src.config import settings
+
+logger = logging.getLogger(__name__)
 
 GRAPH_API = "https://graph.facebook.com/v21.0"
 
@@ -16,7 +20,7 @@ class FacebookAdapter(ChannelAdapter):
         self._page_id = settings.facebook_page_id
 
     async def publish(self, text: str, media_url: str | None = None) -> PublishResult:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=30.0) as client:
             if media_url:
                 url = f"{GRAPH_API}/{self._page_id}/photos"
                 payload = {
@@ -48,8 +52,12 @@ class FacebookAdapter(ChannelAdapter):
             "metric": "post_impressions,post_engaged_users,post_clicks,post_reactions_by_type_total",
             "access_token": self._token,
         }
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(url, params=params)
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                resp = await client.get(url, params=params)
+        except Exception:
+            logger.exception("Facebook collect_metrics request failed for post %s", external_id)
+            return MetricSnapshot()
 
         if resp.status_code != 200:
             return MetricSnapshot()
@@ -75,6 +83,10 @@ class FacebookAdapter(ChannelAdapter):
     async def verify_credentials(self) -> bool:
         url = f"{GRAPH_API}/{self._page_id}"
         params = {"fields": "id,name", "access_token": self._token}
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(url, params=params)
-        return resp.status_code == 200
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.get(url, params=params)
+            return resp.status_code == 200
+        except Exception as e:
+            logger.error("Facebook verify_credentials failed: %s", e)
+            return False

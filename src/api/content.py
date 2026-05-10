@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -21,6 +21,12 @@ class ContentCreate(BaseModel):
     content_text: str
     media_url: str | None = None
     template_version: str | None = None
+
+
+class ContentUpdate(BaseModel):
+    content_text: str | None = None
+    media_url: str | None = None
+    channel: str | None = None
 
 
 class ContentResponse(BaseModel):
@@ -124,3 +130,38 @@ async def get_recent(channel: str | None = None, limit: int = 20, db: Session = 
 async def publish(channel: str | None = None, db: Session = Depends(get_db)):
     results = await publish_queued(db, channel)
     return {"published": len([r for r in results if r.get("success")]), "results": results}
+
+
+@router.put("/{content_id}", response_model=dict[str, Any])
+async def update_content(content_id: int, body: ContentUpdate, db: Session = Depends(get_db)):
+    repo = ContentRepository(db)
+    existing = repo.get(content_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail=f"Content {content_id} not found")
+    if existing.status != "queued":
+        raise HTTPException(status_code=400, detail="Only queued content can be edited")
+    content = repo.update(
+        content_id,
+        content_text=body.content_text,
+        media_url=body.media_url,
+        channel=body.channel,
+    )
+    return {
+        "id": content.id,
+        "channel": content.channel,
+        "content_text": content.content_text,
+        "media_url": content.media_url,
+        "status": content.status,
+    }
+
+
+@router.delete("/{content_id}")
+async def delete_content(content_id: int, db: Session = Depends(get_db)):
+    repo = ContentRepository(db)
+    existing = repo.get(content_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail=f"Content {content_id} not found")
+    if existing.status == "posted":
+        raise HTTPException(status_code=400, detail="Posted content cannot be deleted")
+    repo.delete(content_id)
+    return {"status": "deleted", "id": content_id}

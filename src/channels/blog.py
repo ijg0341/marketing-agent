@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import logging
 from base64 import b64encode
 
 import httpx
 
 from src.channels.base import ChannelAdapter, MetricSnapshot, PublishResult
 from src.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 class WordPressAdapter(ChannelAdapter):
@@ -35,7 +38,7 @@ class WordPressAdapter(ChannelAdapter):
         if media_url:
             payload["featured_media_url"] = media_url
 
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=30.0) as client:
             resp = await client.post(url, json=payload, headers=self._auth_header())
 
         if resp.status_code not in (200, 201):
@@ -51,17 +54,24 @@ class WordPressAdapter(ChannelAdapter):
         # Metrics come from external tools (Google Analytics, Jetpack, etc.)
         # Return page view count if Jetpack stats are available
         url = f"{self._url}/wp-json/wp/v2/posts/{external_id}"
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(url, headers=self._auth_header())
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                resp = await client.get(url, headers=self._auth_header())
+        except Exception:
+            logger.exception("WordPress collect_metrics request failed for post %s", external_id)
+            return MetricSnapshot()
 
         if resp.status_code != 200:
             return MetricSnapshot()
 
-        data = resp.json()
         # Try Jetpack stats endpoint as fallback
         stats_url = f"{self._url}/wp-json/wpcom/v2/sites/{self._url.split('//')[1]}/stats/post/{external_id}"
-        async with httpx.AsyncClient() as client:
-            stats_resp = await client.get(stats_url, headers=self._auth_header())
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                stats_resp = await client.get(stats_url, headers=self._auth_header())
+        except Exception:
+            logger.exception("WordPress Jetpack stats request failed for post %s", external_id)
+            return MetricSnapshot()
 
         views = 0
         raw = {}
@@ -74,6 +84,10 @@ class WordPressAdapter(ChannelAdapter):
 
     async def verify_credentials(self) -> bool:
         url = f"{self._url}/wp-json/wp/v2/users/me"
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(url, headers=self._auth_header())
-        return resp.status_code == 200
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.get(url, headers=self._auth_header())
+            return resp.status_code == 200
+        except Exception as e:
+            logger.error("WordPress verify_credentials failed: %s", e)
+            return False

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, X, Send, Search, Loader2, ExternalLink, Clock, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { Plus, X, Send, Search, Loader2, ExternalLink, Clock, CheckCircle2, XCircle, AlertCircle, Pencil, Trash2, Save } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { ChannelBadge } from '../components/ChannelBadge';
@@ -15,7 +15,9 @@ const ACTIVE_CHANNELS = [
   { value: '', label: '전체' },
   { value: 'twitter', label: 'Twitter / X' },
   { value: 'instagram', label: 'Instagram' },
+  { value: 'facebook', label: 'Facebook' },
   { value: 'blog', label: '블로그' },
+  { value: 'email', label: 'Email' },
 ];
 
 export function ContentPage() {
@@ -27,6 +29,10 @@ export function ContentPage() {
   const [submitting, setSubmitting] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [selectedContent, setSelectedContent] = useState<any | null>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [editText, setEditText] = useState('');
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // Form state — default to first active channel
   const [formChannel, setFormChannel] = useState(ACTIVE_CHANNELS[0].value);
@@ -101,6 +107,48 @@ export function ContentPage() {
       console.error('Failed to publish:', err);
     } finally {
       setPublishing(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setSelectedContent(null);
+    setEditMode(false);
+    setEditText('');
+  };
+
+  const handleStartEdit = () => {
+    if (!selectedContent) return;
+    setEditText(selectedContent.content_text);
+    setEditMode(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!selectedContent || !editText.trim()) return;
+    setSavingEdit(true);
+    try {
+      await api.content.update(selectedContent.id, { content_text: editText });
+      await fetchContent();
+      setSelectedContent({ ...selectedContent, content_text: editText });
+      setEditMode(false);
+    } catch (err) {
+      console.error('Failed to update content:', err);
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedContent) return;
+    if (!window.confirm('이 콘텐츠를 삭제하시겠습니까?')) return;
+    setDeleting(true);
+    try {
+      await api.content.delete(selectedContent.id);
+      handleCloseModal();
+      await fetchContent();
+    } catch (err) {
+      console.error('Failed to delete content:', err);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -280,7 +328,7 @@ export function ContentPage() {
       {selectedContent !== null && (
         <div
           className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-          onClick={() => setSelectedContent(null)}
+          onClick={handleCloseModal}
         >
           <div
             className="bg-white rounded-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto shadow-2xl"
@@ -293,7 +341,7 @@ export function ContentPage() {
                 <StatusBadge status={selectedContent.status} />
               </div>
               <button
-                onClick={() => setSelectedContent(null)}
+                onClick={handleCloseModal}
                 className="p-1.5 rounded-lg text-surface-400 hover:text-surface-700 hover:bg-surface-100 transition-colors"
               >
                 <X className="w-4 h-4" />
@@ -302,10 +350,19 @@ export function ContentPage() {
 
             {/* Modal Body */}
             <div className="p-5 space-y-4">
-              {/* Full content text */}
-              <div className="report-markdown text-sm leading-relaxed">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedContent.content_text}</ReactMarkdown>
-              </div>
+              {/* Full content text or edit textarea */}
+              {editMode ? (
+                <textarea
+                  value={editText}
+                  onChange={(e) => setEditText(e.target.value)}
+                  className="w-full min-h-[180px] px-3 py-2.5 text-sm border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono leading-relaxed"
+                  autoFocus
+                />
+              ) : (
+                <div className="report-markdown text-sm leading-relaxed">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedContent.content_text}</ReactMarkdown>
+                </div>
+              )}
 
               {/* Twitter link */}
               {selectedContent.external_id && (
@@ -365,13 +422,55 @@ export function ContentPage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="flex justify-end px-5 pb-5">
-              <button
-                onClick={() => setSelectedContent(null)}
-                className="px-4 py-2 text-sm font-medium text-surface-600 bg-surface-100 rounded-lg hover:bg-surface-200 transition-colors"
-              >
-                닫기
-              </button>
+            <div className="flex items-center justify-between gap-2 px-5 pb-5">
+              <div className="flex items-center gap-2">
+                {selectedContent.status === 'queued' && !editMode && (
+                  <>
+                    <button
+                      onClick={handleStartEdit}
+                      className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-primary-700 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                      편집
+                    </button>
+                    <button
+                      onClick={handleDelete}
+                      disabled={deleting}
+                      className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
+                    >
+                      {deleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                      삭제
+                    </button>
+                  </>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                {editMode ? (
+                  <>
+                    <button
+                      onClick={() => { setEditMode(false); setEditText(''); }}
+                      className="px-4 py-2 text-sm font-medium text-surface-600 bg-surface-100 rounded-lg hover:bg-surface-200 transition-colors"
+                    >
+                      취소
+                    </button>
+                    <button
+                      onClick={handleSaveEdit}
+                      disabled={savingEdit || !editText.trim()}
+                      className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-50"
+                    >
+                      {savingEdit ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                      저장
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={handleCloseModal}
+                    className="px-4 py-2 text-sm font-medium text-surface-600 bg-surface-100 rounded-lg hover:bg-surface-200 transition-colors"
+                  >
+                    닫기
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

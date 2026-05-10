@@ -7,18 +7,17 @@
 3. [Step 2: 플랫폼 연동](#3-step-2-플랫폼-연동)
 4. [Step 3: 채널 설정](#4-step-3-채널-설정)
 5. [Step 4: 첫 콘텐츠 게시](#5-step-4-첫-콘텐츠-게시)
-6. [Step 5: 첫 광고 캠페인 집행](#6-step-5-첫-광고-캠페인-집행)
-7. [성과 확인하기](#7-성과-확인하기)
-8. [전략 관리](#8-전략-관리)
-9. [AI 자동화 관리](#9-ai-자동화-관리)
-10. [일일 운영 가이드](#10-일일-운영-가이드)
+6. [성과 확인하기](#6-성과-확인하기)
+7. [전략 관리](#7-전략-관리)
+8. [AI 자동화 관리](#8-ai-자동화-관리)
+9. [일일 운영 가이드](#9-일일-운영-가이드)
 
 ---
 
 ## 1. 처음 시작하기
 
 ### 이 시스템이 하는 일
-Marketing Agent는 SNS 마케팅의 **전체 사이클**을 관리합니다:
+Marketing Agent는 **콘텐츠 마케팅의 전체 사이클**을 관리합니다:
 - 콘텐츠 작성 → 게시 → 성과 수집 → 분석 → 전략 자동 조정
 
 ### 접속
@@ -36,8 +35,6 @@ Settings > Platform Connections에서 API 키 등록
 Settings > Channel Settings에서 채널 ON/OFF
     ↓
 Content에서 첫 콘텐츠 게시
-    ↓
-Advertising에서 첫 광고 캠페인 생성
 ```
 
 ---
@@ -84,9 +81,9 @@ Advertising에서 첫 광고 캠페인 생성
 
 > 사이드바 > **Settings** > **Platform Connections** 탭
 
-각 플랫폼의 API 키를 등록합니다. **사용할 플랫폼만 등록하면 됩니다.**
+각 콘텐츠 채널의 API 키를 등록합니다. **사용할 채널만 등록하면 됩니다.**
 
-### 콘텐츠 채널 (무료 게시)
+### 콘텐츠 채널
 
 #### Twitter / X
 1. https://developer.x.com 에서 개발자 계정 생성
@@ -124,31 +121,6 @@ Advertising에서 첫 광고 캠페인 생성
 2. Settings > API Keys > Create API Key
 3. Settings > Sender Authentication에서 발신 이메일 인증
 4. 대시보드에 API Key + From Email 입력 → **Save** → **Test Connection**
-
-### 광고 플랫폼 (유료)
-
-#### Meta Ads (Facebook + Instagram 광고)
-1. https://business.facebook.com 에서 비즈니스 관리자 설정
-2. 광고 계정 생성 + **결제 수단 등록** (카드/계좌)
-3. 광고 계정 ID 확인 (설정 > 광고 계정 정보, `act_` 제외한 숫자)
-4. developers.facebook.com Graph API Explorer에서 토큰 생성
-   - 필요 권한: `ads_management`, `ads_read`
-5. 대시보드에 입력 → **Save** → **Test Connection**
-
-#### Google Ads
-1. https://ads.google.com 에서 계정 생성 + **결제 수단 등록**
-2. Customer ID 확인 (우측 상단, xxx-xxx-xxxx 형식)
-3. https://developers.google.com/google-ads/api 에서 개발자 토큰 신청
-4. Google Cloud Console에서 OAuth 2.0 Client ID/Secret 생성
-5. OAuth Playground에서 Refresh Token 획득
-6. 대시보드에 5개 값 입력 → **Save** → **Test Connection**
-
-#### Twitter Ads
-1. https://ads.twitter.com 에서 광고 계정 생성 + **결제 수단 등록**
-2. Ads Account ID는 URL에서 확인 (`ads.twitter.com/accounts/xxxxx`)
-3. Ads API 액세스는 developer.x.com에서 별도 신청
-4. 대시보드에 Account ID 입력 (나머지는 Twitter 콘텐츠 채널과 동일 키 사용)
-5. **Save** → **Test Connection**
 
 ### 연동 상태 확인
 - **Connected** (초록): 정상 연결
@@ -216,67 +188,7 @@ Advertising에서 첫 광고 캠페인 생성
 
 ---
 
-## 6. Step 5: 첫 광고 캠페인 집행
-
-> 사이드바 > **Advertising**
-
-### 캠페인 생성
-1. **New Campaign** 클릭
-2. 기본 정보:
-   - **Platform**: 광고할 플랫폼 선택
-   - **Campaign Name**: 알아보기 쉬운 이름 (예: "4월 봄 프로모션")
-   - **Objective**: 목표 선택
-     | 목표 | 설명 | 언제 사용 |
-     |------|------|----------|
-     | Awareness | 많은 사람에게 노출 | 브랜드 알리기 |
-     | Traffic | 웹사이트 방문 유도 | 랜딩페이지 트래픽 |
-     | Engagement | 좋아요/공유 유도 | 커뮤니티 활성화 |
-     | Conversions | 구매/가입 유도 | 매출 직결 |
-
-3. 예산:
-   - **Daily Budget**: 일일 예산 (예: ₩30,000)
-   - **Total Budget**: 총 한도 (예: ₩900,000)
-   - **Bid Strategy**: `Auto` 추천 (처음에는)
-
-4. 기간: 시작일 / 종료일
-
-5. 타겟팅:
-   - **Age**: 제품에 맞는 연령 (예: 25~44)
-   - **Gender**: All (특별한 이유 없으면)
-   - **Locations**: "서울", "경기" 등
-   - **Interests**: 제품 관련 관심사 태그 추가
-   - **Placements**: 광고 노출 위치 체크
-
-6. 광고 소재:
-   - **Headline**: 클릭을 유도하는 제목
-   - **Body Text**: 핵심 가치 전달
-   - **Media URL**: 광고 이미지/영상 URL
-   - **CTA**: Learn More(일반) / Shop Now(쇼핑) / Sign Up(가입)
-   - **Destination URL**: 클릭 시 이동할 페이지
-
-7. **Create Campaign** → draft 상태로 생성
-
-### 캠페인 시작
-- 목록에서 해당 캠페인의 **▶ 버튼** 클릭 → 플랫폼에 전송 + 활성화
-- 이후 설정한 예산에 따라 등록된 카드에서 자동 결제
-
-### 캠페인 관리
-| 버튼 | 동작 |
-|------|------|
-| ▶ (Play) | 활성화 또는 재개 |
-| ⏸ (Pause) | 일시정지 (비용 발생 중단) |
-| 🗑 (Delete) | 캠페인 삭제 |
-
-### 첫 캠페인 추천 설정
-- 플랫폼: **Meta** (가장 직관적)
-- 목표: **Traffic**
-- 일일 예산: **₩10,000~20,000** (테스트)
-- 기간: **7일**
-- 타겟: 넓게 잡고 시작 → 데이터 보면서 좁히기
-
----
-
-## 7. 성과 확인하기
+## 6. 성과 확인하기
 
 ### Dashboard (전체 요약)
 > 사이드바 > **Dashboard**
@@ -295,20 +207,16 @@ Advertising에서 첫 광고 캠페인 생성
 - **Top Content**: 가장 잘 된 콘텐츠 5개 → 왜 잘 됐는지 분석
 - **Collect Metrics**: 수동으로 최신 성과 수집 트리거
 
-### 광고 성과 (Advertising 페이지)
-- 캠페인별: Spend, Impressions, Clicks, CTR, ROAS
-- **Spend Trend**: 플랫폼별 일일 지출 추이 차트
-
 ### 핵심 지표 읽는 법
 | 지표 | 좋은 수준 | 나쁜 수준 | 조치 |
 |------|----------|----------|------|
 | **Engagement Rate** | 3% 이상 | 1% 미만 | 콘텐츠 주제/톤 변경 |
-| **CTR** (광고) | 2% 이상 | 0.5% 미만 | 소재/타겟 변경 |
-| **ROAS** (광고) | 3.0 이상 | 1.0 미만 | 예산 조정 또는 중단 |
+| **Click Rate** | 2% 이상 | 0.5% 미만 | 카피/소재 재구성 |
+| **Reach Growth** | 주간 +5% 이상 | 정체/감소 | 게시 시간/빈도 재조정 |
 
 ---
 
-## 8. 전략 관리
+## 7. 전략 관리
 
 ### Strategy (전략 현황)
 > 사이드바 > **Strategy**
@@ -331,7 +239,7 @@ Advertising에서 첫 광고 캠페인 생성
 
 ---
 
-## 9. AI 자동화 관리
+## 8. AI 자동화 관리
 
 ### Evolution (자동 진화 기록)
 > 사이드바 > **Evolution**
@@ -366,7 +274,7 @@ AI 태스크 프롬프트를 직접 편집할 수 있습니다:
 
 ---
 
-## 10. 일일 운영 가이드
+## 9. 일일 운영 가이드
 
 ### 아침 루틴 (5분)
 1. **Dashboard** → 전날 성과 빠르게 확인
@@ -375,20 +283,13 @@ AI 태스크 프롬프트를 직접 편집할 수 있습니다:
    - 필요하면 직접 추가 작성
 3. 문제 없으면 자동 게시에 맡기거나 **Publish Queued**
 
-### 수시 체크
-4. **Advertising** → 진행 중 캠페인 성과
-   - CTR < 1%: 소재/타겟 재검토
-   - ROAS > 3: 예산 증액 고려
-   - 예산 소진: 종료 또는 연장
-
 ### 주간 리뷰 (15분)
-5. **Analytics** (7d) → 주간 트렌드 파악
-6. **Strategy** > Change Log → AI 전략 변경 검토
-7. **Evolution** → AI 개선 이력 확인
-8. 필요시 전략 수동 조정
+4. **Analytics** (7d) → 주간 트렌드 파악
+5. **Strategy** > Change Log → AI 전략 변경 검토
+6. **Evolution** → AI 개선 이력 확인
+7. 필요시 전략 수동 조정
 
 ### 월간 리뷰 (30분)
-9. **Analytics** (30d) → 월간 전체 성과
-10. 채널별 ROI 비교 → 저성과 채널 OFF 고려
-11. 광고 캠페인 월간 정산 확인
-12. 다음 달 마케팅 방향 설정 → Strategy/Content에 반영
+8. **Analytics** (30d) → 월간 전체 성과
+9. 채널별 ROI 비교 → 저성과 채널 OFF 고려
+10. 다음 달 마케팅 방향 설정 → Strategy/Content에 반영

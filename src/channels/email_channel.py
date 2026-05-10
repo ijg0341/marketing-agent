@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+import logging
+from datetime import date
+
 import httpx
 
 from src.channels.base import ChannelAdapter, MetricSnapshot, PublishResult
 from src.config import settings
+
+logger = logging.getLogger(__name__)
 
 SENDGRID_API = "https://api.sendgrid.com/v3"
 
@@ -40,7 +45,7 @@ class SendGridAdapter(ChannelAdapter):
             "content": [{"type": "text/html", "value": body}],
         }
 
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=30.0) as client:
             resp = await client.post(f"{SENDGRID_API}/mail/send", json=payload, headers=self._headers())
 
         if resp.status_code in (200, 202):
@@ -49,11 +54,15 @@ class SendGridAdapter(ChannelAdapter):
         return PublishResult(success=False, error=f"{resp.status_code}: {resp.text}")
 
     async def collect_metrics(self, external_id: str) -> MetricSnapshot:
-        # SendGrid global stats for the last day
+        # SendGrid global stats for today
         url = f"{SENDGRID_API}/stats"
-        params = {"start_date": "2026-01-01", "limit": 1, "offset": 0}
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(url, params=params, headers=self._headers())
+        params = {"start_date": date.today().isoformat(), "limit": 1, "offset": 0}
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                resp = await client.get(url, params=params, headers=self._headers())
+        except Exception:
+            logger.exception("SendGrid collect_metrics request failed")
+            return MetricSnapshot()
 
         if resp.status_code != 200:
             return MetricSnapshot()
@@ -78,6 +87,10 @@ class SendGridAdapter(ChannelAdapter):
 
     async def verify_credentials(self) -> bool:
         url = f"{SENDGRID_API}/user/profile"
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(url, headers=self._headers())
-        return resp.status_code == 200
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.get(url, headers=self._headers())
+            return resp.status_code == 200
+        except Exception as e:
+            logger.error("SendGrid verify_credentials failed: %s", e)
+            return False

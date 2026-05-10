@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import logging
+
 import httpx
 
 from src.channels.base import ChannelAdapter, MetricSnapshot, PublishResult
 from src.config import settings
+
+logger = logging.getLogger(__name__)
 
 GRAPH_API = "https://graph.facebook.com/v21.0"
 
@@ -19,7 +23,7 @@ class InstagramAdapter(ChannelAdapter):
         if not media_url:
             return PublishResult(success=False, error="Instagram requires media_url for posts")
 
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=30.0) as client:
             # Step 1: Create media container
             create_url = f"{GRAPH_API}/{self._account_id}/media"
             create_payload = {
@@ -58,8 +62,12 @@ class InstagramAdapter(ChannelAdapter):
             "metric": "impressions,reach,likes,comments,shares,saved",
             "access_token": self._token,
         }
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(url, params=params)
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                resp = await client.get(url, params=params)
+        except Exception:
+            logger.exception("Instagram collect_metrics request failed for media %s", external_id)
+            return MetricSnapshot()
 
         if resp.status_code != 200:
             return MetricSnapshot()
@@ -82,6 +90,10 @@ class InstagramAdapter(ChannelAdapter):
     async def verify_credentials(self) -> bool:
         url = f"{GRAPH_API}/{self._account_id}"
         params = {"fields": "id,username", "access_token": self._token}
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(url, params=params)
-        return resp.status_code == 200
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.get(url, params=params)
+            return resp.status_code == 200
+        except Exception as e:
+            logger.error("Instagram verify_credentials failed: %s", e)
+            return False

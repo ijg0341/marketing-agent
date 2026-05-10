@@ -53,6 +53,28 @@ class ContentRepository:
         q = q.order_by(Content.posted_at.desc()).limit(limit)
         return list(self.db.scalars(q).all())
 
+    def get(self, content_id: int) -> Content | None:
+        return self.db.get(Content, content_id)
+
+    def update(self, content_id: int, **kwargs: Any) -> Content | None:
+        content = self.db.get(Content, content_id)
+        if not content:
+            return None
+        for key, value in kwargs.items():
+            if value is not None and hasattr(content, key):
+                setattr(content, key, value)
+        self.db.commit()
+        self.db.refresh(content)
+        return content
+
+    def delete(self, content_id: int) -> bool:
+        content = self.db.get(Content, content_id)
+        if not content:
+            return False
+        self.db.delete(content)
+        self.db.commit()
+        return True
+
 
 class MetricRepository:
     def __init__(self, db: Session) -> None:

@@ -2,42 +2,10 @@ import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend,
-} from 'recharts';
-import {
-  DollarSign, Target, TrendingUp, MousePointerClick,
   FileText, Eye, Heart, Loader2, BarChart3, ArrowRight,
-  CheckCircle2, Clock, AtSign, Calendar, X,
+  CheckCircle2, Clock, Calendar, X,
 } from 'lucide-react';
 import { api } from '../api';
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-const formatWon = (n: number | undefined | null) => `₩${(n ?? 0).toLocaleString()}`;
-
-const platformColors: Record<string, string> = {
-  meta: 'bg-blue-100 text-blue-700',
-  google: 'bg-red-100 text-red-700',
-  twitter: 'bg-sky-100 text-sky-700',
-};
-const platformLabels: Record<string, string> = {
-  meta: 'Meta',
-  google: 'Google',
-  twitter: 'Twitter',
-};
-
-const statusColors: Record<string, string> = {
-  active: 'bg-emerald-100 text-emerald-700',
-  paused: 'bg-amber-100 text-amber-700',
-  draft: 'bg-surface-100 text-surface-600',
-};
-
-const PLATFORM_CHART_COLORS: Record<string, string> = {
-  meta: '#3b82f6',
-  google: '#ef4444',
-  twitter: '#0ea5e9',
-};
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -74,32 +42,6 @@ interface ContentKpi {
   totalPosts: number;
   totalImpressions: number;
   avgEngagementRate: number;
-}
-
-// ── Aggregation helpers ──────────────────────────────────────────────────────
-
-function aggregateAdKpis(campaigns: any[]) {
-  const totalSpend = campaigns.reduce((s, c) => s + (c.spend ?? 0), 0);
-  const totalConversions = campaigns.reduce((s, c) => s + (c.conversions ?? 0), 0);
-  const avgRoas = campaigns.length > 0
-    ? campaigns.reduce((s, c) => s + (c.roas ?? 0), 0) / campaigns.length
-    : 0;
-  const avgCtr = campaigns.length > 0
-    ? campaigns.reduce((s, c) => s + (c.ctr ?? 0), 0) / campaigns.length
-    : 0;
-  return { totalSpend, totalConversions, avgRoas, avgCtr };
-}
-
-function buildPlatformDistribution(campaigns: any[]) {
-  const byPlatform: Record<string, number> = {};
-  for (const c of campaigns) {
-    byPlatform[c.platform] = (byPlatform[c.platform] || 0) + (c.spend ?? 0);
-  }
-  return Object.entries(byPlatform).map(([platform, value]) => ({
-    name: platformLabels[platform] || platform,
-    value,
-    color: PLATFORM_CHART_COLORS[platform] || '#94a3b8',
-  }));
 }
 
 // ── Onboarding Progress Card ─────────────────────────────────────────────────
@@ -152,46 +94,53 @@ function OnboardingProgressCard({ status }: { status: OnboardingStatus }) {
   );
 }
 
-// ── Twitter Channel Status Card ───────────────────────────────────────────────
+// ── Channel Activity Row ──────────────────────────────────────────────────────
 
-function TwitterStatusCard({ recentContent }: { recentContent: ContentItem[] }) {
-  const twitterPosts = recentContent.filter((c) => c.channel === 'twitter');
-  const postedToday = twitterPosts.filter((c) => {
-    if (!c.posted_at) return false;
-    const d = new Date(c.posted_at);
-    const now = new Date();
-    return d.toDateString() === now.toDateString();
-  });
-  const queued = twitterPosts.filter((c) => c.status === 'queued');
-  const lastPost = twitterPosts.find((c) => c.status === 'posted');
+const CHANNEL_LABELS: Record<string, string> = {
+  twitter: 'Twitter / X',
+  instagram: 'Instagram',
+  facebook: 'Facebook',
+  blog: '블로그',
+  email: 'Email',
+};
 
+const CHANNEL_BADGE_COLORS: Record<string, string> = {
+  twitter: 'bg-sky-50 text-sky-600',
+  instagram: 'bg-pink-50 text-pink-600',
+  facebook: 'bg-blue-50 text-blue-600',
+  blog: 'bg-amber-50 text-amber-600',
+  email: 'bg-emerald-50 text-emerald-600',
+};
+
+const ALL_CHANNELS = ['twitter', 'instagram', 'facebook', 'blog', 'email'];
+
+function ChannelActivityRow({ recentContent }: { recentContent: ContentItem[] }) {
   return (
     <div className="bg-white rounded-xl border border-surface-200 p-5 shadow-sm">
-      <div className="flex items-center gap-2 mb-4">
-        <div className="p-2 bg-sky-50 rounded-lg text-sky-500">
-          <AtSign className="w-4 h-4" />
-        </div>
-        <h2 className="text-sm font-semibold text-surface-900">Twitter / X 채널</h2>
+      <h2 className="text-sm font-semibold text-surface-900 mb-4">채널별 활동</h2>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        {ALL_CHANNELS.map((ch) => {
+          const items = recentContent.filter((c) => c.channel === ch);
+          const today = items.filter((c) => {
+            if (!c.posted_at) return false;
+            const d = new Date(c.posted_at);
+            const now = new Date();
+            return d.toDateString() === now.toDateString();
+          });
+          return (
+            <div key={ch} className="rounded-lg p-3 bg-surface-50">
+              <div className={`inline-block px-2 py-0.5 rounded text-xs font-medium mb-2 ${CHANNEL_BADGE_COLORS[ch]}`}>
+                {CHANNEL_LABELS[ch]}
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-xl font-bold text-surface-900">{today.length}</span>
+                <span className="text-xs text-surface-400">/ {items.length}</span>
+              </div>
+              <p className="text-xs text-surface-500 mt-0.5">오늘 / 전체</p>
+            </div>
+          );
+        })}
       </div>
-      <div className="grid grid-cols-3 gap-3">
-        <div className="text-center p-3 bg-surface-50 rounded-lg">
-          <p className="text-2xl font-bold text-surface-900">{postedToday.length}</p>
-          <p className="text-xs text-surface-500 mt-0.5">오늘 게시</p>
-        </div>
-        <div className="text-center p-3 bg-surface-50 rounded-lg">
-          <p className="text-2xl font-bold text-surface-900">{queued.length}</p>
-          <p className="text-xs text-surface-500 mt-0.5">대기 중</p>
-        </div>
-        <div className="text-center p-3 bg-surface-50 rounded-lg">
-          <p className="text-2xl font-bold text-surface-900">{twitterPosts.length}</p>
-          <p className="text-xs text-surface-500 mt-0.5">전체 게시</p>
-        </div>
-      </div>
-      {lastPost?.posted_at && (
-        <p className="text-xs text-surface-400 mt-3">
-          마지막 게시: {new Date(lastPost.posted_at).toLocaleString('ko-KR')}
-        </p>
-      )}
     </div>
   );
 }
@@ -204,10 +153,6 @@ export function DashboardPage() {
 
   // Onboarding
   const [onboarding, setOnboarding] = useState<OnboardingStatus | null>(null);
-
-  // Ad data — Phase 1: no active ads, show 준비 중 placeholder
-  const [campaigns, setCampaigns] = useState<any[]>([]);
-  const hasAdData = campaigns.length > 0;
 
   // Content data
   const [contentKpi, setContentKpi] = useState<ContentKpi | null>(null);
@@ -230,8 +175,7 @@ export function DashboardPage() {
     async function fetchData() {
       setLoading(true);
       try {
-        const [campaignData, summary, recent, onboardingStatus] = await Promise.all([
-          api.ads.campaigns().catch(() => null),
+        const [summary, recent, onboardingStatus] = await Promise.all([
           api.analytics.summary(period).catch(() => null),
           api.content.recent(10).catch(() => null),
           api.onboarding.status().catch(() => null),
@@ -242,13 +186,6 @@ export function DashboardPage() {
         // Onboarding
         if (onboardingStatus) {
           setOnboarding(onboardingStatus);
-        }
-
-        // Campaigns — only use real data, never mock
-        if (campaignData && Array.isArray(campaignData) && campaignData.length > 0) {
-          setCampaigns(campaignData);
-        } else {
-          setCampaigns([]);
         }
 
         // Content KPI from analytics summary
@@ -301,11 +238,6 @@ export function DashboardPage() {
     return () => { cancelled = true; };
   }, [period]);
 
-  // Derived ad data
-  const adKpis = aggregateAdKpis(campaigns);
-  const platformDist = buildPlatformDistribution(campaigns);
-  const activeCampaigns = campaigns.filter((c) => c.status !== 'draft').slice(0, 5);
-
   const showOnboarding = onboarding && !onboarding.all_required_complete;
 
   return (
@@ -339,8 +271,8 @@ export function DashboardPage() {
       {/* ── 0. Onboarding Progress (if incomplete) ──────────────── */}
       {showOnboarding && <OnboardingProgressCard status={onboarding} />}
 
-      {/* ── 1. Twitter Channel Status ────────────────────────────── */}
-      <TwitterStatusCard recentContent={recentContent} />
+      {/* ── 1. Channel Activity Row ──────────────────────────────── */}
+      <ChannelActivityRow recentContent={recentContent} />
 
       {/* ── 2. Content Marketing KPIs ───────────────────────────── */}
       <div className="space-y-3">
@@ -416,159 +348,6 @@ export function DashboardPage() {
             </ul>
           )}
         </div>
-      </div>
-
-      {/* ── 3. Ad Performance (Phase 1: 준비 중) ─────────────────── */}
-      <div className="space-y-3">
-        <h2 className="text-xs font-semibold text-surface-400 uppercase tracking-wider">광고 성과</h2>
-
-        {hasAdData ? (
-          <>
-            {/* Ad KPI cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white rounded-xl border border-surface-200 p-6 shadow-sm">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-sm text-surface-500 font-medium">총 광고 지출</p>
-                    <p className="text-3xl font-bold mt-1.5 text-surface-900">{formatWon(adKpis.totalSpend)}</p>
-                  </div>
-                  <div className="p-3 bg-blue-50 rounded-lg text-blue-600">
-                    <DollarSign className="w-6 h-6" />
-                  </div>
-                </div>
-              </div>
-              <div className="bg-white rounded-xl border border-surface-200 p-6 shadow-sm">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-sm text-surface-500 font-medium">총 전환수</p>
-                    <p className="text-3xl font-bold mt-1.5 text-surface-900">{(adKpis.totalConversions ?? 0).toLocaleString()}</p>
-                  </div>
-                  <div className="p-3 bg-emerald-50 rounded-lg text-emerald-600">
-                    <Target className="w-6 h-6" />
-                  </div>
-                </div>
-              </div>
-              <div className="bg-white rounded-xl border border-surface-200 p-6 shadow-sm">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-sm text-surface-500 font-medium">평균 ROAS</p>
-                    <p className="text-3xl font-bold mt-1.5 text-surface-900">{adKpis.avgRoas.toFixed(1)}x</p>
-                  </div>
-                  <div className="p-3 bg-violet-50 rounded-lg text-violet-600">
-                    <TrendingUp className="w-6 h-6" />
-                  </div>
-                </div>
-              </div>
-              <div className="bg-white rounded-xl border border-surface-200 p-6 shadow-sm">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-sm text-surface-500 font-medium">평균 CTR</p>
-                    <p className="text-3xl font-bold mt-1.5 text-surface-900">{adKpis.avgCtr.toFixed(1)}%</p>
-                  </div>
-                  <div className="p-3 bg-amber-50 rounded-lg text-amber-600">
-                    <MousePointerClick className="w-6 h-6" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Active Campaigns Table */}
-            <div className="bg-white rounded-xl border border-surface-200 shadow-sm">
-              <div className="p-5 border-b border-surface-200 flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-surface-900">활성 캠페인</h2>
-                <a
-                  href="/ads"
-                  className="flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
-                >
-                  전체 보기 <ArrowRight className="w-3.5 h-3.5" />
-                </a>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-surface-100">
-                      <th className="text-left px-5 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider">플랫폼</th>
-                      <th className="text-left px-5 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider">이름</th>
-                      <th className="text-left px-5 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider">상태</th>
-                      <th className="text-right px-5 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider">일일 예산</th>
-                      <th className="text-right px-5 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider">지출</th>
-                      <th className="text-right px-5 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider">노출수</th>
-                      <th className="text-right px-5 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider">클릭수</th>
-                      <th className="text-right px-5 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider">CTR</th>
-                      <th className="text-right px-5 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider">ROAS</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {activeCampaigns.map((c) => (
-                      <tr key={c.id} className="border-b border-surface-50 hover:bg-surface-50 transition-colors">
-                        <td className="px-5 py-3">
-                          <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${platformColors[c.platform] || 'bg-surface-100 text-surface-600'}`}>
-                            {platformLabels[c.platform] || c.platform}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3 text-surface-700 font-medium">{c.name}</td>
-                        <td className="px-5 py-3">
-                          <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${statusColors[c.status] || 'bg-surface-100 text-surface-600'}`}>
-                            {c.status}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3 text-right text-surface-600">{formatWon(c.daily_budget)}</td>
-                        <td className="px-5 py-3 text-right text-surface-700 font-medium">{formatWon(c.spend)}</td>
-                        <td className="px-5 py-3 text-right text-surface-600">{(c.impressions ?? 0).toLocaleString()}</td>
-                        <td className="px-5 py-3 text-right text-surface-600">{(c.clicks ?? 0).toLocaleString()}</td>
-                        <td className="px-5 py-3 text-right text-surface-600">{(c.ctr ?? 0).toFixed(1)}%</td>
-                        <td className="px-5 py-3 text-right text-surface-700 font-medium">{(c.roas ?? 0).toFixed(1)}x</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Ad Spend Trend + Platform Distribution */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="lg:col-span-2 bg-white rounded-xl border border-surface-200 p-5 shadow-sm">
-                <h2 className="text-sm font-semibold text-surface-900 mb-4">플랫폼별 일별 광고 지출</h2>
-                <ResponsiveContainer width="100%" height={280}>
-                  <AreaChart data={[]}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="#94a3b8" />
-                    <YAxis tick={{ fontSize: 12 }} stroke="#94a3b8" tickFormatter={(v: number) => `₩${(v / 1000).toFixed(0)}k`} />
-                    <Tooltip
-                      formatter={(value, name) => { if (typeof value !== 'number') return ''; return [formatWon(value), platformLabels[String(name)] || String(name)]; }}
-                      contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0' }}
-                    />
-                    <Legend formatter={(value: string) => platformLabels[value] || value} />
-                    <Area type="monotone" dataKey="meta" stackId="1" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} />
-                    <Area type="monotone" dataKey="google" stackId="1" stroke="#ef4444" fill="#ef4444" fillOpacity={0.6} />
-                    <Area type="monotone" dataKey="twitter" stackId="1" stroke="#0ea5e9" fill="#0ea5e9" fillOpacity={0.6} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="bg-white rounded-xl border border-surface-200 p-5 shadow-sm">
-                <h2 className="text-sm font-semibold text-surface-900 mb-4">플랫폼별 지출</h2>
-                <ResponsiveContainer width="100%" height={280}>
-                  <PieChart>
-                    <Pie data={platformDist} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={4} dataKey="value">
-                      {platformDist.map((entry, i) => (
-                        <Cell key={i} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value) => { if (typeof value !== 'number') return ''; return formatWon(value); }} />
-                    <Legend verticalAlign="bottom" height={36} formatter={(value) => <span className="text-xs text-surface-600">{value}</span>} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </>
-        ) : (
-          /* Phase 1: 준비 중 placeholder */
-          <div className="bg-white rounded-xl border border-dashed border-surface-300 p-10 text-center">
-            <DollarSign className="w-10 h-10 text-surface-300 mx-auto mb-3" />
-            <p className="text-sm font-medium text-surface-500">광고 기능 준비 중</p>
-            <p className="text-xs text-surface-400 mt-1">광고 플랫폼(Meta/Google/Twitter Ads)을 연동하면 캠페인 성과가 여기에 표시됩니다</p>
-          </div>
-        )}
       </div>
 
       {/* ── 4. GA4 Section (conditional) ─────────────────────────── */}

@@ -3,7 +3,6 @@ import {
   LayoutDashboard,
   FileText,
   BarChart3,
-  Megaphone,
   Settings2,
   Zap,
   CalendarClock,
@@ -14,7 +13,6 @@ const links = [
   { to: '/', icon: LayoutDashboard, label: '대시보드' },
   { to: '/content', icon: FileText, label: '콘텐츠' },
   { to: '/analytics', icon: BarChart3, label: '분석' },
-  { to: '/ads', icon: Megaphone, label: '광고' },
   { to: '/scheduled-tasks', icon: CalendarClock, label: '자동화' },
   { to: '/settings', icon: Settings2, label: '설정' },
 ];

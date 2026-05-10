@@ -14,8 +14,6 @@ import {
   EyeOff,
   Globe,
   Mail,
-  Megaphone,
-  Search as SearchIcon,
   Target,
   Settings,
   Link2,
@@ -183,9 +181,6 @@ const PLATFORM_ICONS: Record<string, React.ElementType> = {
   facebook: Globe,
   blog: Globe,
   email: Mail,
-  meta_ads: Megaphone,
-  google_ads: SearchIcon,
-  twitter_ads: Globe,
 };
 
 function getPlatformIcon(id: string) {
@@ -631,24 +626,25 @@ function PlatformConnectionsTab({ toast }: { toast: ReturnType<typeof useToast> 
           facebook: 'Facebook',
           blog: 'WordPress Blog',
           email: 'SendGrid Email',
-          meta_ads: 'Meta Ads (Facebook & Instagram)',
-          google_ads: 'Google Ads',
-          twitter_ads: 'Twitter Ads',
         };
-        const list: Platform[] = Object.entries(raw).map(([id, val]: [string, any]) => ({
-          id,
-          name: PLATFORM_NAMES[id] || id,
-          description: '',
-          connected: val.connected ?? false,
-          credential_fields: (val.fields ?? []).map((f: any) => ({
-            key: f.key,
-            label: f.label,
-            type: f.type ?? 'password',
-            has_value: f.has_value ?? false,
-            masked_preview: f.value_preview ?? f.masked_preview ?? '',
-          })),
-          setup_guide: val.guide?.steps ?? null,
-        }));
+        // 1차 오픈 범위: 콘텐츠 채널만 노출. 광고 플랫폼은 제외.
+        const HIDDEN_PLATFORMS = new Set(['meta_ads', 'google_ads', 'twitter_ads']);
+        const list: Platform[] = Object.entries(raw)
+          .filter(([id]) => !HIDDEN_PLATFORMS.has(id))
+          .map(([id, val]: [string, any]) => ({
+            id,
+            name: PLATFORM_NAMES[id] || id,
+            description: '',
+            connected: val.connected ?? false,
+            credential_fields: (val.fields ?? []).map((f: any) => ({
+              key: f.key,
+              label: f.label,
+              type: f.type ?? 'password',
+              has_value: f.has_value ?? false,
+              masked_preview: f.value_preview ?? f.masked_preview ?? '',
+            })),
+            setup_guide: val.guide?.steps ?? null,
+          }));
         setPlatforms(list);
       })
       .catch(() => toast.show('error', '플랫폼 연동 정보를 불러오지 못했습니다'))
