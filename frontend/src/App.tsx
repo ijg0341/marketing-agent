@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { DashboardPage } from './pages/DashboardPage';
 import { ContentPage } from './pages/ContentPage';
+import { ContentDetailPage } from './pages/ContentDetailPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
 import { StrategyPage } from './pages/StrategyPage';
 import { EvolutionPage } from './pages/EvolutionPage';
@@ -124,6 +125,7 @@ export default function App() {
           <Route element={<Layout />}>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/content" element={<ContentPage />} />
+            <Route path="/content/:id" element={<ContentDetailPage />} />
             <Route path="/analytics" element={<AnalyticsPage />} />
             <Route path="/strategy" element={<StrategyPage />} />
             <Route path="/evolution" element={<EvolutionPage />} />

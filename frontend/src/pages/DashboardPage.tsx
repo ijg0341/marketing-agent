@@ -100,7 +100,8 @@ const CHANNEL_LABELS: Record<string, string> = {
   twitter: 'Twitter / X',
   instagram: 'Instagram',
   facebook: 'Facebook',
-  blog: '블로그',
+  blog_naver: '네이버',
+  blog_tistory: '티스토리',
   email: 'Email',
 };
 
@@ -108,11 +109,12 @@ const CHANNEL_BADGE_COLORS: Record<string, string> = {
   twitter: 'bg-sky-50 text-sky-600',
   instagram: 'bg-pink-50 text-pink-600',
   facebook: 'bg-blue-50 text-blue-600',
-  blog: 'bg-amber-50 text-amber-600',
-  email: 'bg-emerald-50 text-emerald-600',
+  blog_naver: 'bg-emerald-50 text-emerald-600',
+  blog_tistory: 'bg-orange-50 text-orange-600',
+  email: 'bg-amber-50 text-amber-600',
 };
 
-const ALL_CHANNELS = ['twitter', 'instagram', 'facebook', 'blog', 'email'];
+const ALL_CHANNELS = ['twitter', 'instagram', 'facebook', 'blog_naver', 'blog_tistory', 'email'];
 
 function ChannelActivityRow({ recentContent }: { recentContent: ContentItem[] }) {
   return (

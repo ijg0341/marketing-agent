@@ -59,6 +59,7 @@ async def list_content(
             "id": c.id,
             "channel": c.channel,
             "content_text": c.content_text,
+            "media_url": c.media_url,
             "status": c.status,
             "created_at": str(c.created_at),
             "posted_at": str(c.posted_at) if c.posted_at else None,
@@ -104,7 +105,13 @@ async def get_queued(channel: str | None = None, db: Session = Depends(get_db)):
     repo = ContentRepository(db)
     items = repo.get_queued(channel)
     return [
-        {"id": c.id, "channel": c.channel, "content_text": c.content_text, "created_at": str(c.created_at)}
+        {
+            "id": c.id,
+            "channel": c.channel,
+            "content_text": c.content_text,
+            "media_url": c.media_url,
+            "created_at": str(c.created_at),
+        }
         for c in items
     ]
 
@@ -118,6 +125,7 @@ async def get_recent(channel: str | None = None, limit: int = 20, db: Session = 
             "id": c.id,
             "channel": c.channel,
             "content_text": c.content_text,
+            "media_url": c.media_url,
             "status": c.status,
             "posted_at": str(c.posted_at) if c.posted_at else None,
             "external_id": c.external_id,
@@ -130,6 +138,25 @@ async def get_recent(channel: str | None = None, limit: int = 20, db: Session = 
 async def publish(channel: str | None = None, db: Session = Depends(get_db)):
     results = await publish_queued(db, channel)
     return {"published": len([r for r in results if r.get("success")]), "results": results}
+
+
+@router.get("/{content_id}", response_model=dict[str, Any])
+async def get_content(content_id: int, db: Session = Depends(get_db)):
+    repo = ContentRepository(db)
+    c = repo.get(content_id)
+    if not c:
+        raise HTTPException(status_code=404, detail=f"Content {content_id} not found")
+    return {
+        "id": c.id,
+        "channel": c.channel,
+        "content_text": c.content_text,
+        "media_url": c.media_url,
+        "status": c.status,
+        "created_at": str(c.created_at),
+        "posted_at": str(c.posted_at) if c.posted_at else None,
+        "external_id": c.external_id,
+        "error_message": getattr(c, "error_message", None),
+    }
 
 
 @router.put("/{content_id}", response_model=dict[str, Any])
@@ -152,6 +179,24 @@ async def update_content(content_id: int, body: ContentUpdate, db: Session = Dep
         "content_text": content.content_text,
         "media_url": content.media_url,
         "status": content.status,
+    }
+
+
+@router.post("/{content_id}/mark-posted", response_model=dict[str, Any])
+async def mark_content_posted(content_id: int, db: Session = Depends(get_db)):
+    """Mark a queued content as posted (manual publish flow for Naver/Tistory blogs)."""
+    repo = ContentRepository(db)
+    existing = repo.get(content_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail=f"Content {content_id} not found")
+    if existing.status != "queued":
+        raise HTTPException(status_code=400, detail="Only queued content can be marked posted")
+    content = repo.mark_posted(content_id)
+    return {
+        "id": content.id,
+        "channel": content.channel,
+        "status": content.status,
+        "posted_at": str(content.posted_at) if content.posted_at else None,
     }
 
 

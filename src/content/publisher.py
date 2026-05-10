@@ -6,7 +6,7 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from src.channels.base import ChannelAdapter
-from src.channels.blog import WordPressAdapter
+from src.channels.blog import MANUAL_PUBLISH_ERROR, NaverBlogAdapter, TistoryBlogAdapter
 from src.channels.email_channel import SendGridAdapter
 from src.channels.facebook import FacebookAdapter
 from src.channels.instagram import InstagramAdapter
@@ -19,9 +19,13 @@ ADAPTERS: dict[str, type[ChannelAdapter]] = {
     "twitter": TwitterAdapter,
     "instagram": InstagramAdapter,
     "facebook": FacebookAdapter,
-    "blog": WordPressAdapter,
+    "blog_naver": NaverBlogAdapter,
+    "blog_tistory": TistoryBlogAdapter,
     "email": SendGridAdapter,
 }
+
+# Channels whose publish() is manual — keep content queued instead of marking failed.
+MANUAL_CHANNELS = {"blog_naver", "blog_tistory"}
 
 
 def get_adapter(channel: str) -> ChannelAdapter:
@@ -47,6 +51,16 @@ async def publish_queued(db: Session, channel: str | None = None) -> list[dict[s
     queued = repo.get_queued(channel)
     results = []
     for content in queued:
+        # Manual channels (Naver/Tistory blogs) require human paste-publish — skip them here.
+        if content.channel in MANUAL_CHANNELS:
+            results.append({
+                "content_id": content.id,
+                "channel": content.channel,
+                "success": False,
+                "error": MANUAL_PUBLISH_ERROR,
+                "skipped": True,
+            })
+            continue
         try:
             adapter = get_adapter(content.channel)
             result = await adapter.publish(content.content_text, content.media_url)

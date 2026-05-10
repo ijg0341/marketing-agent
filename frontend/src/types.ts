@@ -95,4 +95,4 @@ export interface HealthStatus {
   uptime: number;
 }
 
-export type Channel = 'twitter' | 'instagram' | 'facebook' | 'blog' | 'email';
+export type Channel = 'twitter' | 'instagram' | 'facebook' | 'blog_naver' | 'blog_tistory' | 'email';

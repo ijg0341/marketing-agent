@@ -222,21 +222,27 @@ PLATFORM_KEYS = {
             ],
         },
     },
-    "blog": {
-        "keys": ["WORDPRESS_URL", "WORDPRESS_USERNAME", "WORDPRESS_APP_PASSWORD"],
-        "labels": {
-            "WORDPRESS_URL": "WordPress Site URL",
-            "WORDPRESS_USERNAME": "Username",
-            "WORDPRESS_APP_PASSWORD": "Application Password",
-        },
+    "blog_naver": {
+        "keys": [],
+        "labels": {},
         "guide": {
-            "url": "",
+            "url": "https://blog.naver.com/",
             "steps": [
-                "1. WordPress 관리자 로그인 (yoursite.com/wp-admin)",
-                "2. 사용자 > 프로필 > Application Passwords 섹션",
-                "3. 새 Application Password 이름 입력 후 생성",
-                "4. 생성된 비밀번호 복사 (한 번만 표시됨)",
-                "5. WordPress URL은 사이트 주소 (예: https://myblog.com)",
+                "네이버 블로그는 OpenAPI 신규 발급이 막혀있어 자동 발행을 지원하지 않습니다.",
+                "AI가 생성한 콘텐츠를 Content 페이지에서 검토 → HTML 복사 → 네이버 블로그 글쓰기에 붙여넣기 → '발행 완료 처리' 버튼으로 상태 변경하는 반자동 워크플로우로 운영합니다.",
+                "API 키 등록은 필요 없습니다.",
+            ],
+        },
+    },
+    "blog_tistory": {
+        "keys": [],
+        "labels": {},
+        "guide": {
+            "url": "https://www.tistory.com/",
+            "steps": [
+                "티스토리는 2024년 5월 OpenAPI 신규 발급이 중단되어 자동 발행을 지원하지 않습니다.",
+                "AI가 생성한 콘텐츠를 Content 페이지에서 검토 → HTML 복사 → 티스토리 글쓰기에 붙여넣기 → '발행 완료 처리' 버튼으로 상태 변경하는 반자동 워크플로우로 운영합니다.",
+                "API 키 등록은 필요 없습니다.",
             ],
         },
     },
@@ -382,7 +388,7 @@ async def test_platform_connection(platform_id: str):
     from src.ads.google_ads import GoogleAdsAdapter
     from src.ads.meta_ads import MetaAdsAdapter
     from src.ads.twitter_ads import TwitterAdsAdapter
-    from src.channels.blog import WordPressAdapter
+    from src.channels.blog import NaverBlogAdapter, TistoryBlogAdapter
     from src.channels.email_channel import SendGridAdapter
     from src.channels.facebook import FacebookAdapter
     from src.channels.instagram import InstagramAdapter
@@ -392,7 +398,8 @@ async def test_platform_connection(platform_id: str):
         "twitter": TwitterAdapter,
         "instagram": InstagramAdapter,
         "facebook": FacebookAdapter,
-        "blog": WordPressAdapter,
+        "blog_naver": NaverBlogAdapter,
+        "blog_tistory": TistoryBlogAdapter,
         "email": SendGridAdapter,
         "meta_ads": MetaAdsAdapter,
         "google_ads": GoogleAdsAdapter,

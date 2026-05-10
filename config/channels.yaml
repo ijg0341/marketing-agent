@@ -25,9 +25,19 @@ facebook:
   limits:
     max_posts_per_day: 3
     min_interval_minutes: 240
-blog:
+blog_naver:
   enabled: false
-  platform: wordpress
+  platform: naver_blog
+  publish_mode: manual
+  posting_schedule:
+    frequency: weekly
+    days: [monday, thursday]
+    times: ["09:00"]
+    timezone: Asia/Seoul
+blog_tistory:
+  enabled: false
+  platform: tistory
+  publish_mode: manual
   posting_schedule:
     frequency: weekly
     days: [monday, thursday]

@@ -40,8 +40,11 @@ export const api = {
       request<any>('/content', { method: 'POST', body: JSON.stringify(data) }),
     createBatch: (items: any[]) =>
       request<any>('/content/batch', { method: 'POST', body: JSON.stringify({ items }) }),
+    get: (id: number) => request<any>(`/content/${id}`),
     update: (id: number, data: { content_text?: string; media_url?: string; channel?: string }) =>
       request<any>(`/content/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    markPosted: (id: number) =>
+      request<any>(`/content/${id}/mark-posted`, { method: 'POST' }),
     delete: (id: number) =>
       request<any>(`/content/${id}`, { method: 'DELETE' }),
     queued: () => request<any[]>('/content/queued'),

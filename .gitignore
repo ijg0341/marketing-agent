@@ -13,3 +13,4 @@ reports/*.md
 logs/*.jsonl
 !logs/.gitkeep
 .pytest_cache/
+.omc/
