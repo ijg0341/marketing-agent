@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Code, FileText, Zap, CheckCircle2, XCircle, ArrowUpRight, Loader2 } from 'lucide-react';
+import { Code, FileText, Zap, ArrowUpRight, Loader2 } from 'lucide-react';
 import { api } from '../api';
-
-// ── Fallback mock data ──
 
 const defaultEvolutionLog = [
   {
@@ -55,22 +53,12 @@ const defaultEvolutionLog = [
     performance_after: '오픈율: 24%',
     rolled_back: true,
   },
-  {
-    id: 6,
-    timestamp: '2026-04-01T11:42:00',
-    level: 1,
-    component: 'config/strategy.yaml',
-    change_description: 'Twitter에 저녁 게시 시간대(20:00)를 추가했습니다. 오후 8~9시 시간대에 높은 참여 활동이 관측된 데이터에 근거합니다.',
-    performance_before: '일일 평균 노출수: 5,800',
-    performance_after: '일일 평균 노출수: 7,200',
-    rolled_back: false,
-  },
 ];
 
-const levelConfig: Record<number, { label: string; icon: typeof Zap; color: string; bg: string }> = {
-  1: { label: 'Strategy', icon: Zap, color: 'text-amber-600', bg: 'bg-amber-50 border-amber-200' },
-  2: { label: 'Template', icon: FileText, color: 'text-purple-600', bg: 'bg-purple-50 border-purple-200' },
-  3: { label: 'Code', icon: Code, color: 'text-blue-600', bg: 'bg-blue-50 border-blue-200' },
+const levelConfig: Record<number, { label: string; icon: typeof Zap; dot: string }> = {
+  1: { label: 'Strategy', icon: Zap,      dot: 'bg-amber-500' },
+  2: { label: 'Template', icon: FileText, dot: 'bg-purple-500' },
+  3: { label: 'Code',     icon: Code,     dot: 'bg-blue-600' },
 };
 
 export function EvolutionPage() {
@@ -88,145 +76,146 @@ export function EvolutionPage() {
         setEvolutionLog(data);
       }
     } catch (err: any) {
-      console.error('Failed to fetch evolution data:', err);
       setError(err.message ?? 'Failed to load evolution data');
-      // Keep fallback defaults
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => {
-    fetchEvolution();
-  }, [fetchEvolution]);
+  useEffect(() => { fetchEvolution(); }, [fetchEvolution]);
 
   const filtered = filterLevel ? evolutionLog.filter((e) => e.level === filterLevel) : evolutionLog;
+  const successCount = evolutionLog.filter((e) => !e.rolled_back).length;
+  const rolledBackCount = evolutionLog.filter((e) => e.rolled_back).length;
+  const successRate = evolutionLog.length > 0 ? Math.round((successCount / evolutionLog.length) * 100) : 0;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-12 pb-8">
+      {/* ═══ Header ═══════════════════════════════════════════════ */}
+      <header className="flex items-end justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-bold text-surface-900">Evolution</h1>
-          <p className="text-sm text-surface-500 mt-0.5">AI 자동 진화 기록</p>
+          <h1 className="text-[24px] font-bold text-surface-50 tracking-tight leading-none">Evolution</h1>
+          <p className="text-[14px] text-surface-200 mt-2">AI 자동 진화 기록</p>
         </div>
-        <div className="flex gap-1 bg-white rounded-lg border border-surface-200 p-1">
+        <div className="flex items-center gap-4 text-[14px]">
           <button
             onClick={() => setFilterLevel(null)}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-              filterLevel === null ? 'bg-primary-500 text-white' : 'text-surface-500 hover:bg-surface-100'
-            }`}
+            className={`relative pb-1 font-medium transition-colors ${filterLevel === null ? 'text-surface-50' : 'text-surface-300 hover:text-surface-100'}`}
           >
-            All
+            전체
+            {filterLevel === null && <span className="absolute bottom-0 left-0 right-0 h-px bg-primary-500" />}
           </button>
           {[1, 2, 3].map((l) => (
             <button
               key={l}
               onClick={() => setFilterLevel(l)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                filterLevel === l ? 'bg-primary-500 text-white' : 'text-surface-500 hover:bg-surface-100'
-              }`}
+              className={`relative pb-1 font-medium transition-colors inline-flex items-center gap-1.5 ${filterLevel === l ? 'text-surface-50' : 'text-surface-300 hover:text-surface-100'}`}
             >
+              <span className={`w-1.5 h-1.5 rounded-full ${levelConfig[l].dot}`} />
               L{l} {levelConfig[l].label}
+              {filterLevel === l && <span className="absolute bottom-0 left-0 right-0 h-px bg-primary-500" />}
             </button>
           ))}
         </div>
-      </div>
+      </header>
 
-      {/* Error Banner */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
+      {error && <div className="text-[14px] text-red-700">{error}</div>}
 
-      {/* Loading */}
-      {loading && (
-        <div className="flex items-center gap-2 text-sm text-surface-500">
-          <Loader2 className="w-4 h-4 animate-spin" />
-          Loading evolution data...
-        </div>
-      )}
+      {/* ═══ Stats ════════════════════════════════════════════════ */}
+      <section className="grid grid-cols-2 sm:grid-cols-4 gap-x-10 gap-y-6">
+        <StatBlock label="총 진화" value={evolutionLog.length.toString()} />
+        <StatBlock label="성공" value={successCount.toString()} tone="success" />
+        <StatBlock label="롤백" value={rolledBackCount.toString()} tone="danger" />
+        <StatBlock label="성공률" value={`${successRate}%`} />
+      </section>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-surface-200 p-4 shadow-sm">
-          <p className="text-xs text-surface-500 font-medium">Total Evolutions</p>
-          <p className="text-2xl font-bold text-surface-900 mt-1">{evolutionLog.length}</p>
+      {/* ═══ Timeline ═════════════════════════════════════════════ */}
+      <section>
+        <div className="flex items-baseline justify-between mb-4">
+          <h2 className="text-[14px] font-semibold uppercase tracking-[0.14em] text-surface-200">진화 타임라인</h2>
+          {loading && <Loader2 className="w-3 h-3 text-surface-200 animate-spin" />}
         </div>
-        <div className="bg-white rounded-xl border border-surface-200 p-4 shadow-sm">
-          <p className="text-xs text-surface-500 font-medium">Successful</p>
-          <p className="text-2xl font-bold text-emerald-600 mt-1">{evolutionLog.filter((e) => !e.rolled_back).length}</p>
-        </div>
-        <div className="bg-white rounded-xl border border-surface-200 p-4 shadow-sm">
-          <p className="text-xs text-surface-500 font-medium">Rolled Back</p>
-          <p className="text-2xl font-bold text-red-500 mt-1">{evolutionLog.filter((e) => e.rolled_back).length}</p>
-        </div>
-        <div className="bg-white rounded-xl border border-surface-200 p-4 shadow-sm">
-          <p className="text-xs text-surface-500 font-medium">Success Rate</p>
-          <p className="text-2xl font-bold text-surface-900 mt-1">
-            {evolutionLog.length > 0
-              ? Math.round((evolutionLog.filter((e) => !e.rolled_back).length / evolutionLog.length) * 100)
-              : 0}%
-          </p>
-        </div>
-      </div>
 
-      {/* Timeline */}
-      <div className="space-y-4">
-        {filtered.map((entry) => {
-          const config = levelConfig[entry.level];
-          const Icon = config?.icon ?? Zap;
-          const entryConfig = config ?? { label: `L${entry.level}`, color: 'text-surface-600', bg: 'bg-surface-50 border-surface-200' };
-          return (
-            <div
-              key={entry.id}
-              className={`bg-white rounded-xl border shadow-sm overflow-hidden ${
-                entry.rolled_back ? 'border-red-200' : 'border-surface-200'
-              }`}
-            >
-              <div className="p-5">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-medium ${entryConfig.bg} ${entryConfig.color}`}>
-                      <Icon className="w-3.5 h-3.5" />
-                      Level {entry.level}: {entryConfig.label}
-                    </span>
-                    {entry.rolled_back ? (
-                      <span className="flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-600 rounded text-xs font-medium">
-                        <XCircle className="w-3.5 h-3.5" />
-                        Rolled Back
+        {filtered.length === 0 ? (
+          <div className="py-12 text-center text-[14px] text-surface-200 border-t border-surface-800">
+            진화 기록이 없습니다
+          </div>
+        ) : (
+          <div className="border-t border-surface-800">
+            {filtered.map((entry) => {
+              const config = levelConfig[entry.level] ?? { label: `L${entry.level}`, icon: Zap, dot: 'bg-surface-9000' };
+              const Icon = config.icon;
+              return (
+                <article
+                  key={entry.id}
+                  className={`flex gap-5 py-5 border-b border-surface-800 ${entry.rolled_back ? 'opacity-70' : ''}`}
+                >
+                  {/* Level indicator */}
+                  <div className="flex-shrink-0 pt-1">
+                    <div className="relative">
+                      <div className="w-8 h-8 rounded-full bg-surface-900 border border-surface-800 flex items-center justify-center">
+                        <Icon className="w-3.5 h-3.5 text-surface-600" />
+                      </div>
+                      <span className={`absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full ring-2 ring-white ${config.dot}`} />
+                    </div>
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                      <span className="text-[11.5px] font-medium text-surface-200">
+                        Level {entry.level} · {config.label}
                       </span>
-                    ) : (
-                      <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-600 rounded text-xs font-medium">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        Applied
+                      {entry.rolled_back ? (
+                        <span className="inline-flex items-center gap-1.5 text-[14px] font-medium text-red-700">
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                          롤백됨
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 text-[14px] font-medium text-emerald-700">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          적용됨
+                        </span>
+                      )}
+                      <span className="text-[14px] text-surface-200 ml-auto tabular-nums">
+                        {new Date(entry.timestamp).toLocaleString('ko-KR')}
                       </span>
+                    </div>
+
+                    <code className="text-[11.5px] text-surface-600 bg-surface-900 px-1.5 py-0.5 rounded font-mono">
+                      {entry.component}
+                    </code>
+                    <p className="text-[13px] text-surface-300 mt-2 leading-relaxed">
+                      {entry.change_description}
+                    </p>
+
+                    {(entry.performance_before || entry.performance_after) && (
+                      <div className="mt-3 flex items-center gap-3 text-[14px]">
+                        <span className="text-surface-200">
+                          {entry.performance_before}
+                        </span>
+                        <ArrowUpRight className={`w-3.5 h-3.5 ${entry.rolled_back ? 'text-red-500 rotate-90' : 'text-emerald-500'}`} />
+                        <span className={`font-medium ${entry.rolled_back ? 'text-red-700' : 'text-emerald-700'}`}>
+                          {entry.performance_after}
+                        </span>
+                      </div>
                     )}
                   </div>
-                  <span className="text-xs text-surface-400">{new Date(entry.timestamp).toLocaleString('ko-KR')}</span>
-                </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
 
-                <code className="text-xs bg-surface-100 px-2 py-0.5 rounded text-surface-500">{entry.component}</code>
-                <p className="text-sm text-surface-700 mt-2">{entry.change_description}</p>
-
-                {(entry.performance_before || entry.performance_after) && (
-                  <div className="flex items-center gap-4 mt-3 p-3 bg-surface-50 rounded-lg">
-                    <div className="text-xs">
-                      <span className="text-surface-500">Before: </span>
-                      <span className="text-surface-700 font-medium">{entry.performance_before}</span>
-                    </div>
-                    <ArrowUpRight className={`w-4 h-4 ${entry.rolled_back ? 'text-red-400' : 'text-emerald-500'}`} />
-                    <div className="text-xs">
-                      <span className="text-surface-500">After: </span>
-                      <span className={`font-medium ${entry.rolled_back ? 'text-red-600' : 'text-emerald-600'}`}>{entry.performance_after}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+function StatBlock({ label, value, tone }: { label: string; value: string; tone?: 'success' | 'danger' }) {
+  const color = tone === 'success' ? 'text-emerald-600' : tone === 'danger' ? 'text-red-600' : 'text-surface-50';
+  return (
+    <div>
+      <p className="text-[11.5px] font-semibold uppercase tracking-[0.14em] text-surface-200 mb-2">{label}</p>
+      <p className={`text-[18px] font-bold tabular-nums leading-none tracking-tight ${color}`}>{value}</p>
     </div>
   );
 }

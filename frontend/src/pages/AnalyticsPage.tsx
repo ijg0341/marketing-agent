@@ -1,22 +1,21 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Legend,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts';
-import { TrendingUp, TrendingDown, Eye, Heart, MousePointerClick, Target, RefreshCw, Loader2 } from 'lucide-react';
+import { RefreshCw, Loader2 } from 'lucide-react';
 import { ChannelBadge } from '../components/ChannelBadge';
 import { api } from '../api';
 
 const emptyMetrics = [
-  { label: '노출수', value: '0', change: '+0%', up: true, icon: Eye },
-  { label: '참여수', value: '0', change: '+0%', up: true, icon: Heart },
-  { label: '클릭수', value: '0', change: '+0%', up: true, icon: MousePointerClick },
-  { label: '평균 참여율', value: '0.0%', change: '+0%p', up: true, icon: Target },
+  { label: '노출수',      value: '0',    change: '+0%',  up: true },
+  { label: '참여수',      value: '0',    change: '+0%',  up: true },
+  { label: '클릭수',      value: '0',    change: '+0%',  up: true },
+  { label: '평균 참여율', value: '0.0%', change: '+0%p', up: true },
 ];
 
-const EmptyState = () => (
-  <div className="flex items-center justify-center py-12 text-sm text-surface-400">
-    아직 데이터가 없습니다. 메트릭 수집을 실행하면 데이터가 수집됩니다.
+const EmptyState = ({ label = '아직 데이터가 없습니다' }: { label?: string }) => (
+  <div className="py-12 text-center text-[14px] text-surface-200">
+    {label}
   </div>
 );
 
@@ -40,61 +39,29 @@ export function AnalyticsPage() {
         api.content.recent(50),
       ]);
 
-      // Map summary to metric cards
       if (summary) {
         setMetrics([
-          {
-            label: '노출수',
-            value: (summary.total_impressions ?? 0).toLocaleString(),
-            change: '+0%',
-            up: true,
-            icon: Eye,
-          },
-          {
-            label: '참여수',
-            value: (summary.total_engagements ?? 0).toLocaleString(),
-            change: '+0%',
-            up: true,
-            icon: Heart,
-          },
-          {
-            label: '클릭수',
-            value: (summary.total_clicks ?? 0).toLocaleString(),
-            change: '+0%',
-            up: true,
-            icon: MousePointerClick,
-          },
-          {
-            label: '평균 참여율',
-            value: `${(summary.avg_engagement_rate ?? 0).toFixed(1)}%`,
-            change: '+0%p',
-            up: true,
-            icon: Target,
-          },
+          { label: '노출수',      value: (summary.total_impressions ?? 0).toLocaleString(), change: '+0%',  up: true },
+          { label: '참여수',      value: (summary.total_engagements ?? 0).toLocaleString(), change: '+0%',  up: true },
+          { label: '클릭수',      value: (summary.total_clicks ?? 0).toLocaleString(),      change: '+0%',  up: true },
+          { label: '평균 참여율', value: `${(summary.avg_engagement_rate ?? 0).toFixed(1)}%`, change: '+0%p', up: true },
         ]);
       }
 
-      // Map details to daily chart
       if (Array.isArray(details) && details.length > 0) {
         const byDate: Record<string, { impressions: number; engagements: number; clicks: number }> = {};
-
         for (const d of details) {
-          const dateKey = d.timestamp
-            ? new Date(d.timestamp).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' })
-            : 'unknown';
-          if (!byDate[dateKey]) byDate[dateKey] = { impressions: 0, engagements: 0, clicks: 0 };
-          byDate[dateKey].impressions += d.impressions ?? 0;
-          byDate[dateKey].engagements += d.engagements ?? 0;
-          byDate[dateKey].clicks += d.clicks ?? 0;
+          const key = d.timestamp ? new Date(d.timestamp).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' }) : 'unknown';
+          if (!byDate[key]) byDate[key] = { impressions: 0, engagements: 0, clicks: 0 };
+          byDate[key].impressions += d.impressions ?? 0;
+          byDate[key].engagements += d.engagements ?? 0;
+          byDate[key].clicks += d.clicks ?? 0;
         }
-
-        const dailyArr = Object.entries(byDate).map(([date, v]) => ({ date, ...v }));
-        setDailyData(dailyArr);
+        setDailyData(Object.entries(byDate).map(([date, v]) => ({ date, ...v })));
       } else {
         setDailyData([]);
       }
 
-      // Map recent content to top performing table (Twitter only)
       if (Array.isArray(recent) && recent.length > 0) {
         const mapped = recent
           .filter((c: any) => (c.channel ?? 'twitter').toLowerCase() === 'twitter')
@@ -113,16 +80,13 @@ export function AnalyticsPage() {
         setTopContent([]);
       }
     } catch (err: any) {
-      console.error('Failed to fetch analytics:', err);
       setError(err.message ?? 'Failed to load analytics data');
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => {
-    fetchData(period);
-  }, [period, fetchData]);
+  useEffect(() => { fetchData(period); }, [period, fetchData]);
 
   const handleCollect = async () => {
     setCollecting(true);
@@ -130,136 +94,135 @@ export function AnalyticsPage() {
       await api.analytics.collect();
       await fetchData(period);
     } catch (err: any) {
-      console.error('Metric collection failed:', err);
       setError(err.message ?? 'Failed to collect metrics');
     } finally {
       setCollecting(false);
     }
   };
 
+  const periodLabels: Record<string, string> = { '24h': '24시간', '7d': '7일', '30d': '30일' };
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-12 pb-8">
+      {/* ═══ Header ═══════════════════════════════════════════════ */}
+      <header className="flex items-end justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-bold text-surface-900">분석</h1>
-          <p className="text-sm text-surface-500 mt-0.5">Twitter 성과 분석 및 인사이트</p>
+          <h1 className="text-[24px] font-bold text-surface-50 tracking-tight leading-none">분석</h1>
+          <p className="text-[14px] text-surface-200 mt-2">Twitter 성과 분석 및 인사이트 · {periodLabels[period]}</p>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={handleCollect}
             disabled={collecting}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-primary-50 text-primary-600 hover:bg-primary-100 transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-[12.5px] font-medium text-surface-200 hover:text-surface-50 hover:bg-surface-800 rounded-md disabled:opacity-50 transition-colors"
           >
             {collecting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
             메트릭 수집
           </button>
-          <div className="flex gap-1 bg-white rounded-lg border border-surface-200 p-1">
-            {[{ key: '24h', label: '24시간' }, { key: '7d', label: '7일' }, { key: '30d', label: '30일' }].map(({ key, label }) => (
+          <div className="flex items-center gap-4 text-[14px]">
+            {Object.entries(periodLabels).map(([key, label]) => (
               <button
                 key={key}
                 onClick={() => setPeriod(key)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                  period === key ? 'bg-primary-500 text-white' : 'text-surface-500 hover:bg-surface-100'
+                className={`relative pb-1 font-medium transition-colors ${
+                  period === key ? 'text-surface-50' : 'text-surface-300 hover:text-surface-100'
                 }`}
               >
                 {label}
+                {period === key && <span className="absolute bottom-0 left-0 right-0 h-px bg-primary-500" />}
               </button>
             ))}
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Error Banner */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
+        <div className="text-[14px] text-red-700">{error}</div>
       )}
 
-      {/* Loading indicator */}
-      {loading && (
-        <div className="flex items-center gap-2 text-sm text-surface-500">
-          <Loader2 className="w-4 h-4 animate-spin" />
-          로딩 중...
-        </div>
-      )}
-
-      {/* Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* ═══ KPI Row ══════════════════════════════════════════════ */}
+      <section className="grid grid-cols-2 sm:grid-cols-4 gap-x-10 gap-y-6">
         {metrics.map((m) => (
-          <div key={m.label} className="bg-white rounded-xl border border-surface-200 p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-surface-500 font-medium">{m.label}</span>
-              <m.icon className="w-4.5 h-4.5 text-surface-400" />
-            </div>
-            <p className="text-2xl font-bold text-surface-900">{m.value}</p>
-            <div className={`flex items-center gap-1 mt-1 text-xs font-medium ${m.up ? 'text-emerald-600' : 'text-red-500'}`}>
-              {m.up ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
-              {m.change} 이전 기간 대비
-            </div>
+          <div key={m.label}>
+            <p className="text-[11.5px] font-semibold uppercase tracking-[0.14em] text-surface-200 mb-2">{m.label}</p>
+            <p className="text-[22px] font-bold text-surface-50 tabular-nums leading-none tracking-tight">{m.value}</p>
+            <p className={`text-[14px] font-medium mt-2 ${m.up ? 'text-emerald-600' : 'text-red-600'}`}>
+              {m.change} <span className="text-surface-200 font-normal">이전 기간 대비</span>
+            </p>
           </div>
         ))}
-      </div>
+      </section>
 
-      {/* Performance Over Time */}
-      <div className="bg-white rounded-xl border border-surface-200 p-5 shadow-sm">
-        <h2 className="text-sm font-semibold text-surface-900 mb-4">기간별 성과 (Twitter)</h2>
+      {/* ═══ Performance Chart ════════════════════════════════════ */}
+      <section>
+        <div className="flex items-baseline justify-between mb-4">
+          <h2 className="text-[14px] font-semibold uppercase tracking-[0.14em] text-surface-200">기간별 성과 (Twitter)</h2>
+          {loading && <Loader2 className="w-3 h-3 text-surface-200 animate-spin" />}
+        </div>
         {dailyData.length === 0 ? (
-          <EmptyState />
+          <div className="border-t border-surface-800"><EmptyState /></div>
         ) : (
           <ResponsiveContainer width="100%" height={320}>
-            <AreaChart data={dailyData}>
+            <AreaChart data={dailyData} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
               <defs>
-                <linearGradient id="impressionsGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                <linearGradient id="impGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.18} />
+                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
                 </linearGradient>
-                <linearGradient id="engagementsGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                <linearGradient id="engGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#1570ef" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#1570ef" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="#94a3b8" />
-              <YAxis tick={{ fontSize: 12 }} stroke="#94a3b8" />
-              <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }} />
-              <Legend />
-              <Area type="monotone" dataKey="impressions" stroke="#3b82f6" strokeWidth={2} fill="url(#impressionsGrad)" name="노출수" />
-              <Area type="monotone" dataKey="engagements" stroke="#10b981" strokeWidth={2} fill="url(#engagementsGrad)" name="참여수" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
+              <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#71717a' }} stroke="#27272a" tickLine={false} axisLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: '#71717a' }} stroke="#27272a" tickLine={false} axisLine={false} />
+              <Tooltip
+                contentStyle={{
+                  borderRadius: '8px',
+                  border: '1px solid #27272a',
+                  boxShadow: '0 4px 12px -2px rgba(0,0,0,0.4)',
+                  fontSize: '12px',
+                  padding: '8px 10px',
+                }}
+                labelStyle={{ color: '#8b5cf6', fontWeight: 600 }}
+              />
+              <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '8px' }} iconType="circle" />
+              <Area type="monotone" dataKey="impressions" stroke="#8b5cf6" strokeWidth={2} fill="url(#impGrad)" name="노출수" />
+              <Area type="monotone" dataKey="engagements" stroke="#1570ef" strokeWidth={2} fill="url(#engGrad)" name="참여수" />
             </AreaChart>
           </ResponsiveContainer>
         )}
-      </div>
+      </section>
 
-      {/* Top Content */}
-      <div className="bg-white rounded-xl border border-surface-200 shadow-sm">
-        <div className="p-5 border-b border-surface-100">
-          <h2 className="text-sm font-semibold text-surface-900">성과 상위 Twitter 콘텐츠</h2>
-        </div>
+      {/* ═══ Top Content ══════════════════════════════════════════ */}
+      <section>
+        <h2 className="text-[14px] font-semibold uppercase tracking-[0.14em] text-surface-200 mb-4">성과 상위 Twitter 콘텐츠</h2>
         {topContent.length === 0 ? (
-          <EmptyState />
+          <div className="border-t border-surface-800"><EmptyState /></div>
         ) : (
-          <div className="divide-y divide-surface-50">
+          <div className="border-t border-surface-800">
             {topContent.map((item, i) => (
-              <div key={item.id} className="px-5 py-3 flex items-start gap-3">
-                <span className="text-lg font-bold text-surface-300 w-6 shrink-0">#{i + 1}</span>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <ChannelBadge channel={item.channel} />
-                    <span className="text-xs text-surface-400">참여율 {item.rate}%</span>
-                  </div>
-                  <p className="text-sm text-surface-700 truncate">{item.text}</p>
-                  <div className="flex gap-4 mt-1 text-xs text-surface-400">
-                    <span>노출 {item.impressions.toLocaleString()}</span>
-                    <span>참여 {item.engagements.toLocaleString()}</span>
-                  </div>
+              <div key={item.id} className="flex items-center gap-4 py-3.5 border-b border-surface-800">
+                <span className="text-[18px] font-bold text-surface-600 w-8 tabular-nums flex-shrink-0">#{i + 1}</span>
+                <div className="w-[100px] flex-shrink-0">
+                  <ChannelBadge channel={item.channel} />
                 </div>
+                <p className="text-[15px] text-surface-50 truncate flex-1 leading-snug">{item.text}</p>
+                <span className="text-[13px] text-surface-300 tabular-nums w-24 flex-shrink-0">
+                  노출 {item.impressions.toLocaleString()}
+                </span>
+                <span className="text-[13px] text-surface-300 tabular-nums w-24 flex-shrink-0">
+                  참여 {item.engagements.toLocaleString()}
+                </span>
+                <span className="text-[15px] font-semibold text-surface-50 tabular-nums w-16 text-right flex-shrink-0">
+                  {item.rate}%
+                </span>
               </div>
             ))}
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }

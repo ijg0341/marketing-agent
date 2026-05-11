@@ -97,7 +97,7 @@ const platformLabels: Record<Platform, string> = {
 };
 
 const statusColors: Record<CampaignStatus, string> = {
-  draft: 'bg-surface-100 text-surface-600',
+  draft: 'bg-surface-800 text-surface-600',
   active: 'bg-emerald-100 text-emerald-700',
   paused: 'bg-amber-100 text-amber-700',
   completed: 'bg-blue-100 text-blue-700',
@@ -415,7 +415,7 @@ export function AdsPage() {
   /* ---------- sub-components (inline) ---------- */
 
   const inputCls =
-    'w-full px-3 py-2 text-sm border border-surface-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-shadow';
+    'w-full px-3 py-2 text-sm border border-surface-800 rounded-lg bg-surface-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-shadow';
   const labelCls = 'block text-xs font-medium text-surface-600 mb-1';
   const sectionHeaderCls =
     'flex items-center justify-between cursor-pointer select-none py-2';
@@ -427,12 +427,12 @@ export function AdsPage() {
       {/* ===== Header ===== */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-surface-900">광고</h1>
-          <p className="text-sm text-surface-500 mt-0.5">광고 캠페인 관리 및 성과 분석</p>
+          <h1 className="text-2xl font-bold text-surface-50">광고</h1>
+          <p className="text-sm text-surface-200 mt-0.5">광고 캠페인 관리 및 성과 분석</p>
         </div>
         <div className="flex items-center gap-3">
           {/* Platform tabs */}
-          <div className="flex gap-1 bg-white rounded-lg border border-surface-200 p-1">
+          <div className="flex gap-1 bg-surface-900 rounded-lg border border-surface-800 p-1">
             {(['all', 'twitter', 'meta', 'google'] as const).map((p) => (
               <button
                 key={p}
@@ -441,7 +441,7 @@ export function AdsPage() {
                   'px-3 py-1.5 text-xs font-medium rounded-md transition-colors',
                   platformTab === p
                     ? 'bg-primary-500 text-white'
-                    : 'text-surface-500 hover:bg-surface-100',
+                    : 'text-surface-200 hover:bg-surface-800',
                 )}
               >
                 {p === 'all' ? '전체' : platformLabels[p]}
@@ -507,10 +507,10 @@ export function AdsPage() {
 
       {/* ===== Campaign Creation Form ===== */}
       {showForm && (
-        <div className="bg-white rounded-xl border border-surface-200 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-surface-100 bg-surface-50">
-            <h3 className="text-sm font-semibold text-surface-900">새 캠페인 만들기</h3>
-            <p className="text-xs text-surface-500 mt-0.5">새 광고 캠페인을 설정합니다</p>
+        <div className="bg-surface-900 rounded-xl border border-surface-800 shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-surface-800 bg-surface-900">
+            <h3 className="text-sm font-semibold text-surface-50">새 캠페인 만들기</h3>
+            <p className="text-xs text-surface-200 mt-0.5">새 광고 캠페인을 설정합니다</p>
           </div>
 
           <div className="p-6 space-y-6">
@@ -620,16 +620,16 @@ export function AdsPage() {
             </div>
 
             {/* -- Targeting -- */}
-            <div className="border border-surface-200 rounded-lg overflow-hidden">
+            <div className="border border-surface-800 rounded-lg overflow-hidden">
               <div
-                className={clsx(sectionHeaderCls, 'px-4 bg-surface-50')}
+                className={clsx(sectionHeaderCls, 'px-4 bg-surface-900')}
                 onClick={() => setExpandedTargeting((v) => !v)}
               >
-                <span className="text-sm font-semibold text-surface-800">타겟팅</span>
+                <span className="text-sm font-semibold text-surface-100">타겟팅</span>
                 {expandedTargeting ? (
-                  <ChevronUp className="w-4 h-4 text-surface-400" />
+                  <ChevronUp className="w-4 h-4 text-surface-200" />
                 ) : (
-                  <ChevronDown className="w-4 h-4 text-surface-400" />
+                  <ChevronDown className="w-4 h-4 text-surface-200" />
                 )}
               </div>
               {expandedTargeting && (
@@ -765,13 +765,13 @@ export function AdsPage() {
                       {platformPlacements[form.platform].map((pl) => (
                         <label
                           key={pl.value}
-                          className="inline-flex items-center gap-1.5 text-sm text-surface-700 cursor-pointer"
+                          className="inline-flex items-center gap-1.5 text-sm text-surface-200 cursor-pointer"
                         >
                           <input
                             type="checkbox"
                             checked={form.placements.includes(pl.value)}
                             onChange={() => togglePlacement(pl.value)}
-                            className="rounded border-surface-300 text-primary-500 focus:ring-primary-500"
+                            className="rounded border-surface-700 text-primary-500 focus:ring-primary-500"
                           />
                           {pl.label}
                         </label>
@@ -783,16 +783,16 @@ export function AdsPage() {
             </div>
 
             {/* -- Ad Creative -- */}
-            <div className="border border-surface-200 rounded-lg overflow-hidden">
+            <div className="border border-surface-800 rounded-lg overflow-hidden">
               <div
-                className={clsx(sectionHeaderCls, 'px-4 bg-surface-50')}
+                className={clsx(sectionHeaderCls, 'px-4 bg-surface-900')}
                 onClick={() => setExpandedCreative((v) => !v)}
               >
-                <span className="text-sm font-semibold text-surface-800">광고 소재</span>
+                <span className="text-sm font-semibold text-surface-100">광고 소재</span>
                 {expandedCreative ? (
-                  <ChevronUp className="w-4 h-4 text-surface-400" />
+                  <ChevronUp className="w-4 h-4 text-surface-200" />
                 ) : (
-                  <ChevronDown className="w-4 h-4 text-surface-400" />
+                  <ChevronDown className="w-4 h-4 text-surface-200" />
                 )}
               </div>
               {expandedCreative && (
@@ -890,7 +890,7 @@ export function AdsPage() {
                   setForm(emptyForm);
                   setShowForm(false);
                 }}
-                className="px-4 py-2 text-sm font-medium text-surface-600 bg-surface-100 rounded-lg hover:bg-surface-200 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-surface-600 bg-surface-800 rounded-lg hover:bg-surface-700 transition-colors"
               >
                 취소
               </button>
@@ -909,15 +909,15 @@ export function AdsPage() {
       )}
 
       {/* ===== Campaign List ===== */}
-      <div className="bg-white rounded-xl border border-surface-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-surface-100">
-          <h3 className="text-sm font-semibold text-surface-900">
+      <div className="bg-surface-900 rounded-xl border border-surface-800 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-surface-800">
+          <h3 className="text-sm font-semibold text-surface-50">
             캠페인
-            <span className="ml-2 text-surface-400 font-normal">({filtered.length})</span>
+            <span className="ml-2 text-surface-200 font-normal">({filtered.length})</span>
           </h3>
         </div>
         {loading ? (
-          <div className="flex items-center justify-center py-16 gap-2 text-surface-400">
+          <div className="flex items-center justify-center py-16 gap-2 text-surface-200">
             <Loader2 className="w-5 h-5 animate-spin" />
             <span className="text-sm">로딩 중...</span>
           </div>
@@ -925,25 +925,25 @@ export function AdsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-surface-100 bg-surface-50">
-                  <th className="text-left px-4 py-3 font-medium text-surface-500 text-xs">플랫폼</th>
-                  <th className="text-left px-4 py-3 font-medium text-surface-500 text-xs">캠페인</th>
-                  <th className="text-left px-4 py-3 font-medium text-surface-500 text-xs">목표</th>
-                  <th className="text-left px-4 py-3 font-medium text-surface-500 text-xs">상태</th>
-                  <th className="text-right px-4 py-3 font-medium text-surface-500 text-xs">예산</th>
-                  <th className="text-right px-4 py-3 font-medium text-surface-500 text-xs">집행액</th>
-                  <th className="text-right px-4 py-3 font-medium text-surface-500 text-xs">노출수</th>
-                  <th className="text-right px-4 py-3 font-medium text-surface-500 text-xs">클릭수</th>
-                  <th className="text-right px-4 py-3 font-medium text-surface-500 text-xs">CTR</th>
-                  <th className="text-right px-4 py-3 font-medium text-surface-500 text-xs">ROAS</th>
-                  <th className="text-center px-4 py-3 font-medium text-surface-500 text-xs">액션</th>
+                <tr className="border-b border-surface-800 bg-surface-900">
+                  <th className="text-left px-4 py-3 font-medium text-surface-200 text-xs">플랫폼</th>
+                  <th className="text-left px-4 py-3 font-medium text-surface-200 text-xs">캠페인</th>
+                  <th className="text-left px-4 py-3 font-medium text-surface-200 text-xs">목표</th>
+                  <th className="text-left px-4 py-3 font-medium text-surface-200 text-xs">상태</th>
+                  <th className="text-right px-4 py-3 font-medium text-surface-200 text-xs">예산</th>
+                  <th className="text-right px-4 py-3 font-medium text-surface-200 text-xs">집행액</th>
+                  <th className="text-right px-4 py-3 font-medium text-surface-200 text-xs">노출수</th>
+                  <th className="text-right px-4 py-3 font-medium text-surface-200 text-xs">클릭수</th>
+                  <th className="text-right px-4 py-3 font-medium text-surface-200 text-xs">CTR</th>
+                  <th className="text-right px-4 py-3 font-medium text-surface-200 text-xs">ROAS</th>
+                  <th className="text-center px-4 py-3 font-medium text-surface-200 text-xs">액션</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((c) => (
                   <tr
                     key={c.id}
-                    className="border-b border-surface-50 hover:bg-surface-50/60 transition-colors"
+                    className="border-b border-surface-50 hover:bg-surface-800/40 transition-colors"
                   >
                     <td className="px-4 py-3">
                       <span
@@ -955,7 +955,7 @@ export function AdsPage() {
                         {platformLabels[c.platform]}
                       </span>
                     </td>
-                    <td className="px-4 py-3 font-medium text-surface-900 max-w-[200px] truncate">
+                    <td className="px-4 py-3 font-medium text-surface-50 max-w-[200px] truncate">
                       {c.name}
                     </td>
                     <td className="px-4 py-3 text-surface-600">{objectiveLabels[c.objective]}</td>
@@ -970,7 +970,7 @@ export function AdsPage() {
                           {statusLabels[c.status]}
                         </span>
                         {actionLoading === c.id ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin text-surface-400" />
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-surface-200" />
                         ) : (
                           <>
                             {c.status === 'draft' && (
@@ -1001,39 +1001,39 @@ export function AdsPage() {
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-right text-surface-700 tabular-nums">
+                    <td className="px-4 py-3 text-right text-surface-200 tabular-nums">
                       {formatWon(c.total_budget)}
                     </td>
-                    <td className="px-4 py-3 text-right text-surface-700 tabular-nums">
+                    <td className="px-4 py-3 text-right text-surface-200 tabular-nums">
                       {formatWon(c.spend)}
                     </td>
-                    <td className="px-4 py-3 text-right text-surface-700 tabular-nums">
+                    <td className="px-4 py-3 text-right text-surface-200 tabular-nums">
                       {formatNumber(c.impressions)}
                     </td>
-                    <td className="px-4 py-3 text-right text-surface-700 tabular-nums">
+                    <td className="px-4 py-3 text-right text-surface-200 tabular-nums">
                       {formatNumber(c.clicks)}
                     </td>
-                    <td className="px-4 py-3 text-right text-surface-700 tabular-nums">
+                    <td className="px-4 py-3 text-right text-surface-200 tabular-nums">
                       {(c.ctr ?? 0).toFixed(1)}%
                     </td>
-                    <td className="px-4 py-3 text-right text-surface-700 tabular-nums">
+                    <td className="px-4 py-3 text-right text-surface-200 tabular-nums">
                       {(c.roas ?? 0) > 0 ? `${(c.roas ?? 0).toFixed(1)}x` : '-'}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-center gap-1">
                         {actionLoading === c.id ? (
-                          <Loader2 className="w-4 h-4 animate-spin text-surface-400" />
+                          <Loader2 className="w-4 h-4 animate-spin text-surface-200" />
                         ) : (
                           <>
                             <button
-                              className="p-1.5 rounded-md text-surface-400 hover:text-surface-600 hover:bg-surface-100 transition-colors"
+                              className="p-1.5 rounded-md text-surface-200 hover:text-surface-600 hover:bg-surface-800 transition-colors"
                               title="편집"
                             >
                               <Pencil className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={() => handleDelete(c.id)}
-                              className="p-1.5 rounded-md text-surface-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                              className="p-1.5 rounded-md text-surface-200 hover:text-red-600 hover:bg-red-50 transition-colors"
                               title="삭제"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -1047,7 +1047,7 @@ export function AdsPage() {
                 {filtered.length === 0 && (
                   <tr>
                     <td colSpan={11} className="px-4 py-12 text-center">
-                      <div className="flex items-center justify-center py-12 text-sm text-surface-400">아직 광고 캠페인이 없습니다. 새 캠페인을 생성하세요.</div>
+                      <div className="flex items-center justify-center py-12 text-sm text-surface-200">아직 광고 캠페인이 없습니다. 새 캠페인을 생성하세요.</div>
                     </td>
                   </tr>
                 )}
@@ -1058,8 +1058,8 @@ export function AdsPage() {
       </div>
 
       {/* ===== Spend Trend Chart ===== */}
-      <div className="bg-white rounded-xl border border-surface-200 p-5 shadow-sm">
-        <h3 className="text-sm font-semibold text-surface-900 mb-4">일일 광고비 추이</h3>
+      <div className="bg-surface-900 rounded-xl border border-surface-800 p-5 shadow-sm">
+        <h3 className="text-sm font-semibold text-surface-50 mb-4">일일 광고비 추이</h3>
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={[]} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
@@ -1069,8 +1069,8 @@ export function AdsPage() {
                   <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="colorMeta" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="colorGoogle" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#ef4444" stopOpacity={0.15} />
@@ -1078,10 +1078,10 @@ export function AdsPage() {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="#94a3b8" />
+              <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="#71717a" />
               <YAxis
                 tick={{ fontSize: 12 }}
-                stroke="#94a3b8"
+                stroke="#71717a"
                 tickFormatter={(v: number) => `₩${(v / 1000).toFixed(0)}k`}
               />
               <Tooltip
@@ -1110,7 +1110,7 @@ export function AdsPage() {
               <Area
                 type="monotone"
                 dataKey="meta"
-                stroke="#3b82f6"
+                stroke="#8b5cf6"
                 strokeWidth={2}
                 fill="url(#colorMeta)"
               />

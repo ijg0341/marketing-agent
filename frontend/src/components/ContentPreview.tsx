@@ -95,16 +95,16 @@ function TwitterPreview({ text }: { text: string }) {
   return (
     <div className="space-y-2">
       <ValidationBadge result={v} />
-      <div className="bg-white rounded-2xl border border-surface-200 p-4 max-w-md">
+      <div className="bg-surface-900 rounded-2xl border border-surface-800 p-4 max-w-md">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-400 to-blue-500 flex-shrink-0" />
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline gap-1.5">
-              <span className="text-sm font-bold text-surface-900">PLANDOG</span>
-              <span className="text-sm text-surface-400">@plandog</span>
+              <span className="text-sm font-bold text-surface-50">PLANDOG</span>
+              <span className="text-sm text-surface-200">@plandog</span>
             </div>
-            <p className="text-sm text-surface-900 mt-0.5 whitespace-pre-wrap break-words">
-              {text || <span className="text-surface-400">(본문 없음)</span>}
+            <p className="text-sm text-surface-50 mt-0.5 whitespace-pre-wrap break-words">
+              {text || <span className="text-surface-200">(본문 없음)</span>}
             </p>
           </div>
         </div>
@@ -119,12 +119,12 @@ function InstagramPreview({ text, mediaUrl }: { text: string; mediaUrl?: string 
   return (
     <div className="space-y-2">
       <ValidationBadge result={v} />
-      <div className="bg-white rounded-lg border border-surface-200 max-w-sm overflow-hidden">
-        <div className="flex items-center gap-2 p-3 border-b border-surface-100">
+      <div className="bg-surface-900 rounded-lg border border-surface-800 max-w-sm overflow-hidden">
+        <div className="flex items-center gap-2 p-3 border-b border-surface-800">
           <div className="w-7 h-7 rounded-full bg-gradient-to-br from-pink-500 via-red-400 to-yellow-400" />
-          <span className="text-sm font-semibold text-surface-900">plandog</span>
+          <span className="text-sm font-semibold text-surface-50">plandog</span>
         </div>
-        <div className="aspect-square bg-surface-100 flex items-center justify-center overflow-hidden">
+        <div className="aspect-square bg-surface-800 flex items-center justify-center overflow-hidden">
           {mediaUrl ? (
             <img
               src={mediaUrl}
@@ -139,19 +139,19 @@ function InstagramPreview({ text, mediaUrl }: { text: string; mediaUrl?: string 
             />
           ) : null}
           <div
-            className="text-xs text-surface-400 items-center justify-center w-full h-full flex"
+            className="text-xs text-surface-200 items-center justify-center w-full h-full flex"
             style={{ display: mediaUrl ? 'none' : 'flex' }}
           >
             {mediaUrl ? '이미지 로드 실패' : '이미지 미설정'}
           </div>
         </div>
         <div className="p-3">
-          <p className="text-sm text-surface-900">
+          <p className="text-sm text-surface-50">
             <span className="font-semibold">plandog</span>{' '}
-            <span>{firstLine || <span className="text-surface-400">(캡션 없음)</span>}</span>
+            <span>{firstLine || <span className="text-surface-200">(캡션 없음)</span>}</span>
           </p>
           {text.split('\n').length > 1 && (
-            <p className="text-xs text-surface-400 mt-1">… 캡션 더 보기 (총 {text.length}자)</p>
+            <p className="text-xs text-surface-200 mt-1">… 캡션 더 보기 (총 {text.length}자)</p>
           )}
         </div>
       </div>
@@ -164,19 +164,19 @@ function FacebookPreview({ text, mediaUrl }: { text: string; mediaUrl?: string |
   return (
     <div className="space-y-2">
       <ValidationBadge result={v} />
-      <div className="bg-white rounded-lg border border-surface-200 max-w-md overflow-hidden">
+      <div className="bg-surface-900 rounded-lg border border-surface-800 max-w-md overflow-hidden">
         <div className="flex items-center gap-2 p-3">
           <div className="w-9 h-9 rounded-full bg-blue-600" />
           <div>
-            <div className="text-sm font-semibold text-surface-900">PLANDOG</div>
-            <div className="text-xs text-surface-400">방금 전 · 🌐</div>
+            <div className="text-sm font-semibold text-surface-50">PLANDOG</div>
+            <div className="text-xs text-surface-200">방금 전 · 🌐</div>
           </div>
         </div>
-        <p className="px-3 pb-3 text-sm text-surface-900 whitespace-pre-wrap break-words">
-          {text || <span className="text-surface-400">(본문 없음)</span>}
+        <p className="px-3 pb-3 text-sm text-surface-50 whitespace-pre-wrap break-words">
+          {text || <span className="text-surface-200">(본문 없음)</span>}
         </p>
         {mediaUrl && (
-          <div className="aspect-video bg-surface-100">
+          <div className="aspect-video bg-surface-800">
             <img
               src={mediaUrl}
               alt=""
@@ -204,17 +204,17 @@ function BlogPreview({
   return (
     <div className="space-y-2">
       <ValidationBadge result={result} />
-      <article className="bg-white rounded-lg border border-surface-200 p-5 max-w-2xl">
-        <div className="flex items-center gap-2 mb-3 pb-3 border-b border-surface-100">
+      <article className="bg-surface-900 rounded-lg border border-surface-800 p-5 max-w-2xl">
+        <div className="flex items-center gap-2 mb-3 pb-3 border-b border-surface-800">
           <span className={`w-2 h-2 rounded-full ${meta.dot}`} />
           <span className={`text-xs font-bold uppercase tracking-wider ${meta.accent}`}>{meta.label}</span>
         </div>
-        <h1 className="text-xl font-bold text-surface-900 mb-3 break-words">{title || <span className="text-surface-400">(제목 없음)</span>}</h1>
-        <div className="report-markdown text-sm leading-relaxed text-surface-700">
+        <h1 className="text-xl font-bold text-surface-50 mb-3 break-words">{title || <span className="text-surface-200">(제목 없음)</span>}</h1>
+        <div className="report-markdown text-sm leading-relaxed text-surface-200">
           {body ? (
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{body}</ReactMarkdown>
           ) : (
-            <span className="text-surface-400">(본문 없음)</span>
+            <span className="text-surface-200">(본문 없음)</span>
           )}
         </div>
       </article>
@@ -227,24 +227,24 @@ function EmailPreview({ text }: { text: string }) {
   return (
     <div className="space-y-2">
       <ValidationBadge result={result} />
-      <div className="bg-white rounded-lg border border-surface-200 max-w-md overflow-hidden">
-        <div className="px-4 py-3 border-b border-surface-100 space-y-1.5 bg-surface-50">
+      <div className="bg-surface-900 rounded-lg border border-surface-800 max-w-md overflow-hidden">
+        <div className="px-4 py-3 border-b border-surface-800 space-y-1.5 bg-surface-900">
           <div className="text-xs">
-            <span className="text-surface-500">제목: </span>
-            <span className="text-surface-900 font-medium break-all">{subject || <span className="text-surface-400">(없음)</span>}</span>
+            <span className="text-surface-200">제목: </span>
+            <span className="text-surface-50 font-medium break-all">{subject || <span className="text-surface-200">(없음)</span>}</span>
           </div>
           <div className="text-xs">
-            <span className="text-surface-500">수신자: </span>
-            <span className="text-surface-900 break-all">{recipients || <span className="text-surface-400">(없음)</span>}</span>
+            <span className="text-surface-200">수신자: </span>
+            <span className="text-surface-50 break-all">{recipients || <span className="text-surface-200">(없음)</span>}</span>
           </div>
         </div>
         {body ? (
           <div
-            className="p-4 text-sm text-surface-700 break-words"
+            className="p-4 text-sm text-surface-200 break-words"
             dangerouslySetInnerHTML={{ __html: body }}
           />
         ) : (
-          <p className="p-4 text-sm text-surface-400">(본문 없음)</p>
+          <p className="p-4 text-sm text-surface-200">(본문 없음)</p>
         )}
       </div>
     </div>
@@ -277,7 +277,7 @@ export function ContentPreview({
       return <EmailPreview text={text} />;
     default:
       return (
-        <div className="text-sm text-surface-500 p-4 rounded-lg border border-surface-200 bg-surface-50">
+        <div className="text-sm text-surface-200 p-4 rounded-lg border border-surface-800 bg-surface-900">
           알 수 없는 채널: <code>{channel}</code>
         </div>
       );

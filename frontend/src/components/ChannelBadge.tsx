@@ -1,32 +1,20 @@
 import { clsx } from 'clsx';
 
-const channelColors: Record<string, string> = {
-  twitter: 'bg-sky-100 text-sky-700',
-  instagram: 'bg-pink-100 text-pink-700',
-  facebook: 'bg-blue-100 text-blue-700',
-  blog_naver: 'bg-emerald-100 text-emerald-700',
-  blog_tistory: 'bg-orange-100 text-orange-700',
-  email: 'bg-amber-100 text-amber-700',
-};
-
-const channelLabels: Record<string, string> = {
-  twitter: 'Twitter',
-  instagram: 'Instagram',
-  facebook: 'Facebook',
-  blog_naver: '네이버 블로그',
-  blog_tistory: '티스토리',
-  email: 'Email',
+const CHANNEL_META: Record<string, { label: string; dot: string }> = {
+  twitter:      { label: 'Twitter',     dot: 'bg-sky-400' },
+  instagram:    { label: 'Instagram',   dot: 'bg-pink-400' },
+  facebook:     { label: 'Facebook',    dot: 'bg-blue-500' },
+  blog_naver:   { label: '네이버 블로그', dot: 'bg-emerald-400' },
+  blog_tistory: { label: '티스토리',     dot: 'bg-orange-400' },
+  email:        { label: 'Email',       dot: 'bg-amber-400' },
 };
 
 export function ChannelBadge({ channel }: { channel: string }) {
+  const meta = CHANNEL_META[channel];
   return (
-    <span
-      className={clsx(
-        'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium',
-        channelColors[channel] || 'bg-gray-100 text-gray-700'
-      )}
-    >
-      {channelLabels[channel] || channel}
+    <span className="inline-flex items-center gap-1.5 text-[14px] font-medium text-surface-50">
+      <span className={clsx('w-1.5 h-1.5 rounded-full flex-shrink-0', meta?.dot ?? 'bg-surface-500')} />
+      {meta?.label ?? channel}
     </span>
   );
 }

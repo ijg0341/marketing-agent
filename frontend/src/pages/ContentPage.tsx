@@ -11,14 +11,28 @@ const TEMPLATES = [
 ];
 
 const ACTIVE_CHANNELS = [
-  { value: '', label: '전체' },
-  { value: 'twitter', label: 'Twitter / X' },
-  { value: 'instagram', label: 'Instagram' },
-  { value: 'facebook', label: 'Facebook' },
-  { value: 'blog_naver', label: '네이버 블로그' },
+  { value: '',             label: '전체' },
+  { value: 'twitter',      label: 'Twitter / X' },
+  { value: 'instagram',    label: 'Instagram' },
+  { value: 'facebook',     label: 'Facebook' },
+  { value: 'blog_naver',   label: '네이버 블로그' },
   { value: 'blog_tistory', label: '티스토리' },
-  { value: 'email', label: 'Email' },
+  { value: 'email',        label: 'Email' },
 ];
+
+function formatRelative(iso: string | null | undefined): string {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  const diff = Date.now() - d.getTime();
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return '방금 전';
+  if (min < 60) return `${min}분 전`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr}시간 전`;
+  const day = Math.floor(hr / 24);
+  if (day < 7) return `${day}일 전`;
+  return d.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+}
 
 export function ContentPage() {
   const [tab, setTab] = useState<'all' | 'queued' | 'posted' | 'failed'>('all');
@@ -30,7 +44,6 @@ export function ContentPage() {
   const [publishing, setPublishing] = useState(false);
   const navigate = useNavigate();
 
-  // Form state — default to first active channel
   const [formChannel, setFormChannel] = useState(ACTIVE_CHANNELS[0].value);
   const [formTemplate, setFormTemplate] = useState('sns_post_v1');
   const [formMediaUrl, setFormMediaUrl] = useState('');
@@ -39,13 +52,10 @@ export function ContentPage() {
   const fetchContent = useCallback(async () => {
     setLoading(true);
     try {
-      const params: any = { limit: 100 };
-      if (formChannel) params.channel = formChannel;
-      const items = await api.content.list(params).catch(() => null);
+      const items = await api.content.list({ limit: 100 }).catch(() => null);
       if (items && Array.isArray(items)) {
         setContent(items);
       } else {
-        // Fallback: merge queued + recent
         const [queued, recent] = await Promise.all([
           api.content.queued().catch(() => [] as any[]),
           api.content.recent(50).catch(() => [] as any[]),
@@ -59,8 +69,7 @@ export function ContentPage() {
         );
         setContent(merged);
       }
-    } catch (err) {
-      // Keep current state on error — no fallback to mock
+    } catch {
       setContent([]);
     } finally {
       setLoading(false);
@@ -81,11 +90,9 @@ export function ContentPage() {
         media_url: formMediaUrl || undefined,
         template_version: formTemplate,
       });
-      // Reset form
       setFormContent('');
       setFormMediaUrl('');
       setShowForm(false);
-      // Refresh list
       await fetchContent();
     } catch (err) {
       console.error('Failed to create content:', err);
@@ -119,165 +126,186 @@ export function ContentPage() {
     failed: content.filter((c) => c.status === 'failed').length,
   };
 
+  const tabLabels: Record<string, string> = {
+    all: '전체',
+    queued: '대기',
+    posted: '발행됨',
+    failed: '실패',
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="pb-8 space-y-8">
+      {/* ═══ Header ═════════════════════════════════════════════════ */}
+      <header className="flex items-end justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-bold text-surface-900">콘텐츠</h1>
-          <p className="text-sm text-surface-500 mt-0.5">콘텐츠 관리 및 게시</p>
+          <h1 className="text-[24px] font-bold text-surface-50 tracking-tight leading-none">콘텐츠</h1>
+          <p className="text-[14px] text-surface-200 mt-2">콘텐츠 관리 및 게시</p>
         </div>
-        <div className="flex items-center gap-2">
-          {loading && <Loader2 className="w-4 h-4 text-primary-500 animate-spin" />}
+        <div className="flex items-center gap-1.5">
+          {loading && <Loader2 className="w-3.5 h-3.5 text-surface-200 animate-spin mr-1" />}
           <button
             onClick={handlePublish}
             disabled={publishing}
-            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-primary-600 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-[12.5px] font-medium text-surface-200 hover:text-surface-50 hover:bg-surface-800 rounded-md disabled:opacity-50 transition-colors"
           >
-            {publishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+            {publishing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
             대기열 발행
           </button>
           <button
             onClick={() => setShowForm(!showForm)}
-            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[13px] font-semibold text-white bg-primary-500 rounded-md hover:bg-primary-600 transition-colors"
           >
-            {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+            {showForm ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
             {showForm ? '취소' : '콘텐츠 작성'}
           </button>
         </div>
-      </div>
+      </header>
 
-      {/* New Content Form */}
+      {/* ═══ Create Form ═══════════════════════════════════════════ */}
       {showForm && (
-        <div className="bg-white rounded-xl border border-surface-200 p-5 shadow-sm space-y-4">
-          <h3 className="text-sm font-semibold text-surface-900">콘텐츠 작성</h3>
+        <section className="border-y border-surface-800 py-6 space-y-4 animate-fade-in">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-surface-600 mb-1">채널</label>
+            <Field label="채널">
               <select
                 value={formChannel}
                 onChange={(e) => setFormChannel(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-3 py-2 text-[14px] bg-surface-900 border border-surface-800 rounded-md focus:outline-none focus:ring-2 focus:ring-surface-100/15 focus:border-surface-500 transition-colors"
               >
                 {ACTIVE_CHANNELS.map((ch) => (
                   <option key={ch.value} value={ch.value}>{ch.label}</option>
                 ))}
               </select>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-surface-600 mb-1">템플릿</label>
+            </Field>
+            <Field label="템플릿">
               <select
                 value={formTemplate}
                 onChange={(e) => setFormTemplate(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-3 py-2 text-[14px] bg-surface-900 border border-surface-800 rounded-md focus:outline-none focus:ring-2 focus:ring-surface-100/15 focus:border-surface-500 transition-colors"
               >
                 {TEMPLATES.map((t) => (
                   <option key={t.value} value={t.value}>{t.label}</option>
                 ))}
               </select>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-surface-600 mb-1">미디어 URL (선택)</label>
+            </Field>
+            <Field label="미디어 URL (선택)">
               <input
                 type="url"
                 value={formMediaUrl}
                 onChange={(e) => setFormMediaUrl(e.target.value)}
                 placeholder="https://..."
-                className="w-full px-3 py-2 text-sm border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-3 py-2 text-[14px] bg-surface-900 border border-surface-800 rounded-md focus:outline-none focus:ring-2 focus:ring-surface-100/15 focus:border-surface-500 placeholder:text-surface-500 transition-colors"
               />
-            </div>
+            </Field>
           </div>
-          <div>
-            <label className="block text-xs font-medium text-surface-600 mb-1">내용</label>
+          <Field label="내용">
             <textarea
               rows={3}
               value={formContent}
               onChange={(e) => setFormContent(e.target.value)}
               placeholder="콘텐츠를 입력하세요..."
-              className="w-full px-3 py-2 text-sm border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+              className="w-full px-3 py-2 text-[14px] bg-surface-900 border border-surface-800 rounded-md focus:outline-none focus:ring-2 focus:ring-surface-100/15 focus:border-surface-500 placeholder:text-surface-500 resize-y transition-colors"
             />
-          </div>
+          </Field>
           <div className="flex justify-end">
             <button
               onClick={handleCreate}
               disabled={submitting || !formContent.trim()}
-              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold text-white bg-primary-500 rounded-md hover:bg-primary-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
-              {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
+              {submitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
               대기열에 추가
             </button>
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Search & Filter */}
-      <div className="flex items-center gap-3">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="콘텐츠 검색..."
-            className="w-full pl-9 pr-3 py-2 text-sm border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
-          />
-        </div>
-        <div className="flex gap-1 bg-white rounded-lg border border-surface-200 p-1">
+      {/* ═══ Filter Toolbar ═══════════════════════════════════════ */}
+      <div className="flex items-center justify-between gap-4 border-b border-surface-800 pb-3">
+        <div className="flex items-center gap-6 text-[14px]">
           {(['all', 'queued', 'posted', 'failed'] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                tab === t
-                  ? 'bg-primary-500 text-white'
-                  : 'text-surface-500 hover:bg-surface-100'
+              className={`relative pb-3 -mb-3 font-medium transition-colors ${
+                tab === t ? 'text-surface-50' : 'text-surface-300 hover:text-surface-100'
               }`}
             >
-              {t === 'all' ? '전체' : t === 'queued' ? '대기 중' : t === 'posted' ? '발행됨' : '실패'} ({counts[t]})
+              {tabLabels[t]}
+              <span className={`ml-1 text-[12.5px] tabular-nums ${tab === t ? 'text-surface-200' : 'text-surface-200'}`}>
+                {counts[t]}
+              </span>
+              {tab === t && (
+                <span className="absolute bottom-0 left-0 right-0 h-px bg-primary-500" />
+              )}
             </button>
           ))}
         </div>
+
+        <div className="relative w-64">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-surface-200" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="검색..."
+            className="w-full pl-8 pr-3 py-2 text-[14px] bg-surface-900 border border-transparent rounded-md focus:outline-none focus:bg-surface-900 focus:border-surface-800 focus:ring-2 focus:ring-surface-100/10 placeholder:text-surface-500 transition-all"
+          />
+        </div>
       </div>
 
-      {/* Content Cards */}
+      {/* ═══ Content List ════════════════════════════════════════ */}
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-xl border border-dashed border-surface-300 py-16 text-center">
-          <Search className="w-8 h-8 text-surface-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-surface-500">
+        <div className="py-20 text-center">
+          <Search className="w-7 h-7 text-surface-600 mx-auto mb-3" />
+          <p className="text-[14px] font-medium text-surface-600">
             {loading ? '불러오는 중...' : '아직 데이터가 없습니다'}
           </p>
           {!loading && (
-            <p className="text-xs text-surface-400 mt-1">
+            <p className="text-[12.5px] text-surface-300 mt-1.5">
               {tab !== 'all'
-                ? `'${tab}' 상태의 콘텐츠가 없습니다`
-                : 'New Content 버튼으로 첫 콘텐츠를 만들어보세요'}
+                ? `'${tabLabels[tab]}' 상태의 콘텐츠가 없습니다`
+                : '콘텐츠 작성 버튼으로 첫 콘텐츠를 만들어보세요'}
             </p>
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
           {filtered.map((item) => (
-            <div key={item.id} onClick={() => navigate(`/content/${item.id}`)} className="bg-white rounded-xl border border-surface-200 p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer hover:border-primary-200 transition-colors">
-              <div className="flex items-center justify-between mb-3">
+            <button
+              key={item.id}
+              onClick={() => navigate(`/content/${item.id}`)}
+              className="group w-full flex items-center gap-4 py-4 border-b border-surface-800 hover:bg-surface-800/40 transition-colors -mx-2 px-2 rounded text-left"
+            >
+              <div className="w-[130px] flex-shrink-0">
                 <ChannelBadge channel={item.channel} />
+              </div>
+              <p className="text-[15px] text-surface-50 line-clamp-1 flex-1 group-hover:text-surface-50 leading-snug">
+                {item.content_text}
+              </p>
+              <div className="w-[90px] flex-shrink-0">
                 <StatusBadge status={item.status} />
               </div>
-              <p className="text-sm text-surface-700 line-clamp-2 mb-3">{item.content_text}</p>
-              <div className="flex items-center justify-between text-xs text-surface-400">
-                <span>{item.template_version ?? '—'}</span>
-                <span>
-                  {item.posted_at
-                    ? `발행됨 ${new Date(item.posted_at).toLocaleString('ko-KR')}`
-                    : item.created_at
-                    ? `생성됨 ${new Date(item.created_at).toLocaleString('ko-KR')}`
-                    : '—'}
-                </span>
-              </div>
-            </div>
+              <span className="text-[12.5px] text-surface-400 font-mono tabular-nums w-24 flex-shrink-0">
+                {item.template_version ?? '—'}
+              </span>
+              <span className="text-[13px] text-surface-300 tabular-nums w-20 text-right flex-shrink-0">
+                {formatRelative(item.posted_at ?? item.created_at)}
+              </span>
+            </button>
           ))}
         </div>
       )}
+    </div>
+  );
+}
 
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="block text-[14px] font-semibold uppercase tracking-[0.12em] text-surface-200 mb-1.5">
+        {label}
+      </label>
+      {children}
     </div>
   );
 }

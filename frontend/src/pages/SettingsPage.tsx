@@ -1,30 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  Save,
-  RefreshCw,
-  CheckCircle2,
-  XCircle,
-  Plus,
-  X,
-  Loader2,
-  ChevronDown,
-  ChevronUp,
-  BookOpen,
-  Eye,
-  EyeOff,
-  Globe,
-  Mail,
-  Target,
-  Settings,
-  Link2,
-  Sliders,
-  AlertCircle,
-  DollarSign,
+  Save, RefreshCw, CheckCircle2, Plus, X, Loader2,
+  ChevronDown, ChevronUp, BookOpen, Eye, EyeOff, Globe, Mail,
+  Target, Link2, Sliders, AlertCircle, DollarSign, Sparkles,
 } from 'lucide-react';
 
-// ---------------------------------------------------------------------------
-// API helpers
-// ---------------------------------------------------------------------------
+// ─── API helpers ──────────────────────────────────────────────────────
 
 const BASE = '/api/settings';
 
@@ -37,15 +18,13 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json();
 }
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
+// ─── Types ────────────────────────────────────────────────────────────
 
 interface AgentSettings {
   product_name: string;
   website_url: string;
   language: string;
-  context: string; // 자유 텍스트 마케팅 브리핑
+  context: string;
 }
 
 interface CredentialField {
@@ -53,7 +32,7 @@ interface CredentialField {
   label: string;
   type?: string;
   has_value: boolean;
-  masked_preview: string; // mapped from API's value_preview
+  masked_preview: string;
 }
 
 interface OnboardingStep {
@@ -101,9 +80,7 @@ interface Toast {
   message: string;
 }
 
-// ---------------------------------------------------------------------------
-// Toast system
-// ---------------------------------------------------------------------------
+// ─── Toast system ─────────────────────────────────────────────────────
 
 let toastId = 0;
 
@@ -113,19 +90,19 @@ function ToastContainer({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id
       {toasts.map((t) => (
         <div
           key={t.id}
-          className={`pointer-events-auto flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg text-sm font-medium animate-slide-in ${
+          className={`pointer-events-auto flex items-center gap-2.5 pl-4 pr-3 py-2.5 rounded-lg text-[11.5px] font-medium animate-slide-in shadow-lg ${
             t.type === 'success'
-              ? 'bg-emerald-600 text-white'
+              ? 'bg-surface-900 text-white border border-surface-800'
               : t.type === 'error'
               ? 'bg-red-600 text-white'
-              : 'bg-surface-700 text-white'
+              : 'bg-surface-900 text-white'
           }`}
         >
-          {t.type === 'success' && <CheckCircle2 className="w-4 h-4 shrink-0" />}
-          {t.type === 'error' && <AlertCircle className="w-4 h-4 shrink-0" />}
+          {t.type === 'success' && <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-emerald-400" />}
+          {t.type === 'error' && <AlertCircle className="w-3.5 h-3.5 shrink-0" />}
           <span className="flex-1">{t.message}</span>
-          <button onClick={() => onDismiss(t.id)} className="ml-2 opacity-70 hover:opacity-100">
-            <X className="w-3.5 h-3.5" />
+          <button onClick={() => onDismiss(t.id)} className="ml-2 opacity-60 hover:opacity-100 transition-opacity">
+            <X className="w-3 h-3" />
           </button>
         </div>
       ))}
@@ -159,21 +136,35 @@ function useToast() {
   return { toasts, show, dismiss };
 }
 
-// ---------------------------------------------------------------------------
-// Reusable small components
-// ---------------------------------------------------------------------------
+// ─── Reusable small components ────────────────────────────────────────
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return <label className="block text-sm font-medium text-surface-700 mb-1">{children}</label>;
-}
-
-function Spinner({ className = 'w-4 h-4' }: { className?: string }) {
+function Spinner({ className = 'w-3.5 h-3.5' }: { className?: string }) {
   return <Loader2 className={`${className} animate-spin`} />;
 }
 
-// ---------------------------------------------------------------------------
-// Platform icon resolver
-// ---------------------------------------------------------------------------
+function FieldLabel({ children, required }: { children: React.ReactNode; required?: boolean }) {
+  return (
+    <label className="block text-[14px] font-semibold uppercase tracking-[0.12em] text-surface-200 mb-1.5">
+      {children}
+      {required && <span className="ml-1 text-red-500 normal-case tracking-normal">*</span>}
+    </label>
+  );
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="text-[14px] font-semibold uppercase tracking-[0.14em] text-surface-200 mb-4">
+      {children}
+    </h2>
+  );
+}
+
+const INPUT_CLASS = 'w-full px-3 py-2 text-[14px] bg-surface-900 border border-surface-800 rounded-md focus:outline-none focus:ring-2 focus:ring-surface-100/15 focus:border-surface-500 placeholder:text-surface-500 disabled:bg-surface-900 transition-colors';
+
+const PRIMARY_BTN = 'inline-flex items-center gap-1.5 px-3.5 py-2 text-[13px] font-semibold text-white bg-primary-500 rounded-md hover:bg-primary-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors';
+const SECONDARY_BTN = 'inline-flex items-center gap-1.5 px-3 py-2 text-[12.5px] font-medium text-surface-200 hover:text-surface-50 hover:bg-surface-800 rounded-md disabled:opacity-50 transition-colors';
+
+// ─── Platform icons ───────────────────────────────────────────────────
 
 const PLATFORM_ICONS: Record<string, React.ElementType> = {
   twitter: Globe,
@@ -187,9 +178,7 @@ function getPlatformIcon(id: string) {
   return PLATFORM_ICONS[id] || Globe;
 }
 
-// ---------------------------------------------------------------------------
-// Defaults / constants
-// ---------------------------------------------------------------------------
+// ─── Constants ────────────────────────────────────────────────────────
 
 const LANGUAGES = [
   { value: 'ko', label: '한국어' },
@@ -238,9 +227,7 @@ const emptyAgent: AgentSettings = {
   context: '',
 };
 
-// ---------------------------------------------------------------------------
-// Tab 1: Marketing Target
-// ---------------------------------------------------------------------------
+// ─── Tab 1: Marketing Target ──────────────────────────────────────────
 
 function MarketingTargetTab({ toast }: { toast: ReturnType<typeof useToast> }) {
   const [data, setData] = useState<AgentSettings>(emptyAgent);
@@ -271,13 +258,8 @@ function MarketingTargetTab({ toast }: { toast: ReturnType<typeof useToast> }) {
     setSaving(true);
     try {
       const payload = {
-        product: {
-          name: data.product_name,
-          website: data.website_url,
-        },
-        brand: {
-          language: data.language,
-        },
+        product: { name: data.product_name, website: data.website_url },
+        brand: { language: data.language },
         context: data.context,
       };
       await request('/agent', { method: 'PUT', body: JSON.stringify(payload) });
@@ -290,81 +272,70 @@ function MarketingTargetTab({ toast }: { toast: ReturnType<typeof useToast> }) {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <Spinner className="w-6 h-6 text-primary-500" />
-      </div>
-    );
+    return <div className="flex items-center justify-center py-24"><Spinner className="w-5 h-5 text-surface-200" /></div>;
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       {/* 기본 정보 */}
-      <div className="bg-white rounded-xl border border-surface-200 shadow-sm p-6 space-y-5">
-        <h3 className="text-base font-semibold text-surface-900">기본 정보</h3>
+      <section>
+        <SectionLabel>기본 정보</SectionLabel>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           <div>
-            <SectionLabel>제품/서비스 이름</SectionLabel>
+            <FieldLabel>제품/서비스 이름</FieldLabel>
             <input
               value={data.product_name}
               onChange={(e) => setData((prev) => ({ ...prev, product_name: e.target.value }))}
-              placeholder="예: VibeWork"
-              className="w-full px-3 py-2 text-sm border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              placeholder="VibeWork"
+              className={INPUT_CLASS}
             />
           </div>
           <div>
-            <SectionLabel>웹사이트 URL</SectionLabel>
+            <FieldLabel>웹사이트 URL</FieldLabel>
             <input
               value={data.website_url}
               onChange={(e) => setData((prev) => ({ ...prev, website_url: e.target.value }))}
               placeholder="https://example.com"
-              className="w-full px-3 py-2 text-sm border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className={INPUT_CLASS}
             />
           </div>
           <div>
-            <SectionLabel>주 사용 언어</SectionLabel>
+            <FieldLabel>주 사용 언어</FieldLabel>
             <select
               value={data.language}
               onChange={(e) => setData((prev) => ({ ...prev, language: e.target.value }))}
-              className="w-full px-3 py-2 text-sm border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+              className={INPUT_CLASS}
             >
-              {LANGUAGES.map((l) => (
-                <option key={l.value} value={l.value}>{l.label}</option>
-              ))}
+              {LANGUAGES.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
             </select>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* 마케팅 브리핑 */}
-      <div className="bg-white rounded-xl border border-surface-200 shadow-sm p-6 space-y-4">
-        <div>
-          <h3 className="text-base font-semibold text-surface-900">마케팅 브리핑</h3>
-          <p className="text-xs text-surface-500 mt-1">
-            제품 설명, 브랜드 톤, 타겟 오디언스, 경쟁사, 해시태그 등을 자유롭게 작성하세요.
-            AI가 콘텐츠 생성과 전략 수립 시 이 내용을 컨텍스트로 활용합니다.
-          </p>
+      <section>
+        <div className="flex items-baseline justify-between mb-4">
+          <SectionLabel>마케팅 브리핑</SectionLabel>
         </div>
+        <p className="text-[13px] text-surface-300 mb-3 -mt-3 leading-relaxed max-w-2xl">
+          제품 설명, 브랜드 톤, 타겟 오디언스, 경쟁사, 해시태그 등을 자유롭게 작성하세요.
+          AI가 콘텐츠 생성과 전략 수립 시 이 내용을 컨텍스트로 활용합니다.
+        </p>
         <textarea
           value={data.context}
           onChange={(e) => setData((prev) => ({ ...prev, context: e.target.value }))}
           rows={20}
           placeholder="마케팅 브리핑을 작성하세요..."
-          className="w-full px-4 py-3 text-sm font-mono leading-relaxed border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 resize-y"
+          className="w-full px-4 py-3 text-[14px] bg-surface-900 border border-surface-800 rounded-lg focus:outline-none focus:ring-4 focus:ring-surface-100/10 focus:border-surface-500 font-mono leading-relaxed resize-y placeholder:text-surface-500 transition-all"
         />
-        <p className="text-xs text-surface-400">
-          마크다운 형식으로 작성할 수 있습니다. 구조는 자유이며, AI가 자연어로 이해합니다.
+        <p className="text-[13px] text-surface-300 mt-2">
+          Markdown 형식으로 작성할 수 있습니다. 구조는 자유이며 AI가 자연어로 이해합니다.
         </p>
-      </div>
+      </section>
 
-      {/* 저장 */}
-      <div className="flex justify-end">
-        <button
-          onClick={save}
-          disabled={saving}
-          className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 disabled:opacity-50 transition-colors"
-        >
-          {saving ? <Spinner /> : <Save className="w-4 h-4" />}
+      <div className="flex justify-end pt-2 border-t border-surface-800">
+        <button onClick={save} disabled={saving} className={PRIMARY_BTN}>
+          {saving ? <Spinner /> : <Save className="w-3.5 h-3.5" />}
           저장
         </button>
       </div>
@@ -372,11 +343,9 @@ function MarketingTargetTab({ toast }: { toast: ReturnType<typeof useToast> }) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Tab 2: Platform Connections
-// ---------------------------------------------------------------------------
+// ─── Tab 2: Platform Connections ──────────────────────────────────────
 
-function PlatformCard({
+function PlatformRow({
   platform,
   toast,
   onUpdate,
@@ -393,14 +362,12 @@ function PlatformCard({
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null);
+  const [expanded, setExpanded] = useState(!platform.connected);
 
   const Icon = getPlatformIcon(platform.id);
 
   const toggleGuide = async () => {
-    if (guideOpen) {
-      setGuideOpen(false);
-      return;
-    }
+    if (guideOpen) { setGuideOpen(false); return; }
     setGuideOpen(true);
     if (!guide) {
       setGuideLoading(true);
@@ -408,7 +375,7 @@ function PlatformCard({
         const res = await request<{ steps: string[] }>(`/platforms/${platform.id}/guide`);
         setGuide(res.steps);
       } catch {
-        setGuide(['설정 가이드를 불러오지 못했습니다. 문서를 확인하세요.']);
+        setGuide(['설정 가이드를 불러오지 못했습니다']);
       } finally {
         setGuideLoading(false);
       }
@@ -422,12 +389,12 @@ function PlatformCard({
         method: 'PUT',
         body: JSON.stringify({ credentials: creds }),
       });
-      toast.show('success', `${platform.name} 인증 정보가 저장되었습니다`);
+      toast.show('success', `${platform.name} 인증 정보 저장 완료`);
       setCreds({});
       setEditing({});
       onUpdate();
     } catch {
-      toast.show('error', `${platform.name} 인증 정보 저장에 실패했습니다`);
+      toast.show('error', `${platform.name} 인증 정보 저장 실패`);
     } finally {
       setSaving(false);
     }
@@ -437,9 +404,7 @@ function PlatformCard({
     setTesting(true);
     setTestResult(null);
     try {
-      const res = await request<any>(`/platforms/${platform.id}/test`, {
-        method: 'POST',
-      });
+      const res = await request<any>(`/platforms/${platform.id}/test`, { method: 'POST' });
       setTestResult({
         ok: res.connected ?? res.ok ?? false,
         message: res.connected ? '연결 성공' : (res.error || '연결 실패'),
@@ -454,160 +419,148 @@ function PlatformCard({
   const hasEdits = Object.keys(creds).length > 0;
 
   return (
-    <div className="bg-white rounded-xl border border-surface-200 shadow-sm overflow-hidden">
-      <div className="p-5">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-surface-100 flex items-center justify-center">
-              <Icon className="w-5 h-5 text-surface-600" />
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-surface-900">{platform.name}</h3>
-              <p className="text-xs text-surface-500">{platform.description}</p>
-            </div>
-          </div>
-          <span
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${
-              platform.connected
-                ? 'bg-emerald-50 text-emerald-700'
-                : 'bg-surface-100 text-surface-500'
-            }`}
-          >
-            {platform.connected ? (
-              <CheckCircle2 className="w-3.5 h-3.5" />
-            ) : (
-              <XCircle className="w-3.5 h-3.5" />
-            )}
-            {platform.connected ? '연결됨' : '미연결'}
-          </span>
+    <div className="border-b border-surface-800">
+      {/* Row */}
+      <div
+        className="flex items-center gap-4 py-4 cursor-pointer hover:bg-surface-800/40 transition-colors -mx-2 px-2 rounded"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <div className="w-8 h-8 rounded-lg bg-surface-800 flex items-center justify-center flex-shrink-0">
+          <Icon className="w-4 h-4 text-surface-600" />
         </div>
-
-        {/* Setup Guide Toggle */}
-        <button
-          onClick={toggleGuide}
-          className="flex items-center gap-1.5 text-xs font-medium text-primary-600 hover:text-primary-700 mb-4"
-        >
-          <BookOpen className="w-3.5 h-3.5" />
-          설정 가이드
-          {guideOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-        </button>
-
-        {/* Guide content */}
-        {guideOpen && (
-          <div className="mb-4 p-4 bg-surface-50 rounded-lg border border-surface-100">
-            {guideLoading ? (
-              <div className="flex items-center gap-2 text-sm text-surface-500">
-                <Spinner /> 가이드 로딩 중...
-              </div>
-            ) : (
-              <ol className="space-y-2">
-                {(guide || []).map((step, i) => (
-                  <li key={i} className="flex gap-2 text-sm text-surface-700">
-                    <span className="shrink-0 w-5 h-5 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-semibold">
-                      {i + 1}
-                    </span>
-                    <span
-                      dangerouslySetInnerHTML={{
-                        __html: step
-                          .replace(/^\d+\.\s*/, '')
-                          .replace(
-                            /\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,
-                            '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary-600 underline hover:text-primary-800">$1</a>'
-                          ),
-                      }}
-                    />
-                  </li>
-                ))}
-              </ol>
-            )}
-          </div>
-        )}
-
-        {/* Credential Fields */}
-        {platform.credential_fields.length > 0 && (
-          <div className="space-y-3">
-            {platform.credential_fields.map((field) => {
-              const isEditing = editing[field.key] || !field.has_value;
-              return (
-                <div key={field.key}>
-                  <label className="block text-xs font-medium text-surface-600 mb-1">{field.label}</label>
-                  {field.has_value && !isEditing ? (
-                    <div className="flex items-center gap-2">
-                      <span className="flex-1 px-3 py-2 text-sm bg-surface-50 border border-surface-200 rounded-lg text-surface-500 font-mono tracking-wider">
-                        {field.masked_preview}
-                      </span>
-                      <button
-                        onClick={() => setEditing((prev) => ({ ...prev, [field.key]: true }))}
-                        className="p-2 text-surface-400 hover:text-surface-600 transition-colors"
-                        title="Edit"
-                      >
-                        <EyeOff className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <input
-                        type={field.type === 'password' ? 'password' : 'text'}
-                        value={creds[field.key] || ''}
-                        onChange={(e) => setCreds((prev) => ({ ...prev, [field.key]: e.target.value }))}
-                        placeholder={field.has_value ? '새 값을 입력하면 교체됩니다...' : `${field.label} 입력`}
-                        className="flex-1 px-3 py-2 text-sm border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      />
-                      {field.has_value && (
-                        <button
-                          onClick={() => {
-                            setEditing((prev) => ({ ...prev, [field.key]: false }));
-                            setCreds((prev) => {
-                              const next = { ...prev };
-                              delete next[field.key];
-                              return next;
-                            });
-                          }}
-                          className="p-2 text-surface-400 hover:text-surface-600 transition-colors"
-                          title="Cancel"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Actions */}
-        <div className="flex items-center gap-3 mt-5 pt-4 border-t border-surface-100">
-          <button
-            onClick={saveCredentials}
-            disabled={saving || !hasEdits}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 disabled:opacity-40 transition-colors"
-          >
-            {saving ? <Spinner /> : <Save className="w-3.5 h-3.5" />}
-            인증 정보 저장
-          </button>
-          <button
-            onClick={testConnection}
-            disabled={testing}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-primary-600 bg-primary-50 rounded-lg hover:bg-primary-100 disabled:opacity-40 transition-colors"
-          >
-            {testing ? <Spinner /> : <RefreshCw className="w-3.5 h-3.5" />}
-            연결 테스트
-          </button>
-          {testResult && (
-            <span
-              className={`flex items-center gap-1 text-xs font-medium ${
-                testResult.ok ? 'text-emerald-600' : 'text-red-500'
-              }`}
-            >
-              {testResult.ok ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
-              {testResult.message}
-            </span>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-[15px] font-semibold text-surface-50">{platform.name}</h3>
+          {platform.description && (
+            <p className="text-[13px] text-surface-300 mt-0.5">{platform.description}</p>
           )}
         </div>
+        <span className={`inline-flex items-center gap-1.5 text-[11.5px] font-medium flex-shrink-0 ${
+          platform.connected ? 'text-emerald-700' : 'text-surface-200'
+        }`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${platform.connected ? 'bg-emerald-500' : 'bg-surface-300'}`} />
+          {platform.connected ? '연결됨' : '미연결'}
+        </span>
+        <ChevronDown className={`w-3.5 h-3.5 text-surface-200 transition-transform flex-shrink-0 ${expanded ? 'rotate-180' : ''}`} />
       </div>
+
+      {/* Expanded */}
+      {expanded && (
+        <div className="pb-5 animate-fade-in space-y-4">
+          {/* Setup guide toggle */}
+          <button
+            onClick={toggleGuide}
+            className="inline-flex items-center gap-1.5 text-[11.5px] font-medium text-surface-600 hover:text-surface-50 transition-colors"
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            설정 가이드
+            {guideOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          </button>
+
+          {guideOpen && (
+            <div className="bg-surface-900 rounded-lg px-4 py-3">
+              {guideLoading ? (
+                <div className="flex items-center gap-2 text-[11.5px] text-surface-200">
+                  <Spinner /> 가이드 로딩 중...
+                </div>
+              ) : (
+                <ol className="space-y-2">
+                  {(guide || []).map((step, i) => (
+                    <li key={i} className="flex gap-2.5 text-[14px] text-surface-200 leading-relaxed">
+                      <span className="shrink-0 w-4 h-4 rounded-full bg-surface-900 text-white flex items-center justify-center text-[14px] font-bold mt-0.5">
+                        {i + 1}
+                      </span>
+                      <span
+                        dangerouslySetInnerHTML={{
+                          __html: step
+                            .replace(/^\d+\.\s*/, '')
+                            .replace(
+                              /\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,
+                              '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-surface-50 underline underline-offset-2 hover:text-surface-200">$1</a>',
+                            ),
+                        }}
+                      />
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </div>
+          )}
+
+          {/* Credentials */}
+          {platform.credential_fields.length > 0 && (
+            <div className="space-y-3">
+              {platform.credential_fields.map((field) => {
+                const isEditing = editing[field.key] || !field.has_value;
+                return (
+                  <div key={field.key}>
+                    <FieldLabel>{field.label}</FieldLabel>
+                    {field.has_value && !isEditing ? (
+                      <div className="flex items-center gap-2">
+                        <span className="flex-1 px-3 py-2 text-[14px] bg-surface-900 border border-surface-800 rounded-md text-surface-200 font-mono tracking-wider">
+                          {field.masked_preview}
+                        </span>
+                        <button
+                          onClick={() => setEditing((prev) => ({ ...prev, [field.key]: true }))}
+                          className="p-2 text-surface-300 hover:text-surface-100 hover:bg-surface-800 rounded transition-colors"
+                          title="편집"
+                        >
+                          <EyeOff className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type={field.type === 'password' ? 'password' : 'text'}
+                          value={creds[field.key] || ''}
+                          onChange={(e) => setCreds((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                          placeholder={field.has_value ? '새 값을 입력하면 교체됩니다' : `${field.label} 입력`}
+                          className={`flex-1 ${INPUT_CLASS}`}
+                        />
+                        {field.has_value && (
+                          <button
+                            onClick={() => {
+                              setEditing((prev) => ({ ...prev, [field.key]: false }));
+                              setCreds((prev) => {
+                                const next = { ...prev };
+                                delete next[field.key];
+                                return next;
+                              });
+                            }}
+                            className="p-2 text-surface-300 hover:text-surface-100 hover:bg-surface-800 rounded transition-colors"
+                            title="취소"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex items-center gap-2 pt-2">
+            <button onClick={saveCredentials} disabled={saving || !hasEdits} className={PRIMARY_BTN}>
+              {saving ? <Spinner /> : <Save className="w-3.5 h-3.5" />}
+              인증 정보 저장
+            </button>
+            <button onClick={testConnection} disabled={testing} className={SECONDARY_BTN}>
+              {testing ? <Spinner /> : <RefreshCw className="w-3.5 h-3.5" />}
+              연결 테스트
+            </button>
+            {testResult && (
+              <span className={`inline-flex items-center gap-1.5 text-[11.5px] font-medium ml-1 ${
+                testResult.ok ? 'text-emerald-700' : 'text-red-700'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${testResult.ok ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                {testResult.message}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -619,7 +572,6 @@ function PlatformConnectionsTab({ toast }: { toast: ReturnType<typeof useToast> 
   const loadPlatforms = useCallback(() => {
     request<any>('/platforms')
       .then((raw) => {
-        // API returns { twitter: {...}, instagram: {...} } — convert to Platform[]
         const PLATFORM_NAMES: Record<string, string> = {
           twitter: 'Twitter / X',
           instagram: 'Instagram',
@@ -627,7 +579,6 @@ function PlatformConnectionsTab({ toast }: { toast: ReturnType<typeof useToast> 
           blog: 'WordPress Blog',
           email: 'SendGrid Email',
         };
-        // 1차 오픈 범위: 콘텐츠 채널만 노출. 광고 플랫폼은 제외.
         const HIDDEN_PLATFORMS = new Set(['meta_ads', 'google_ads', 'twitter_ads']);
         const list: Platform[] = Object.entries(raw)
           .filter(([id]) => !HIDDEN_PLATFORMS.has(id))
@@ -652,38 +603,30 @@ function PlatformConnectionsTab({ toast }: { toast: ReturnType<typeof useToast> 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    loadPlatforms();
-  }, [loadPlatforms]);
+  useEffect(() => { loadPlatforms(); }, [loadPlatforms]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <Spinner className="w-6 h-6 text-primary-500" />
-      </div>
-    );
+    return <div className="flex items-center justify-center py-24"><Spinner className="w-5 h-5 text-surface-200" /></div>;
   }
 
   if (platforms.length === 0) {
     return (
-      <div className="text-center py-16 text-surface-500 text-sm">
-        등록된 플랫폼이 없습니다. 백엔드 API를 확인하세요.
+      <div className="py-16 text-center text-[14px] text-surface-200">
+        등록된 플랫폼이 없습니다
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="border-t border-surface-800">
       {platforms.map((p) => (
-        <PlatformCard key={p.id} platform={p} toast={toast} onUpdate={loadPlatforms} />
+        <PlatformRow key={p.id} platform={p} toast={toast} onUpdate={loadPlatforms} />
       ))}
     </div>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Tab 3: Channel Settings
-// ---------------------------------------------------------------------------
+// ─── Tab 3: Channel Settings ──────────────────────────────────────────
 
 function ChannelSettingsTab({ toast }: { toast: ReturnType<typeof useToast> }) {
   const [channels, setChannels] = useState<ChannelConfig[]>([]);
@@ -718,11 +661,8 @@ function ChannelSettingsTab({ toast }: { toast: ReturnType<typeof useToast> }) {
   }, []);
 
   const updateChannel = async (id: string, patch: Partial<ChannelConfig>) => {
-    // Optimistic UI update
     const prev = channels;
     setChannels((chs) => chs.map((ch) => (ch.id === id ? { ...ch, ...patch } : ch)));
-
-    // If enabled changed, immediately call API
     if ('enabled' in patch) {
       try {
         const current = prev.find((ch) => ch.id === id);
@@ -735,14 +675,11 @@ function ChannelSettingsTab({ toast }: { toast: ReturnType<typeof useToast> }) {
               times: current?.posting_times || ['10:00'],
               timezone: 'Asia/Seoul',
             },
-            limits: {
-              max_posts_per_day: current?.max_posts_per_day || 5,
-            },
+            limits: { max_posts_per_day: current?.max_posts_per_day || 5 },
           }),
         });
         toast.show('success', `${id} 채널 ${patch.enabled ? '활성화' : '비활성화'} 완료`);
-      } catch (err) {
-        // Rollback on failure
+      } catch {
         setChannels(prev);
         toast.show('error', `채널 상태 변경 실패`);
       }
@@ -752,7 +689,6 @@ function ChannelSettingsTab({ toast }: { toast: ReturnType<typeof useToast> }) {
   const saveAll = async () => {
     setSaving(true);
     try {
-      // Convert ChannelConfig[] back to per-channel API calls
       for (const ch of channels) {
         await request(`/channels/${ch.id}`, {
           method: 'PUT',
@@ -763,79 +699,62 @@ function ChannelSettingsTab({ toast }: { toast: ReturnType<typeof useToast> }) {
               times: ch.posting_times,
               timezone: 'Asia/Seoul',
             },
-            limits: {
-              max_posts_per_day: ch.max_posts_per_day,
-            },
+            limits: { max_posts_per_day: ch.max_posts_per_day },
           }),
         });
       }
       toast.show('success', '채널 설정이 저장되었습니다');
     } catch {
-      toast.show('error', '채널 설정 저장에 실패했습니다');
+      toast.show('error', '채널 설정 저장 실패');
     } finally {
       setSaving(false);
     }
   };
 
-  const statusConfig = {
-    connected: { label: '연결됨', color: 'text-emerald-600', bg: 'bg-emerald-50', icon: CheckCircle2 },
-    disconnected: { label: '미연결', color: 'text-surface-400', bg: 'bg-surface-100', icon: XCircle },
-    error: { label: '오류', color: 'text-red-500', bg: 'bg-red-50', icon: AlertCircle },
-  };
-
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <Spinner className="w-6 h-6 text-primary-500" />
-      </div>
-    );
+    return <div className="flex items-center justify-center py-24"><Spinner className="w-5 h-5 text-surface-200" /></div>;
   }
 
   return (
-    <div className="space-y-4">
-      {channels.map((ch) => {
-        const st = statusConfig[ch.status];
-        const StIcon = st.icon;
-        return (
-          <div
-            key={ch.id}
-            className={`bg-white rounded-xl border shadow-sm transition-opacity ${
-              ch.enabled ? 'border-surface-200' : 'border-surface-100 opacity-60'
-            }`}
-          >
-            <div className="p-5">
-              {/* Header */}
-              <div className="flex items-center justify-between mb-4">
+    <div className="space-y-10">
+      <section>
+        <SectionLabel>채널</SectionLabel>
+        <div className="border-t border-surface-800">
+          {channels.map((ch) => (
+            <div key={ch.id} className="border-b border-surface-800 py-4">
+              {/* Row */}
+              <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <h3 className="text-sm font-semibold text-surface-900">{ch.name}</h3>
-                  <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${st.bg} ${st.color}`}>
-                    <StIcon className="w-3.5 h-3.5" />
-                    {st.label}
+                  <h3 className="text-[15px] font-semibold text-surface-50">{ch.name}</h3>
+                  <span className={`inline-flex items-center gap-1.5 text-[14px] font-medium ${
+                    ch.enabled ? 'text-emerald-700' : 'text-surface-200'
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${ch.enabled ? 'bg-emerald-500' : 'bg-surface-300'}`} />
+                    {ch.enabled ? '활성' : '비활성'}
                   </span>
                 </div>
                 <button
                   onClick={() => updateChannel(ch.id, { enabled: !ch.enabled })}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    ch.enabled ? 'bg-primary-500' : 'bg-surface-300'
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                    ch.enabled ? 'bg-surface-900' : 'bg-surface-300'
                   }`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${
-                      ch.enabled ? 'translate-x-6' : 'translate-x-1'
+                    className={`inline-block h-3.5 w-3.5 transform rounded-full bg-surface-900 transition-transform shadow-sm ${
+                      ch.enabled ? 'translate-x-[18px]' : 'translate-x-[3px]'
                     }`}
                   />
                 </button>
               </div>
 
-              {/* Settings when enabled */}
               {ch.enabled && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-surface-100">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
                   <div>
-                    <label className="block text-xs font-medium text-surface-500 mb-1">게시 빈도</label>
+                    <FieldLabel>게시 빈도</FieldLabel>
                     <select
                       value={ch.frequency}
                       onChange={(e) => updateChannel(ch.id, { frequency: e.target.value })}
-                      className="w-full px-3 py-2 text-sm border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+                      className={INPUT_CLASS}
                     >
                       <option value="hourly">매시간</option>
                       <option value="daily">매일</option>
@@ -844,34 +763,30 @@ function ChannelSettingsTab({ toast }: { toast: ReturnType<typeof useToast> }) {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-surface-500 mb-1">하루 최대 게시 수</label>
+                    <FieldLabel>하루 최대 게시 수</FieldLabel>
                     <input
                       type="number"
                       min={1}
                       max={50}
                       value={ch.max_posts_per_day}
                       onChange={(e) => updateChannel(ch.id, { max_posts_per_day: parseInt(e.target.value) || 1 })}
-                      className="w-full px-3 py-2 text-sm border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className={INPUT_CLASS}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-surface-500 mb-1">게시 시간</label>
+                    <FieldLabel>게시 시간</FieldLabel>
                     <div className="flex flex-wrap gap-1.5">
                       {ch.posting_times.map((t) => (
                         <span
                           key={t}
-                          className="inline-flex items-center gap-1 px-2 py-1 bg-surface-100 rounded text-xs text-surface-600 font-medium"
+                          className="inline-flex items-center gap-1 px-2 py-0.5 bg-surface-800 rounded text-[11.5px] text-surface-200 font-mono tabular-nums"
                         >
                           {t}
                           <button
-                            onClick={() =>
-                              updateChannel(ch.id, {
-                                posting_times: ch.posting_times.filter((pt) => pt !== t),
-                              })
-                            }
-                            className="hover:text-red-500"
+                            onClick={() => updateChannel(ch.id, { posting_times: ch.posting_times.filter((pt) => pt !== t) })}
+                            className="hover:text-red-600"
                           >
-                            <X className="w-3 h-3" />
+                            <X className="w-2.5 h-2.5" />
                           </button>
                         </span>
                       ))}
@@ -880,19 +795,17 @@ function ChannelSettingsTab({ toast }: { toast: ReturnType<typeof useToast> }) {
                           type="time"
                           value={newTime[ch.id] || ''}
                           onChange={(e) => setNewTime((prev) => ({ ...prev, [ch.id]: e.target.value }))}
-                          className="px-1.5 py-0.5 text-xs border border-surface-200 rounded focus:outline-none focus:ring-1 focus:ring-primary-500"
+                          className="px-1.5 py-0.5 text-[11.5px] font-mono border border-surface-800 rounded focus:outline-none focus:ring-1 focus:ring-surface-100/20"
                         />
                         <button
                           onClick={() => {
                             const time = newTime[ch.id];
                             if (time && !ch.posting_times.includes(time)) {
-                              updateChannel(ch.id, {
-                                posting_times: [...ch.posting_times, time].sort(),
-                              });
+                              updateChannel(ch.id, { posting_times: [...ch.posting_times, time].sort() });
                               setNewTime((prev) => ({ ...prev, [ch.id]: '' }));
                             }
                           }}
-                          className="px-2 py-1 border border-dashed border-surface-300 rounded text-xs text-surface-400 hover:text-surface-600 hover:border-surface-400 transition-colors"
+                          className="px-1.5 py-0.5 border border-dashed border-surface-700 rounded text-surface-200 hover:text-surface-50 hover:border-surface-900 transition-colors"
                         >
                           <Plus className="w-3 h-3" />
                         </button>
@@ -902,47 +815,23 @@ function ChannelSettingsTab({ toast }: { toast: ReturnType<typeof useToast> }) {
                 </div>
               )}
             </div>
-          </div>
-        );
-      })}
-
-      {/* System Info */}
-      <div className="bg-white rounded-xl border border-surface-200 p-5 shadow-sm">
-        <h2 className="text-sm font-semibold text-surface-900 mb-4">시스템 정보</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div>
-            <p className="text-xs text-surface-500">API 서버</p>
-            <p className="text-sm font-medium text-emerald-600 mt-0.5 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
-              실행 중
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-surface-500">데이터베이스</p>
-            <p className="text-sm font-medium text-surface-700 mt-0.5">SQLite</p>
-          </div>
-          <div>
-            <p className="text-xs text-surface-500">전략 버전</p>
-            <p className="text-sm font-medium text-surface-700 mt-0.5">v1</p>
-          </div>
-          <div>
-            <p className="text-xs text-surface-500">스케줄러</p>
-            <p className="text-sm font-medium text-emerald-600 mt-0.5 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
-              활성
-            </p>
-          </div>
+          ))}
         </div>
-      </div>
+      </section>
 
-      {/* Save */}
-      <div className="flex justify-end">
-        <button
-          onClick={saveAll}
-          disabled={saving}
-          className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 disabled:opacity-50 transition-colors"
-        >
-          {saving ? <Spinner /> : <Save className="w-4 h-4" />}
+      <section>
+        <SectionLabel>시스템 정보</SectionLabel>
+        <dl className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <SystemInfoItem label="API 서버" value="실행 중" tone="success" />
+          <SystemInfoItem label="데이터베이스" value="SQLite" />
+          <SystemInfoItem label="전략 버전" value="v1" mono />
+          <SystemInfoItem label="스케줄러" value="활성" tone="success" />
+        </dl>
+      </section>
+
+      <div className="flex justify-end pt-2 border-t border-surface-800">
+        <button onClick={saveAll} disabled={saving} className={PRIMARY_BTN}>
+          {saving ? <Spinner /> : <Save className="w-3.5 h-3.5" />}
           채널 설정 저장
         </button>
       </div>
@@ -950,101 +839,21 @@ function ChannelSettingsTab({ toast }: { toast: ReturnType<typeof useToast> }) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Onboarding Wizard
-// ---------------------------------------------------------------------------
-
-function OnboardingWizard({
-  status,
-  onDismiss,
-  onNavigate,
-}: {
-  status: OnboardingStatus;
-  onDismiss: () => void;
-  onNavigate: (tab: string) => void;
-}) {
-  const pct = Math.round((status.required_done / status.required_total) * 100);
-  const nextStep = status.steps.find((s) => !s.completed && !s.optional);
-
+function SystemInfoItem({ label, value, tone, mono }: { label: string; value: string; tone?: 'success'; mono?: boolean }) {
   return (
-    <div className="bg-gradient-to-r from-primary-50 to-sky-50 rounded-xl border border-primary-200 p-5 shadow-sm">
-      <div className="flex items-start justify-between mb-1">
-        <div>
-          <h2 className="text-sm font-semibold text-primary-900">초기 설정 마법사</h2>
-          <p className="text-xs text-primary-700 mt-0.5">
-            필수 항목 {status.required_done}/{status.required_total} 완료 ({pct}%)
-          </p>
-        </div>
-        <button
-          onClick={onDismiss}
-          className="text-primary-400 hover:text-primary-600 p-1"
-          title="닫기"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-
-      <div className="w-full bg-primary-100 rounded-full h-1.5 mb-4">
-        <div
-          className="bg-primary-500 h-1.5 rounded-full transition-all"
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-
-      <div className="space-y-2 mb-4">
-        {status.steps.map((step) => (
-          <div
-            key={step.id}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border text-sm ${
-              step.completed
-                ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-                : step.optional
-                ? 'bg-white border-surface-200 text-surface-500'
-                : 'bg-white border-surface-200 text-surface-700'
-            }`}
-          >
-            <span className={`shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
-              step.completed
-                ? 'bg-emerald-500 text-white'
-                : 'bg-surface-200 text-surface-500'
-            }`}>
-              {step.completed ? '✓' : ''}
-            </span>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="font-medium truncate">{step.title}</span>
-                {step.optional && (
-                  <span className="text-xs text-surface-400 shrink-0">(선택)</span>
-                )}
-              </div>
-              {!step.completed && (
-                <p className="text-xs text-surface-400 mt-0.5 truncate">{step.description}</p>
-              )}
-            </div>
-            {!step.completed && step.tab && (
-              <button
-                onClick={() => onNavigate(step.tab!)}
-                className="shrink-0 text-xs font-medium text-primary-600 hover:text-primary-800 bg-primary-50 rounded px-2 py-1 border border-primary-200"
-              >
-                설정
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {nextStep && (
-        <p className="text-xs text-primary-700">
-          다음 단계: <span className="font-semibold">{nextStep.title}</span> — {nextStep.description}
-        </p>
-      )}
+    <div>
+      <dt className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-surface-200 mb-1">{label}</dt>
+      <dd className={`text-[14px] font-medium inline-flex items-center gap-1.5 ${
+        tone === 'success' ? 'text-emerald-700' : 'text-surface-50'
+      } ${mono ? 'font-mono' : ''}`}>
+        {tone === 'success' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
+        {value}
+      </dd>
     </div>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Tab 4: Marketing Budget
-// ---------------------------------------------------------------------------
+// ─── Tab 4: Marketing Budget ──────────────────────────────────────────
 
 interface MarketingBudget {
   total_budget: number;
@@ -1103,89 +912,160 @@ function BudgetTab({ toast }: { toast: ReturnType<typeof useToast> }) {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <Spinner className="w-6 h-6 text-primary-500" />
-      </div>
-    );
+    return <div className="flex items-center justify-center py-24"><Spinner className="w-5 h-5 text-surface-200" /></div>;
   }
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-xl border border-surface-200 shadow-sm p-6 space-y-5">
-        <h3 className="text-base font-semibold text-surface-900">마케팅 예산</h3>
+    <div className="space-y-10">
+      <section>
+        <SectionLabel>마케팅 예산</SectionLabel>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           <div>
-            <SectionLabel>총 예산 (₩)</SectionLabel>
+            <FieldLabel>총 예산 (₩)</FieldLabel>
             <input
               type="number"
               min={0}
               value={budget.total_budget || ''}
               onChange={(e) => setBudget((prev) => ({ ...prev, total_budget: Number(e.target.value) }))}
               placeholder="0"
-              className="w-full px-3 py-2 text-sm border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className={INPUT_CLASS}
             />
           </div>
           <div>
-            <SectionLabel>시작일</SectionLabel>
+            <FieldLabel>시작일</FieldLabel>
             <input
               type="date"
               value={budget.start_date}
               onChange={(e) => setBudget((prev) => ({ ...prev, start_date: e.target.value }))}
-              className="w-full px-3 py-2 text-sm border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className={INPUT_CLASS}
             />
           </div>
           <div>
-            <SectionLabel>종료일</SectionLabel>
+            <FieldLabel>종료일</FieldLabel>
             <input
               type="date"
               value={budget.end_date}
               onChange={(e) => setBudget((prev) => ({ ...prev, end_date: e.target.value }))}
-              className="w-full px-3 py-2 text-sm border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className={INPUT_CLASS}
             />
           </div>
         </div>
+
         {dailyGuide !== null && (
-          <div className="pt-1">
-            <SectionLabel>일일 예산 가이드</SectionLabel>
-            <p className="text-sm text-surface-700 font-medium">
-              ₩{dailyGuide.toLocaleString()} / 일
+          <div className="mt-6 pl-4 border-l-2 border-surface-900">
+            <p className="text-[11.5px] font-semibold uppercase tracking-[0.14em] text-surface-200 mb-1">일일 예산 가이드</p>
+            <p className="text-[14px] font-bold text-surface-50 tabular-nums">
+              ₩{dailyGuide.toLocaleString()} <span className="text-[14px] font-normal text-surface-200">/ 일</span>
             </p>
           </div>
         )}
-        <div className="flex justify-end pt-2">
-          <button
-            onClick={save}
-            disabled={saving}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors disabled:opacity-60"
-          >
-            {saving ? <Spinner /> : <Save className="w-4 h-4" />}
-            저장
-          </button>
-        </div>
+      </section>
+
+      <div className="flex justify-end pt-2 border-t border-surface-800">
+        <button onClick={save} disabled={saving} className={PRIMARY_BTN}>
+          {saving ? <Spinner /> : <Save className="w-3.5 h-3.5" />}
+          저장
+        </button>
       </div>
     </div>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Main Settings Page
-// ---------------------------------------------------------------------------
+// ─── Onboarding Wizard ────────────────────────────────────────────────
+
+function OnboardingWizard({
+  status,
+  onDismiss,
+  onNavigate,
+}: {
+  status: OnboardingStatus;
+  onDismiss: () => void;
+  onNavigate: (tab: string) => void;
+}) {
+  const pct = Math.round((status.required_done / status.required_total) * 100);
+  const nextStep = status.steps.find((s) => !s.completed && !s.optional);
+
+  return (
+    <div className="border-y border-surface-800">
+      <div className="px-5 py-4 flex items-start justify-between">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-8 h-8 rounded-lg bg-primary-500 text-white flex items-center justify-center flex-shrink-0">
+            <Sparkles className="w-3.5 h-3.5" />
+          </div>
+          <div>
+            <h2 className="text-[15px] font-semibold text-surface-50">초기 설정 마법사</h2>
+            <p className="text-[13px] text-surface-300 mt-0.5">
+              필수 항목 <strong className="text-surface-200 tabular-nums">{status.required_done}/{status.required_total}</strong> 완료 · {pct}%
+            </p>
+          </div>
+        </div>
+        <button onClick={onDismiss} className="p-1 hover:bg-surface-800 rounded text-surface-300 hover:text-surface-100 transition-colors">
+          <X className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      <div className="h-px bg-surface-800 relative">
+        <div className="absolute inset-y-0 left-0 bg-primary-500 transition-all duration-500" style={{ width: `${pct}%` }} />
+      </div>
+
+      <div className="px-5 py-4 space-y-2">
+        {status.steps.map((step) => (
+          <div
+            key={step.id}
+            className={`flex items-center gap-3 px-3 py-2 rounded-md text-[14px] ${
+              step.completed ? 'text-emerald-700' : 'text-surface-200'
+            }`}
+          >
+            <span className={`shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-[14px] font-bold ${
+              step.completed ? 'bg-emerald-500 text-white' : 'bg-surface-800 text-surface-200'
+            }`}>
+              {step.completed ? '✓' : ''}
+            </span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="font-medium truncate">{step.title}</span>
+                {step.optional && <span className="text-[14px] text-surface-200">선택</span>}
+              </div>
+              {!step.completed && (
+                <p className="text-[13px] text-surface-300 mt-0.5 truncate">{step.description}</p>
+              )}
+            </div>
+            {!step.completed && step.tab && (
+              <button
+                onClick={() => onNavigate(step.tab!)}
+                className="shrink-0 text-[12.5px] font-medium text-surface-200 hover:text-surface-50 hover:bg-surface-800 rounded px-2 py-1 transition-colors"
+              >
+                설정 →
+              </button>
+            )}
+          </div>
+        ))}
+
+        {nextStep && (
+          <p className="text-[13px] text-surface-300 mt-2 pt-3 border-t border-surface-800">
+            다음 단계: <strong className="text-surface-50 font-medium">{nextStep.title}</strong> — {nextStep.description}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Settings Page ───────────────────────────────────────────────
 
 type TabKey = 'target' | 'platforms' | 'channels' | 'budget';
 
 const TABS: { key: TabKey; label: string; icon: React.ElementType }[] = [
-  { key: 'target', label: '마케팅 대상', icon: Target },
+  { key: 'target',    label: '마케팅 대상', icon: Target },
   { key: 'platforms', label: '플랫폼 연동', icon: Link2 },
-  { key: 'channels', label: '채널 설정', icon: Sliders },
-  { key: 'budget', label: '마케팅 예산', icon: DollarSign },
+  { key: 'channels',  label: '채널 설정',   icon: Sliders },
+  { key: 'budget',    label: '마케팅 예산', icon: DollarSign },
 ];
 
 export function SettingsPage() {
   const [activeTab, setActiveTab] = useState<TabKey>('target');
   const toast = useToast();
 
-  // Onboarding wizard state
   const [onboarding, setOnboarding] = useState<OnboardingStatus | null>(null);
   const [wizardDismissed, setWizardDismissed] = useState(false);
 
@@ -1193,9 +1073,7 @@ export function SettingsPage() {
     fetch('/api/onboarding/status')
       .then((r) => r.json())
       .then((data: OnboardingStatus) => {
-        if (!data.all_required_complete) {
-          setOnboarding(data);
-        }
+        if (!data.all_required_complete) setOnboarding(data);
       })
       .catch(() => {});
   }, []);
@@ -1209,19 +1087,15 @@ export function SettingsPage() {
   const showWizard = onboarding && !wizardDismissed && !onboarding.all_required_complete;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 pb-8">
       <ToastContainer toasts={toast.toasts} onDismiss={toast.dismiss} />
 
-      {/* Page Header */}
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <Settings className="w-5 h-5 text-surface-400" />
-          <h1 className="text-2xl font-bold text-surface-900">설정</h1>
-        </div>
-        <p className="text-sm text-surface-500">마케팅 대상, 플랫폼 연동, 채널 설정을 관리합니다</p>
-      </div>
+      {/* ═══ Header ═════════════════════════════════════════════ */}
+      <header>
+        <h1 className="text-[24px] font-bold text-surface-50 tracking-tight leading-none">설정</h1>
+        <p className="text-[14px] text-surface-200 mt-2">마케팅 대상, 플랫폼 연동, 채널 설정을 관리합니다</p>
+      </header>
 
-      {/* Onboarding Wizard */}
       {showWizard && (
         <OnboardingWizard
           status={onboarding}
@@ -1231,8 +1105,8 @@ export function SettingsPage() {
       )}
 
       {/* Tabs */}
-      <div className="border-b border-surface-200">
-        <nav className="flex gap-0 -mb-px">
+      <div className="border-b border-surface-800">
+        <nav className="flex gap-6">
           {TABS.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.key;
@@ -1240,14 +1114,13 @@ export function SettingsPage() {
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${
-                  isActive
-                    ? 'border-primary-500 text-primary-600'
-                    : 'border-transparent text-surface-500 hover:text-surface-700 hover:border-surface-300'
+                className={`relative inline-flex items-center gap-1.5 pb-3 -mb-px text-[14px] font-medium transition-colors ${
+                  isActive ? 'text-surface-50' : 'text-surface-200 hover:text-surface-100'
                 }`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-3.5 h-3.5" />
                 <span>{tab.label}</span>
+                {isActive && <span className="absolute bottom-0 left-0 right-0 h-px bg-primary-500" />}
               </button>
             );
           })}
@@ -1255,7 +1128,7 @@ export function SettingsPage() {
       </div>
 
       {/* Tab Content */}
-      <div>
+      <div className="pt-2">
         {activeTab === 'target' && <MarketingTargetTab toast={toast} />}
         {activeTab === 'platforms' && <PlatformConnectionsTab toast={toast} />}
         {activeTab === 'channels' && <ChannelSettingsTab toast={toast} />}
