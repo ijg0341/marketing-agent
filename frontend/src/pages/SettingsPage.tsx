@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Save, RefreshCw, CheckCircle2, Plus, X, Loader2,
   ChevronDown, ChevronUp, BookOpen, Eye, EyeOff, Globe, Mail,
-  Target, Link2, Sliders, AlertCircle, DollarSign, Sparkles,
+  Target, Link2, Sliders, AlertCircle, DollarSign,
 } from 'lucide-react';
 
 // ─── API helpers ──────────────────────────────────────────────────────
@@ -33,26 +33,6 @@ interface CredentialField {
   type?: string;
   has_value: boolean;
   masked_preview: string;
-}
-
-interface OnboardingStep {
-  id: string;
-  title: string;
-  description: string;
-  completed: boolean;
-  optional?: boolean;
-  route?: string;
-  tab?: string;
-}
-
-interface OnboardingStatus {
-  steps: OnboardingStep[];
-  completed: number;
-  total: number;
-  required_done: number;
-  required_total: number;
-  all_required_complete: boolean;
-  setup_complete: boolean;
 }
 
 interface Platform {
@@ -971,86 +951,6 @@ function BudgetTab({ toast }: { toast: ReturnType<typeof useToast> }) {
   );
 }
 
-// ─── Onboarding Wizard ────────────────────────────────────────────────
-
-function OnboardingWizard({
-  status,
-  onDismiss,
-  onNavigate,
-}: {
-  status: OnboardingStatus;
-  onDismiss: () => void;
-  onNavigate: (tab: string) => void;
-}) {
-  const pct = Math.round((status.required_done / status.required_total) * 100);
-  const nextStep = status.steps.find((s) => !s.completed && !s.optional);
-
-  return (
-    <div className="border-y border-surface-800">
-      <div className="px-5 py-4 flex items-start justify-between">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-8 h-8 rounded-lg bg-primary-500 text-white flex items-center justify-center flex-shrink-0">
-            <Sparkles className="w-3.5 h-3.5" />
-          </div>
-          <div>
-            <h2 className="text-[15px] font-semibold text-surface-50">초기 설정 마법사</h2>
-            <p className="text-[13px] text-surface-300 mt-0.5">
-              필수 항목 <strong className="text-surface-200 tabular-nums">{status.required_done}/{status.required_total}</strong> 완료 · {pct}%
-            </p>
-          </div>
-        </div>
-        <button onClick={onDismiss} className="p-1 hover:bg-surface-800 rounded text-surface-300 hover:text-surface-100 transition-colors">
-          <X className="w-3.5 h-3.5" />
-        </button>
-      </div>
-
-      <div className="h-px bg-surface-800 relative">
-        <div className="absolute inset-y-0 left-0 bg-primary-500 transition-all duration-500" style={{ width: `${pct}%` }} />
-      </div>
-
-      <div className="px-5 py-4 space-y-2">
-        {status.steps.map((step) => (
-          <div
-            key={step.id}
-            className={`flex items-center gap-3 px-3 py-2 rounded-md text-[14px] ${
-              step.completed ? 'text-emerald-700' : 'text-surface-200'
-            }`}
-          >
-            <span className={`shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-[14px] font-bold ${
-              step.completed ? 'bg-emerald-500 text-white' : 'bg-surface-800 text-surface-200'
-            }`}>
-              {step.completed ? '✓' : ''}
-            </span>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="font-medium truncate">{step.title}</span>
-                {step.optional && <span className="text-[14px] text-surface-200">선택</span>}
-              </div>
-              {!step.completed && (
-                <p className="text-[13px] text-surface-300 mt-0.5 truncate">{step.description}</p>
-              )}
-            </div>
-            {!step.completed && step.tab && (
-              <button
-                onClick={() => onNavigate(step.tab!)}
-                className="shrink-0 text-[12.5px] font-medium text-surface-200 hover:text-surface-50 hover:bg-surface-800 rounded px-2 py-1 transition-colors"
-              >
-                설정 →
-              </button>
-            )}
-          </div>
-        ))}
-
-        {nextStep && (
-          <p className="text-[13px] text-surface-300 mt-2 pt-3 border-t border-surface-800">
-            다음 단계: <strong className="text-surface-50 font-medium">{nextStep.title}</strong> — {nextStep.description}
-          </p>
-        )}
-      </div>
-    </div>
-  );
-}
-
 // ─── Main Settings Page ───────────────────────────────────────────────
 
 type TabKey = 'target' | 'platforms' | 'channels' | 'budget';
@@ -1066,26 +966,6 @@ export function SettingsPage() {
   const [activeTab, setActiveTab] = useState<TabKey>('target');
   const toast = useToast();
 
-  const [onboarding, setOnboarding] = useState<OnboardingStatus | null>(null);
-  const [wizardDismissed, setWizardDismissed] = useState(false);
-
-  useEffect(() => {
-    fetch('/api/onboarding/status')
-      .then((r) => r.json())
-      .then((data: OnboardingStatus) => {
-        if (!data.all_required_complete) setOnboarding(data);
-      })
-      .catch(() => {});
-  }, []);
-
-  const handleWizardNavigate = (tab: string) => {
-    if (tab === 'target' || tab === 'platforms' || tab === 'channels' || tab === 'budget') {
-      setActiveTab(tab as TabKey);
-    }
-  };
-
-  const showWizard = onboarding && !wizardDismissed && !onboarding.all_required_complete;
-
   return (
     <div className="space-y-8 pb-8">
       <ToastContainer toasts={toast.toasts} onDismiss={toast.dismiss} />
@@ -1095,14 +975,6 @@ export function SettingsPage() {
         <h1 className="text-[24px] font-bold text-surface-50 tracking-tight leading-none">설정</h1>
         <p className="text-[14px] text-surface-200 mt-2">마케팅 대상, 플랫폼 연동, 채널 설정을 관리합니다</p>
       </header>
-
-      {showWizard && (
-        <OnboardingWizard
-          status={onboarding}
-          onDismiss={() => setWizardDismissed(true)}
-          onNavigate={handleWizardNavigate}
-        />
-      )}
 
       {/* Tabs */}
       <div className="border-b border-surface-800">

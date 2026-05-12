@@ -11,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import FileResponse, JSONResponse
 
-from src.api import ads, analytics, content, ga4, health, onboarding, reports, scheduled_tasks, settings as settings_api, strategy
+from src.api import ads, analytics, assets, content, ga4, health, onboarding, reports, scheduled_tasks, settings as settings_api, strategy
 from src.config import settings
 from src.db.database import init_db
 from src.scheduler import setup_scheduler, shutdown_scheduler
@@ -76,6 +76,7 @@ app.add_middleware(APIKeyAuthMiddleware)
 
 app.include_router(health.router)
 app.include_router(content.router)
+app.include_router(assets.router)
 app.include_router(analytics.router)
 app.include_router(strategy.router)
 app.include_router(scheduled_tasks.router)

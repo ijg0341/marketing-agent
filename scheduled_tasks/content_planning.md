@@ -20,7 +20,19 @@
 
 4. **최근 성과 확인** — `reports/` 최신 리포트가 있으면 어떤 콘텐츠 유형이 잘 반응했는지 참고합니다.
 
-5. **채널별 콘텐츠 생성** — 활성화된 채널 각각에 맞는 콘텐츠를 `max_per_day` 수량만큼 생성합니다. 채널 특성에 맞게 동일 메시지도 톤/포맷을 다르게 작성하세요.
+5. **사용 가능한 이미지 자산 확인** — `GET http://localhost:8000/api/assets`로 자산 목록을 받습니다.
+   - 응답: `[{id, url, description, tags, used_count, last_used_at, created_at}, ...]`
+   - 자산이 0개면 자산 없이 콘텐츠 생성 (자산은 선택 사항)
+   - 자산이 있으면 다음 규칙으로 콘텐츠에 끼워 넣음:
+     - **Instagram / Facebook**: 톤·주제에 맞는 자산 1개를 골라 `media_url`에 URL 입력
+     - **블로그 (네이버/티스토리)**: 본문 markdown 안에 `![설명](URL)` 형태로 1~2개 삽입 (도입부 또는 핵심 섹션)
+     - **Email**: 본문 HTML 안에 `<img src="URL" alt="설명" style="max-width:100%">` 형태로 삽입
+     - **Twitter**: 짧은 글이라 자산은 선택 — 시각적 임팩트가 필요할 때만 `media_url`에 추가
+   - **선택 우선순위**: `last_used_at`이 NULL이거나 가장 오래된 자산 우선 → 같은 자산이 매번 반복되는 것을 피함
+   - **매칭**: 콘텐츠 주제와 `description`/`tags`가 잘 맞는 자산을 우선
+   - 등록된 자산 URL이 콘텐츠 텍스트나 `media_url`에 포함되면 `used_count`/`last_used_at`이 자동으로 갱신됨
+
+6. **채널별 콘텐츠 생성** — 활성화된 채널 각각에 맞는 콘텐츠를 `max_per_day` 수량만큼 생성합니다. 채널 특성에 맞게 동일 메시지도 톤/포맷을 다르게 작성하세요.
 
 ---
 
@@ -83,7 +95,7 @@
 
 ---
 
-## 6. 큐에 등록
+## 7. 큐에 등록
 생성한 콘텐츠를 API로 등록합니다:
 
 ```bash
@@ -96,7 +108,7 @@ curl -X POST http://localhost:8000/api/content \
 - **Blog**: `content_text`의 첫 줄을 제목으로 사용
 - **Email**: `content_text`에 줄1=제목, 줄2=수신자, 줄3+=HTML로 작성
 
-## 7. 검증
+## 8. 검증
 큐 등록 확인:
 
 ```bash

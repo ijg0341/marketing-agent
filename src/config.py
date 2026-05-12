@@ -41,6 +41,11 @@ class Settings(BaseSettings):
     sendgrid_api_key: str = ""
     sendgrid_from_email: str = ""
 
+    # Supabase Storage (image assets)
+    supabase_url: str = ""
+    supabase_service_role_key: str = ""
+    supabase_bucket: str = "marketing-agent-assets"
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 

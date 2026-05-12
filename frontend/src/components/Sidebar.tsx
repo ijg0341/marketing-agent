@@ -5,12 +5,14 @@ import {
   BarChart3,
   Settings2,
   CalendarClock,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
 const links = [
   { to: '/',                icon: LayoutDashboard, label: '대시보드' },
   { to: '/content',         icon: FileText,        label: '콘텐츠' },
+  { to: '/assets',          icon: ImageIcon,       label: '자산' },
   { to: '/analytics',       icon: BarChart3,       label: '분석' },
   { to: '/scheduled-tasks', icon: CalendarClock,   label: '자동화' },
   { to: '/settings',        icon: Settings2,       label: '설정' },

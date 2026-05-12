@@ -4,6 +4,7 @@ import { Layout } from './components/Layout';
 import { DashboardPage } from './pages/DashboardPage';
 import { ContentPage } from './pages/ContentPage';
 import { ContentDetailPage } from './pages/ContentDetailPage';
+import { AssetsPage } from './pages/AssetsPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
 import { StrategyPage } from './pages/StrategyPage';
 import { EvolutionPage } from './pages/EvolutionPage';
@@ -126,6 +127,7 @@ export default function App() {
             <Route path="/" element={<DashboardPage />} />
             <Route path="/content" element={<ContentPage />} />
             <Route path="/content/:id" element={<ContentDetailPage />} />
+            <Route path="/assets" element={<AssetsPage />} />
             <Route path="/analytics" element={<AnalyticsPage />} />
             <Route path="/strategy" element={<StrategyPage />} />
             <Route path="/evolution" element={<EvolutionPage />} />

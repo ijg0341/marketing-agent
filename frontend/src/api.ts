@@ -18,10 +18,16 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (apiKey) headers['X-API-Key'] = apiKey;
 
-  const res = await fetch(`${BASE}${path}`, { headers, ...options });
+  const res = await fetch(`${BASE}${path}`, { cache: 'no-store', headers, ...options });
   if (res.status === 401) throw new Error('AUTH_REQUIRED');
   if (!res.ok) throw new Error(`API error: ${res.status}`);
-  return res.json();
+  const text = await res.text();
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    const ctype = res.headers.get('content-type') ?? 'unknown';
+    throw new Error(`Invalid JSON from ${path} (content-type: ${ctype}): ${text.slice(0, 120)}`);
+  }
 }
 
 export const api = {
@@ -102,6 +108,39 @@ export const api = {
   reports: {
     list: () => request<any[]>('/reports'),
     get: (filename: string) => request<any>(`/reports/${filename}`),
+  },
+
+  assets: {
+    list: () => request<any[]>('/assets'),
+    create: (data: { url: string; description: string; tags?: string }) =>
+      request<any>('/assets', { method: 'POST', body: JSON.stringify(data) }),
+    update: (id: number, data: { url?: string; description?: string; tags?: string }) =>
+      request<any>(`/assets/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    delete: (id: number) =>
+      request<any>(`/assets/${id}`, { method: 'DELETE' }),
+    upload: async (file: File, description: string, tags?: string) => {
+      const apiKey = getApiKey();
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('description', description);
+      if (tags) formData.append('tags', tags);
+
+      const headers: Record<string, string> = {};
+      if (apiKey) headers['X-API-Key'] = apiKey;
+
+      const res = await fetch(`${BASE}/assets/upload`, {
+        method: 'POST',
+        cache: 'no-store',
+        headers,
+        body: formData,
+      });
+      if (res.status === 401) throw new Error('AUTH_REQUIRED');
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Upload failed (${res.status}): ${text.slice(0, 200)}`);
+      }
+      return res.json();
+    },
   },
 
   scheduledTasks: {

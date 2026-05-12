@@ -6,7 +6,7 @@ from typing import Any
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from src.db.models import Ad, AdGroup, AdMetric, Campaign, Content, EvolutionLog, Metric, StrategyLog
+from src.db.models import Ad, AdGroup, AdMetric, Asset, Campaign, Content, EvolutionLog, Metric, StrategyLog
 
 
 class ContentRepository:
@@ -74,6 +74,58 @@ class ContentRepository:
         self.db.delete(content)
         self.db.commit()
         return True
+
+
+class AssetRepository:
+    def __init__(self, db: Session) -> None:
+        self.db = db
+
+    def create(self, **kwargs: Any) -> Asset:
+        a = Asset(**kwargs)
+        self.db.add(a)
+        self.db.commit()
+        self.db.refresh(a)
+        return a
+
+    def get(self, asset_id: int) -> Asset | None:
+        return self.db.get(Asset, asset_id)
+
+    def list_all(self) -> list[Asset]:
+        q = select(Asset).order_by(Asset.created_at.desc())
+        return list(self.db.scalars(q).all())
+
+    def update(self, asset_id: int, **kwargs: Any) -> Asset | None:
+        a = self.db.get(Asset, asset_id)
+        if not a:
+            return None
+        for k, v in kwargs.items():
+            if v is not None and hasattr(a, k):
+                setattr(a, k, v)
+        self.db.commit()
+        self.db.refresh(a)
+        return a
+
+    def delete(self, asset_id: int) -> bool:
+        a = self.db.get(Asset, asset_id)
+        if not a:
+            return False
+        self.db.delete(a)
+        self.db.commit()
+        return True
+
+    def mark_used_in_content(self, content_text: str | None, media_url: str | None) -> None:
+        """Detect any asset URLs that appear in the content text or media_url and bump usage."""
+        haystack = (content_text or "") + " " + (media_url or "")
+        if not haystack.strip():
+            return
+        bumped = False
+        for a in self.db.scalars(select(Asset)).all():
+            if a.url and a.url in haystack:
+                a.used_count = (a.used_count or 0) + 1
+                a.last_used_at = datetime.now(timezone.utc)
+                bumped = True
+        if bumped:
+            self.db.commit()
 
 
 class MetricRepository:

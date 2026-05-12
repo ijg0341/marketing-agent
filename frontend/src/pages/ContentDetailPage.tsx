@@ -27,9 +27,9 @@ const CHANNEL_META: Record<string, { label: string; dot: string }> = {
 };
 
 const STATUS_META: Record<string, { label: string; dot: string; text: string }> = {
-  queued: { label: '대기 중', dot: 'bg-amber-500',   text: 'text-amber-700' },
-  posted: { label: '발행됨',  dot: 'bg-emerald-500', text: 'text-emerald-700' },
-  failed: { label: '실패',    dot: 'bg-red-500',     text: 'text-red-700' },
+  queued: { label: '대기 중', dot: 'bg-amber-400',   text: 'text-amber-400' },
+  posted: { label: '발행됨',  dot: 'bg-emerald-400', text: 'text-emerald-400' },
+  failed: { label: '실패',    dot: 'bg-red-400',     text: 'text-red-400' },
 };
 
 function buildBlogHtml(rawText: string): string {
@@ -77,7 +77,6 @@ export function ContentDetailPage() {
   const [marking, setMarking] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
 
   useEffect(() => {
     if (!id) return;
@@ -185,7 +184,7 @@ export function ContentDetailPage() {
           <ArrowLeft className="w-4 h-4" />
           콘텐츠 목록
         </button>
-        <div className="text-sm text-red-700">
+        <div className="text-sm text-red-400">
           <AlertCircle className="w-4 h-4 inline-block mr-1.5 -mt-0.5" />
           {error}
         </div>
@@ -195,7 +194,7 @@ export function ContentDetailPage() {
 
   if (!content) return null;
 
-  const channelMeta = CHANNEL_META[content.channel] ?? { label: content.channel, dot: 'bg-surface-9000' };
+  const channelMeta = CHANNEL_META[content.channel] ?? { label: content.channel, dot: 'bg-surface-700' };
   const statusMeta = STATUS_META[content.status] ?? { label: content.status, dot: 'bg-surface-400', text: 'text-surface-200' };
 
   return (
@@ -230,8 +229,8 @@ export function ContentDetailPage() {
             {dirty && (
               <>
                 <span className="text-surface-600">·</span>
-                <span className="inline-flex items-center gap-1.5 text-amber-700">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                <span className="inline-flex items-center gap-1.5 text-amber-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
                   <span className="font-medium">저장되지 않음</span>
                 </span>
               </>
@@ -275,7 +274,7 @@ export function ContentDetailPage() {
                 <button
                   onClick={handleDelete}
                   disabled={deleting}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[14px] font-medium text-surface-600 hover:text-red-700 hover:bg-red-50 rounded-md disabled:opacity-50 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[14px] font-medium text-surface-300 hover:text-red-400 hover:bg-red-500/10 rounded-md disabled:opacity-50 transition-colors"
                 >
                   {deleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
                   삭제
@@ -306,7 +305,7 @@ export function ContentDetailPage() {
 
         {/* Error banner */}
         {error && (
-          <div className="mt-8 flex items-start gap-2 text-sm text-red-700">
+          <div className="mt-8 flex items-start gap-2 text-sm text-red-400">
             <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
@@ -321,8 +320,36 @@ export function ContentDetailPage() {
           </p>
         )}
 
-        {/* ── Workspace: editor (left) | preview (right) ───────────── */}
-        <div className="mt-12 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] gap-x-14 gap-y-10">
+        {/* ── Workspace: preview (top, full-width) → editor (bottom) ── */}
+        <div className="mt-12 space-y-12">
+
+          {/* Preview 영역 — PC + 모바일 동시 표시 */}
+          <section>
+            <Label>미리보기</Label>
+
+            <div className="bg-surface-900 rounded-2xl p-8 min-h-[420px]">
+              <div className="flex flex-wrap gap-10 justify-center items-start">
+                {/* PC */}
+                <div className="flex flex-col items-center gap-3">
+                  <span className="text-[11.5px] font-semibold uppercase tracking-[0.14em] text-surface-400">
+                    PC
+                  </span>
+                  <ContentPreview channel={content.channel} text={text} mediaUrl={mediaUrl} />
+                </div>
+
+                {/* Mobile (phone frame) */}
+                <div className="flex flex-col items-center gap-3">
+                  <span className="text-[11.5px] font-semibold uppercase tracking-[0.14em] text-surface-400">
+                    모바일
+                  </span>
+                  <div className="w-[375px] max-w-full rounded-[36px] border-[8px] border-surface-950 bg-surface-950 p-3 shadow-[0_20px_50px_-10px_rgba(0,0,0,0.6)]">
+                    <div className="h-1 w-12 mx-auto mb-2 bg-surface-700 rounded-full" />
+                    <ContentPreview channel={content.channel} text={text} mediaUrl={mediaUrl} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
 
           {/* Editor 영역 — 박스 없음, underline 스타일 */}
           <section>
@@ -333,14 +360,14 @@ export function ContentDetailPage() {
               disabled={!isQueued}
               spellCheck={false}
               placeholder={isManualBlog ? '첫 줄은 제목, 두 번째 줄부터 본문...' : '본문을 입력하세요'}
-              className="w-full min-h-[480px] text-[14px] bg-transparent border-0 focus:outline-none resize-y font-mono leading-[1.85] text-surface-50 placeholder:text-surface-500 disabled:text-surface-200"
+              className="w-full min-h-[480px] text-[14px] bg-surface-900 border border-surface-800 rounded-lg px-4 py-3 focus:border-surface-600 focus:outline-none resize-y font-mono leading-[1.85] text-surface-50 placeholder:text-surface-500 disabled:text-surface-300 disabled:bg-surface-900/50 transition-colors"
             />
-            <div className="flex items-center justify-between pt-3 border-t border-surface-800">
-              <span className="text-[14px] text-surface-200 tabular-nums">
+            <div className="flex items-center justify-between mt-3 px-1">
+              <span className="text-[14px] text-surface-300 tabular-nums">
                 {text.length.toLocaleString()} characters
               </span>
               {isManualBlog && (
-                <span className="text-[14px] text-surface-200">Markdown 지원</span>
+                <span className="text-[14px] text-surface-300">Markdown 지원</span>
               )}
             </div>
 
@@ -348,7 +375,7 @@ export function ContentDetailPage() {
               <div className="mt-10">
                 <Label>
                   미디어 URL
-                  {content.channel === 'instagram' && <span className="ml-1.5 text-red-500 normal-case tracking-normal text-[14px] font-medium">필수</span>}
+                  {content.channel === 'instagram' && <span className="ml-1.5 text-red-400 normal-case tracking-normal text-[14px] font-medium">필수</span>}
                 </Label>
                 <input
                   type="text"
@@ -356,7 +383,7 @@ export function ContentDetailPage() {
                   onChange={(e) => setMediaUrl(e.target.value)}
                   disabled={!isQueued}
                   placeholder="https://example.com/image.jpg"
-                  className="w-full text-[14px] bg-transparent border-0 border-b border-surface-800 pb-2 focus:border-surface-900 focus:outline-none transition-colors placeholder:text-surface-500 disabled:text-surface-200 font-mono"
+                  className="w-full text-[14px] bg-surface-900 border border-surface-800 rounded-md px-3 py-2 focus:border-surface-600 focus:outline-none transition-colors placeholder:text-surface-500 disabled:text-surface-300 disabled:bg-surface-900/50 font-mono"
                 />
               </div>
             )}
@@ -364,7 +391,7 @@ export function ContentDetailPage() {
             {isManualBlog && isQueued && (
               <div className="mt-12">
                 <Label>수동 발행</Label>
-                <ol className="text-[11.5px] text-surface-600 space-y-2 list-decimal pl-5 marker:text-surface-200 marker:font-medium leading-relaxed">
+                <ol className="text-[13px] text-surface-300 space-y-2 list-decimal pl-5 marker:text-surface-200 marker:font-medium leading-relaxed">
                   <li>본문/제목 검토 후 <span className="text-surface-50 font-medium">저장</span></li>
                   <li><span className="text-surface-50 font-medium">HTML 복사</span>로 클립보드에 복사</li>
                   <li>
@@ -375,46 +402,6 @@ export function ContentDetailPage() {
                 </ol>
               </div>
             )}
-          </section>
-
-          {/* Preview 영역 — 살짝 다른 배경으로 영역만 분리 (박스 X) */}
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <Label className="!mb-0">미리보기</Label>
-              <div className="flex items-center gap-4 text-[14px]">
-                {(['desktop', 'mobile'] as const).map((m) => (
-                  <button
-                    key={m}
-                    onClick={() => setPreviewMode(m)}
-                    className={`relative pb-1 font-medium transition-colors ${
-                      previewMode === m
-                        ? 'text-surface-50'
-                        : 'text-surface-200 hover:text-surface-600'
-                    }`}
-                  >
-                    {m === 'desktop' ? 'PC' : '모바일'}
-                    {previewMode === m && (
-                      <span className="absolute bottom-0 left-0 right-0 h-px bg-surface-900" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-surface-900 rounded-2xl p-8 min-h-[480px]">
-              {previewMode === 'mobile' ? (
-                <div className="flex justify-center pt-2">
-                  <div className="w-[375px] max-w-full rounded-[36px] border-[8px] border-surface-900 bg-surface-900 p-3 shadow-[0_20px_50px_-20px_rgba(15,23,42,0.25)]">
-                    <div className="h-1 w-12 mx-auto mb-2 bg-surface-700 rounded-full" />
-                    <ContentPreview channel={content.channel} text={text} mediaUrl={mediaUrl} />
-                  </div>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <ContentPreview channel={content.channel} text={text} mediaUrl={mediaUrl} />
-                </div>
-              )}
-            </div>
           </section>
         </div>
 
@@ -436,8 +423,8 @@ export function ContentDetailPage() {
 
         {content.error_message && (
           <div className="mt-8">
-            <Label className="!text-red-600">발행 에러</Label>
-            <p className="text-[14px] text-red-700 break-all leading-relaxed font-mono">
+            <Label className="!text-red-400">발행 에러</Label>
+            <p className="text-[14px] text-red-400 break-all leading-relaxed font-mono">
               {content.error_message}
             </p>
           </div>

@@ -1,111 +1,57 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { AlertCircle, CheckCircle2, AlertTriangle } from 'lucide-react';
+import {
+  Heart,
+  MessageCircle,
+  Repeat2,
+  BarChart3,
+  Share,
+  Bookmark,
+  MoreHorizontal,
+  Send,
+  ThumbsUp,
+} from 'lucide-react';
 
-// ── Validation ───────────────────────────────────────────────────────────────
+// ── Parsers ─────────────────────────────────────────────────────────────────
 
-type Level = 'ok' | 'warning' | 'error';
-
-interface ValidationResult {
-  level: Level;
-  message: string;
-}
-
-function validateTwitter(text: string): ValidationResult {
-  const len = text.length;
-  if (len === 0) return { level: 'error', message: '본문 비어있음' };
-  if (len > 280) return { level: 'error', message: `${len}자 — 280자 초과 (게시 실패)` };
-  if (len > 250) return { level: 'warning', message: `${len}/280자 — 한도 근접` };
-  return { level: 'ok', message: `${len}/280자` };
-}
-
-function validateInstagram(text: string, mediaUrl?: string | null): ValidationResult {
-  if (!mediaUrl) return { level: 'error', message: '이미지 URL 필수 (Instagram은 이미지 없이 게시 불가)' };
-  if (text.length > 2200) return { level: 'error', message: `${text.length}자 — 2,200자 초과` };
-  if (text.length === 0) return { level: 'warning', message: '캡션이 비어있습니다' };
-  return { level: 'ok', message: `${text.length}/2,200자 · 미디어 OK` };
-}
-
-function validateFacebook(text: string): ValidationResult {
-  const len = text.length;
-  if (len === 0) return { level: 'error', message: '본문 비어있음' };
-  if (len < 40) return { level: 'warning', message: `${len}자 — 짧음 (80~200자 권장)` };
-  if (len > 500) return { level: 'warning', message: `${len}자 — 긺 (engagement 떨어질 수 있음)` };
-  return { level: 'ok', message: `${len}자` };
-}
-
-function validateBlog(text: string): { result: ValidationResult; title: string; body: string } {
+function parseBlog(text: string): { title: string; body: string } {
   const lines = text.split('\n');
   const title = (lines[0] ?? '').replace(/^#+\s*/, '').trim();
   const body = lines.slice(1).join('\n').trim();
-  if (!title) return { result: { level: 'error', message: '첫 줄에 제목이 필요합니다' }, title, body };
-  if (!body) return { result: { level: 'error', message: '본문이 비어있습니다' }, title, body };
-  if (body.length < 200) return { result: { level: 'warning', message: `본문 ${body.length}자 — SEO에는 800자+ 권장` }, title, body };
-  return { result: { level: 'ok', message: `제목 + 본문 ${body.length}자` }, title, body };
+  return { title, body };
 }
 
-function validateEmail(text: string): {
-  result: ValidationResult;
-  subject: string;
-  recipients: string;
-  body: string;
-} {
+function parseEmail(text: string): { subject: string; recipients: string; body: string } {
   const lines = text.split('\n');
-  if (lines.length < 3) {
-    return {
-      result: { level: 'error', message: '포맷: 줄1=제목, 줄2=수신자(쉼표 구분), 줄3+=HTML 본문' },
-      subject: lines[0]?.trim() ?? '',
-      recipients: lines[1]?.trim() ?? '',
-      body: '',
-    };
-  }
-  const subject = lines[0].trim();
-  const recipients = lines[1].trim();
+  const subject = lines[0]?.trim() ?? '';
+  const recipients = lines[1]?.trim() ?? '';
   const body = lines.slice(2).join('\n').trim();
-  if (!subject) return { result: { level: 'error', message: '제목 비어있음' }, subject, recipients, body };
-  if (!recipients || !recipients.includes('@')) {
-    return { result: { level: 'error', message: '수신자 이메일 누락 (쉼표 구분)' }, subject, recipients, body };
-  }
-  if (!body) return { result: { level: 'error', message: '본문 비어있음' }, subject, recipients, body };
-  const count = recipients.split(',').filter((e) => e.trim()).length;
-  return { result: { level: 'ok', message: `${count}명에게 발송 준비 완료` }, subject, recipients, body };
-}
-
-// ── Validation Badge ────────────────────────────────────────────────────────
-
-function ValidationBadge({ result }: { result: ValidationResult }) {
-  const styles: Record<Level, string> = {
-    ok: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    warning: 'bg-amber-50 text-amber-700 border-amber-200',
-    error: 'bg-red-50 text-red-700 border-red-200',
-  };
-  const Icon = result.level === 'ok' ? CheckCircle2 : result.level === 'warning' ? AlertTriangle : AlertCircle;
-  return (
-    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium ${styles[result.level]}`}>
-      <Icon className="w-3.5 h-3.5 flex-shrink-0" />
-      <span>{result.message}</span>
-    </div>
-  );
+  return { subject, recipients, body };
 }
 
 // ── Channel Previews ────────────────────────────────────────────────────────
 
 function TwitterPreview({ text }: { text: string }) {
-  const v = validateTwitter(text);
   return (
-    <div className="space-y-2">
-      <ValidationBadge result={v} />
-      <div className="bg-surface-900 rounded-2xl border border-surface-800 p-4 max-w-md">
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-400 to-blue-500 flex-shrink-0" />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-sm font-bold text-surface-50">PLANDOG</span>
-              <span className="text-sm text-surface-200">@plandog</span>
-            </div>
-            <p className="text-sm text-surface-50 mt-0.5 whitespace-pre-wrap break-words">
-              {text || <span className="text-surface-200">(본문 없음)</span>}
-            </p>
+    <div className="bg-surface-800 rounded-2xl border border-surface-700 p-4 max-w-md w-full">
+      <div className="flex items-start gap-3">
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-400 to-blue-500 flex-shrink-0" />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-baseline gap-1.5 flex-wrap">
+            <span className="text-[15px] font-bold text-surface-50">PLANDOG</span>
+            <span className="text-[14px] text-surface-400">@plandog</span>
+            <span className="text-[14px] text-surface-400">·</span>
+            <span className="text-[14px] text-surface-400">2시간</span>
+          </div>
+          <p className="text-[15px] text-surface-50 mt-1 whitespace-pre-wrap break-words leading-snug">
+            {text || <span className="text-surface-400">(본문 없음)</span>}
+          </p>
+          <div className="mt-3 flex items-center justify-between text-surface-400 max-w-[300px]">
+            <button className="hover:text-sky-400 transition-colors"><MessageCircle className="w-4 h-4" /></button>
+            <button className="hover:text-emerald-400 transition-colors"><Repeat2 className="w-4 h-4" /></button>
+            <button className="hover:text-pink-400 transition-colors"><Heart className="w-4 h-4" /></button>
+            <button className="hover:text-sky-400 transition-colors"><BarChart3 className="w-4 h-4" /></button>
+            <button className="hover:text-sky-400 transition-colors"><Share className="w-4 h-4" /></button>
           </div>
         </div>
       </div>
@@ -114,77 +60,106 @@ function TwitterPreview({ text }: { text: string }) {
 }
 
 function InstagramPreview({ text, mediaUrl }: { text: string; mediaUrl?: string | null }) {
-  const v = validateInstagram(text, mediaUrl);
   const firstLine = text.split('\n')[0] ?? '';
   return (
-    <div className="space-y-2">
-      <ValidationBadge result={v} />
-      <div className="bg-surface-900 rounded-lg border border-surface-800 max-w-sm overflow-hidden">
-        <div className="flex items-center gap-2 p-3 border-b border-surface-800">
-          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-pink-500 via-red-400 to-yellow-400" />
+    <div className="bg-surface-800 rounded-lg border border-surface-700 max-w-sm w-full overflow-hidden">
+      <div className="flex items-center justify-between p-3 border-b border-surface-700">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 via-red-400 to-yellow-400 p-0.5">
+            <div className="w-full h-full rounded-full bg-surface-800" />
+          </div>
           <span className="text-sm font-semibold text-surface-50">plandog</span>
         </div>
-        <div className="aspect-square bg-surface-800 flex items-center justify-center overflow-hidden">
-          {mediaUrl ? (
-            <img
-              src={mediaUrl}
-              alt=""
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                if (e.currentTarget.nextElementSibling) {
-                  (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
-                }
-              }}
-            />
-          ) : null}
-          <div
-            className="text-xs text-surface-200 items-center justify-center w-full h-full flex"
-            style={{ display: mediaUrl ? 'none' : 'flex' }}
-          >
-            {mediaUrl ? '이미지 로드 실패' : '이미지 미설정'}
-          </div>
+        <MoreHorizontal className="w-4 h-4 text-surface-300" />
+      </div>
+      <div className="aspect-square bg-surface-900 flex items-center justify-center overflow-hidden">
+        {mediaUrl ? (
+          <img
+            src={mediaUrl}
+            alt=""
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+              if (e.currentTarget.nextElementSibling) {
+                (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
+              }
+            }}
+          />
+        ) : null}
+        <div
+          className="text-xs text-surface-400 items-center justify-center w-full h-full flex"
+          style={{ display: mediaUrl ? 'none' : 'flex' }}
+        >
+          {mediaUrl ? '이미지 로드 실패' : '이미지 미설정'}
         </div>
-        <div className="p-3">
-          <p className="text-sm text-surface-50">
-            <span className="font-semibold">plandog</span>{' '}
-            <span>{firstLine || <span className="text-surface-200">(캡션 없음)</span>}</span>
-          </p>
-          {text.split('\n').length > 1 && (
-            <p className="text-xs text-surface-200 mt-1">… 캡션 더 보기 (총 {text.length}자)</p>
-          )}
+      </div>
+      <div className="flex items-center justify-between px-3 pt-3">
+        <div className="flex items-center gap-4 text-surface-50">
+          <Heart className="w-[22px] h-[22px]" />
+          <MessageCircle className="w-[22px] h-[22px]" />
+          <Send className="w-[22px] h-[22px]" />
         </div>
+        <Bookmark className="w-[22px] h-[22px] text-surface-50" />
+      </div>
+      <div className="px-3 pt-2 pb-3">
+        <p className="text-[13px] font-semibold text-surface-50">좋아요 0개</p>
+        <p className="text-sm text-surface-50 mt-1 break-words">
+          <span className="font-semibold">plandog</span>{' '}
+          <span>{firstLine || <span className="text-surface-400">(캡션 없음)</span>}</span>
+        </p>
+        {text.split('\n').length > 1 && (
+          <p className="text-xs text-surface-300 mt-1">… 더 보기 (총 {text.length}자)</p>
+        )}
       </div>
     </div>
   );
 }
 
 function FacebookPreview({ text, mediaUrl }: { text: string; mediaUrl?: string | null }) {
-  const v = validateFacebook(text);
   return (
-    <div className="space-y-2">
-      <ValidationBadge result={v} />
-      <div className="bg-surface-900 rounded-lg border border-surface-800 max-w-md overflow-hidden">
-        <div className="flex items-center gap-2 p-3">
-          <div className="w-9 h-9 rounded-full bg-blue-600" />
+    <div className="bg-surface-800 rounded-lg border border-surface-700 max-w-md w-full overflow-hidden">
+      <div className="flex items-start justify-between px-3 pt-3 pb-2">
+        <div className="flex items-center gap-2">
+          <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold">
+            P
+          </div>
           <div>
-            <div className="text-sm font-semibold text-surface-50">PLANDOG</div>
-            <div className="text-xs text-surface-200">방금 전 · 🌐</div>
+            <div className="text-[14px] font-semibold text-surface-50">PLANDOG</div>
+            <div className="text-[12px] text-surface-400">방금 전 · 🌐</div>
           </div>
         </div>
-        <p className="px-3 pb-3 text-sm text-surface-50 whitespace-pre-wrap break-words">
-          {text || <span className="text-surface-200">(본문 없음)</span>}
-        </p>
-        {mediaUrl && (
-          <div className="aspect-video bg-surface-800">
-            <img
-              src={mediaUrl}
-              alt=""
-              className="w-full h-full object-cover"
-              onError={(e) => (e.currentTarget.style.display = 'none')}
-            />
-          </div>
-        )}
+        <MoreHorizontal className="w-4 h-4 text-surface-300" />
+      </div>
+      <p className="px-3 pb-3 text-[15px] text-surface-50 whitespace-pre-wrap break-words leading-snug">
+        {text || <span className="text-surface-400">(본문 없음)</span>}
+      </p>
+      {mediaUrl && (
+        <div className="aspect-video bg-surface-900">
+          <img
+            src={mediaUrl}
+            alt=""
+            className="w-full h-full object-cover"
+            onError={(e) => (e.currentTarget.style.display = 'none')}
+          />
+        </div>
+      )}
+      <div className="px-3 py-2 flex items-center justify-between text-[12px] text-surface-400 border-b border-surface-700">
+        <span className="inline-flex items-center gap-1">
+          <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-600 text-white text-[10px]">👍</span>
+          좋아요 0
+        </span>
+        <span>댓글 0 · 공유 0</span>
+      </div>
+      <div className="grid grid-cols-3">
+        <button className="flex items-center justify-center gap-1.5 py-2 text-[13px] font-medium text-surface-200 hover:bg-surface-700/50 transition-colors">
+          <ThumbsUp className="w-4 h-4" /> 좋아요
+        </button>
+        <button className="flex items-center justify-center gap-1.5 py-2 text-[13px] font-medium text-surface-200 hover:bg-surface-700/50 transition-colors">
+          <MessageCircle className="w-4 h-4" /> 댓글
+        </button>
+        <button className="flex items-center justify-center gap-1.5 py-2 text-[13px] font-medium text-surface-200 hover:bg-surface-700/50 transition-colors">
+          <Share className="w-4 h-4" /> 공유
+        </button>
       </div>
     </div>
   );
@@ -197,56 +172,75 @@ function BlogPreview({
   text: string;
   platform: 'naver' | 'tistory';
 }) {
-  const { result, title, body } = validateBlog(text);
+  const { title, body } = parseBlog(text);
   const meta = platform === 'naver'
-    ? { label: 'NAVER 블로그', accent: 'text-emerald-600', dot: 'bg-emerald-500' }
-    : { label: 'TISTORY', accent: 'text-orange-600', dot: 'bg-orange-500' };
+    ? { label: 'NAVER 블로그', accent: 'text-emerald-400', dot: 'bg-emerald-400', category: '기획·PM' }
+    : { label: 'TISTORY',      accent: 'text-orange-400',  dot: 'bg-orange-400',  category: 'PM/기획' };
+  const today = '2026. 05. 11.';
   return (
-    <div className="space-y-2">
-      <ValidationBadge result={result} />
-      <article className="bg-surface-900 rounded-lg border border-surface-800 p-5 max-w-2xl">
-        <div className="flex items-center gap-2 mb-3 pb-3 border-b border-surface-800">
-          <span className={`w-2 h-2 rounded-full ${meta.dot}`} />
-          <span className={`text-xs font-bold uppercase tracking-wider ${meta.accent}`}>{meta.label}</span>
-        </div>
-        <h1 className="text-xl font-bold text-surface-50 mb-3 break-words">{title || <span className="text-surface-200">(제목 없음)</span>}</h1>
-        <div className="report-markdown text-sm leading-relaxed text-surface-200">
-          {body ? (
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{body}</ReactMarkdown>
-          ) : (
-            <span className="text-surface-200">(본문 없음)</span>
-          )}
-        </div>
-      </article>
-    </div>
+    <article className="bg-surface-800 rounded-lg border border-surface-700 p-6 max-w-2xl w-full">
+      <div className="flex items-center gap-2 mb-4 pb-4 border-b border-surface-700">
+        <span className={`w-2 h-2 rounded-full ${meta.dot}`} />
+        <span className={`text-[11px] font-bold uppercase tracking-wider ${meta.accent}`}>{meta.label}</span>
+      </div>
+      <h1 className="text-[22px] font-bold text-surface-50 mb-2 break-words leading-tight">
+        {title || <span className="text-surface-400 font-normal">(제목 없음)</span>}
+      </h1>
+      <div className="flex items-center gap-2 text-[12px] text-surface-400 mb-5">
+        <span className="font-medium text-surface-200">플랜도그</span>
+        <span>·</span>
+        <span>{meta.category}</span>
+        <span>·</span>
+        <span>{today}</span>
+      </div>
+      <div className="report-markdown text-[14.5px] leading-relaxed text-surface-100">
+        {body ? (
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{body}</ReactMarkdown>
+        ) : (
+          <span className="text-surface-400">(본문 없음)</span>
+        )}
+      </div>
+      <div className="mt-6 pt-4 border-t border-surface-700 flex items-center gap-5 text-[12px] text-surface-400">
+        <span className="inline-flex items-center gap-1.5">
+          <Heart className="w-3.5 h-3.5" /> 공감 0
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <MessageCircle className="w-3.5 h-3.5" /> 댓글 0
+        </span>
+      </div>
+    </article>
   );
 }
 
 function EmailPreview({ text }: { text: string }) {
-  const { result, subject, recipients, body } = validateEmail(text);
+  const { subject, recipients, body } = parseEmail(text);
   return (
-    <div className="space-y-2">
-      <ValidationBadge result={result} />
-      <div className="bg-surface-900 rounded-lg border border-surface-800 max-w-md overflow-hidden">
-        <div className="px-4 py-3 border-b border-surface-800 space-y-1.5 bg-surface-900">
-          <div className="text-xs">
-            <span className="text-surface-200">제목: </span>
-            <span className="text-surface-50 font-medium break-all">{subject || <span className="text-surface-200">(없음)</span>}</span>
-          </div>
-          <div className="text-xs">
-            <span className="text-surface-200">수신자: </span>
-            <span className="text-surface-50 break-all">{recipients || <span className="text-surface-200">(없음)</span>}</span>
-          </div>
-        </div>
-        {body ? (
-          <div
-            className="p-4 text-sm text-surface-200 break-words"
-            dangerouslySetInnerHTML={{ __html: body }}
-          />
-        ) : (
-          <p className="p-4 text-sm text-surface-200">(본문 없음)</p>
-        )}
+    <div className="bg-surface-800 rounded-lg border border-surface-700 max-w-md w-full overflow-hidden">
+      <div className="px-4 py-3 border-b border-surface-700">
+        <h2 className="text-[16px] font-semibold text-surface-50 break-words leading-snug">
+          {subject || <span className="text-surface-400 font-normal">(제목 없음)</span>}
+        </h2>
       </div>
+      <div className="px-4 py-3 border-b border-surface-700 space-y-1.5 text-[12px]">
+        <div className="flex gap-2">
+          <span className="text-surface-400 w-11 shrink-0">보낸이</span>
+          <span className="text-surface-100">PLANDOG &lt;hello@plandog.io&gt;</span>
+        </div>
+        <div className="flex gap-2">
+          <span className="text-surface-400 w-11 shrink-0">받는이</span>
+          <span className="text-surface-100 break-all">
+            {recipients || <span className="text-surface-400">(없음)</span>}
+          </span>
+        </div>
+      </div>
+      {body ? (
+        <div
+          className="p-4 text-sm text-surface-100 break-words leading-relaxed"
+          dangerouslySetInnerHTML={{ __html: body }}
+        />
+      ) : (
+        <p className="p-4 text-sm text-surface-400">(본문 없음)</p>
+      )}
     </div>
   );
 }
@@ -277,7 +271,7 @@ export function ContentPreview({
       return <EmailPreview text={text} />;
     default:
       return (
-        <div className="text-sm text-surface-200 p-4 rounded-lg border border-surface-800 bg-surface-900">
+        <div className="text-sm text-surface-300 p-4 rounded-lg border border-surface-700 bg-surface-800">
           알 수 없는 채널: <code>{channel}</code>
         </div>
       );

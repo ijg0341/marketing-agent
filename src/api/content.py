@@ -11,7 +11,7 @@ from src.config import agent_config
 from src.content.publisher import publish_queued
 from src.db.database import get_db
 from src.db.models import Content
-from src.db.repository import ContentRepository
+from src.db.repository import AssetRepository, ContentRepository
 
 router = APIRouter(prefix="/api/content", tags=["content"])
 
@@ -72,6 +72,7 @@ async def list_content(
 @router.post("", response_model=dict[str, Any])
 async def create_content(body: ContentCreate, db: Session = Depends(get_db)):
     repo = ContentRepository(db)
+    asset_repo = AssetRepository(db)
     strategy = agent_config.strategy
     content = repo.create(
         channel=body.channel,
@@ -80,12 +81,14 @@ async def create_content(body: ContentCreate, db: Session = Depends(get_db)):
         template_version=body.template_version,
         strategy_version=strategy.get("version"),
     )
+    asset_repo.mark_used_in_content(body.content_text, body.media_url)
     return {"id": content.id, "status": content.status, "channel": content.channel}
 
 
 @router.post("/batch", response_model=dict[str, Any])
 async def create_batch(items: list[ContentCreate], db: Session = Depends(get_db)):
     repo = ContentRepository(db)
+    asset_repo = AssetRepository(db)
     strategy = agent_config.strategy
     created = []
     for item in items:
@@ -96,6 +99,7 @@ async def create_batch(items: list[ContentCreate], db: Session = Depends(get_db)
             template_version=item.template_version,
             strategy_version=strategy.get("version"),
         )
+        asset_repo.mark_used_in_content(item.content_text, item.media_url)
         created.append({"id": c.id, "channel": c.channel})
     return {"created": len(created), "items": created}
 
