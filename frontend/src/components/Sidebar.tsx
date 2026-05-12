@@ -6,6 +6,7 @@ import {
   Settings2,
   CalendarClock,
   Image as ImageIcon,
+  GitPullRequest,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -15,6 +16,7 @@ const links = [
   { to: '/assets',          icon: ImageIcon,       label: '자산' },
   { to: '/analytics',       icon: BarChart3,       label: '분석' },
   { to: '/scheduled-tasks', icon: CalendarClock,   label: '자동화' },
+  { to: '/proposals',       icon: GitPullRequest,  label: '진화 제안' },
   { to: '/settings',        icon: Settings2,       label: '설정' },
 ];
 

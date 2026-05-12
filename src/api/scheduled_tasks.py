@@ -24,7 +24,6 @@ DEFAULT_SCHEDULES: dict[str, dict[str, Any]] = {
     "daily_analysis": {"cron": "3 9 * * *", "description": "Daily Performance Analysis & Report"},
     "content_planning": {"cron": "17 10 * * *", "description": "Daily Content Planning & Generation"},
     "strategy_evolution": {"cron": "42 11 * * 1,4", "description": "Strategy Auto-Evolution (Mon/Thu)"},
-    "code_evolution": {"cron": "22 14 * * 3", "description": "Code Self-Review & Improvement (Wed)"},
     "prompt_evolution": {"cron": "51 14 * * 5", "description": "Prompt & Template Improvement (Fri)"},
 }
 
@@ -91,11 +90,22 @@ def _get_enabled_tasks() -> dict[str, str]:
 
 
 def _build_cron_line(task_id: str, cron: str) -> str:
-    """Build a crontab entry for a task."""
+    """Build a crontab entry for a task.
+
+    Pipes the task markdown into `claude --print` via stdin so the file content
+    becomes the actual prompt (passing the path as a positional argument would
+    only send the path string, not the file content).
+
+    In `--print` mode there is no user to approve tool prompts, so we must
+    explicitly allow the tools the evolution tasks rely on (curl for API
+    calls, Read for inspecting yaml).
+    """
     logs_dir = PROJECT_DIR / "logs"
     return (
         f"{CRON_MARKER}{task_id}\n"
-        f"{cron} cd {PROJECT_DIR} && claude scheduled_tasks/{task_id}.md >> {logs_dir}/{task_id}.log 2>&1"
+        f"{cron} cd {PROJECT_DIR} && cat scheduled_tasks/{task_id}.md | "
+        f"claude --print --allowed-tools 'Bash Read Write' "
+        f">> {logs_dir}/{task_id}.log 2>&1"
     )
 
 
@@ -209,10 +219,11 @@ async def run_task(task_id: str):
     log_file = logs_dir / f"{task_id}.log"
 
     try:
-        with open(log_file, "a") as lf:
+        with open(path, "rb") as pf, open(log_file, "a") as lf:
             proc = subprocess.Popen(
-                ["claude", "-p", str(path)],
+                ["claude", "--print", "--allowed-tools", "Bash Read Write"],
                 cwd=str(PROJECT_DIR),
+                stdin=pf,
                 stdout=lf,
                 stderr=lf,
                 start_new_session=True,

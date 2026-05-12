@@ -143,6 +143,25 @@ export const api = {
     },
   },
 
+  proposals: {
+    list: (status?: string) => {
+      const qs = status ? `?status=${encodeURIComponent(status)}` : '';
+      return request<any[]>(`/proposals${qs}`);
+    },
+    get: (id: number) => request<any>(`/proposals/${id}`),
+    approve: (id: number, note?: string) =>
+      request<any>(`/proposals/${id}/approve`, {
+        method: 'POST',
+        body: JSON.stringify({ decided_by: 'user', note: note ?? null }),
+      }),
+    reject: (id: number, note?: string) =>
+      request<any>(`/proposals/${id}/reject`, {
+        method: 'POST',
+        body: JSON.stringify({ decided_by: 'user', note: note ?? null }),
+      }),
+    delete: (id: number) => request<any>(`/proposals/${id}`, { method: 'DELETE' }),
+  },
+
   scheduledTasks: {
     list: () => request<any[]>('/scheduled-tasks'),
     get: (id: string) => request<any>(`/scheduled-tasks/${id}`),

@@ -10,6 +10,7 @@ import { StrategyPage } from './pages/StrategyPage';
 import { EvolutionPage } from './pages/EvolutionPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { ScheduledTasksPage } from './pages/ScheduledTasksPage';
+import { ProposalsPage } from './pages/ProposalsPage';
 import { getApiKey, setApiKey, api } from './api';
 import { KeyRound, Loader2, AlertCircle } from 'lucide-react';
 
@@ -132,6 +133,7 @@ export default function App() {
             <Route path="/strategy" element={<StrategyPage />} />
             <Route path="/evolution" element={<EvolutionPage />} />
             <Route path="/scheduled-tasks" element={<ScheduledTasksPage />} />
+            <Route path="/proposals" element={<ProposalsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
         </Routes>

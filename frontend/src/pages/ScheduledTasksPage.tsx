@@ -25,12 +25,9 @@ const CATEGORIES = [
 
 const TASK_CATEGORY: Record<string, string> = {
   daily_analysis: 'analysis',
-  ad_performance_analysis: 'analysis',
   content_planning: 'content',
   strategy_evolution: 'optimization',
-  ad_budget_optimization: 'optimization',
   prompt_evolution: 'system',
-  code_evolution: 'system',
 };
 
 function cronToHuman(cron: string): string {

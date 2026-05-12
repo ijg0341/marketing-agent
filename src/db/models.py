@@ -88,6 +88,23 @@ class EvolutionLog(Base):
     rolled_back: Mapped[bool] = mapped_column(Integer, default=False)
 
 
+class EvolutionProposal(Base):
+    __tablename__ = "evolution_proposals"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    task_id: Mapped[str] = mapped_column(String(100), index=True)  # strategy_evolution / prompt_evolution
+    target_file: Mapped[str] = mapped_column(String(300))  # e.g. config/strategy.yaml
+    before_content: Mapped[str] = mapped_column(Text)
+    after_content: Mapped[str] = mapped_column(Text)
+    before_hash: Mapped[str] = mapped_column(String(64))  # sha256 of before_content at proposal time
+    reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(String(20), default="pending", index=True)  # pending / approved / rejected / applied / conflict
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    decided_by: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    decision_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
 class Campaign(Base):
     __tablename__ = "campaigns"
 

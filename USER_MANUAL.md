@@ -265,7 +265,6 @@ AI 태스크 프롬프트를 직접 편집할 수 있습니다:
 | daily_analysis | 매일 09:03 | 전날 성과 분석 + 리포트 |
 | content_planning | 매일 10:17 | 오늘 콘텐츠 생성 + 큐 등록 |
 | strategy_evolution | 월/목 11:42 | 전략 자동 최적화 |
-| code_evolution | 수 14:22 | 코드 리뷰 + 개선 |
 | prompt_evolution | 금 14:51 | 템플릿 성과 분석 + 개선 |
 
 **편집 방법**: 카드 클릭 → 펼치기 → 연필 아이콘 → 프롬프트 수정 → Save
