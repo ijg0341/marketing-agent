@@ -11,6 +11,7 @@ venv/
 reports/*.md
 !reports/.gitkeep
 logs/*.jsonl
+logs/*.log
 !logs/.gitkeep
 .pytest_cache/
 .omc/
